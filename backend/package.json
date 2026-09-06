@@ -18,6 +18,7 @@
     "retrain:self": "((..\\\\.venv\\\\Scripts\\\\python.exe -c \"import ultralytics\" >NUL 2>&1) || (npm run ml:install)) && (if not exist ml_models\\\\yolo_best.pt (npm run train:full)) && npm run train:self && npm run reload:yolo"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "axios": "^1.6.7",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.0.1",

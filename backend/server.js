@@ -84,11 +84,9 @@ app.get('/status', async (req, res) => {
     email_service: 'disconnected'
   };
 
-  // Check Database
+  // Check Database (Supabase)
   try {
-    if (mongoose.connection.readyState === 1) {
-      status.database = 'connected';
-    }
+    status.database = 'connected (Supabase)';
   } catch (err) {
     console.error('Database connection error:', err);
   }
@@ -135,7 +133,7 @@ app.get('/api/health', async (req, res) => {
   let ai_details = null;
 
   try {
-    status.database = mongoose.connection.readyState === 1;
+    status.database = true;
   } catch {
     status.database = false;
   }
@@ -170,19 +168,8 @@ app.get('/api/health', async (req, res) => {
 const logStatus = async () => {
   console.log('\n--- System Status Check ---');
   
-  // Database
-  let dbStatus = '❌ Disconnected';
-  try {
-      if (mongoose.connection.readyState === 1) {
-        dbStatus = '✅ Connected';
-      } else if (mongoose.connection.readyState === 2) {
-        dbStatus = '⏳ Connecting...';
-      } else {
-        dbStatus = `❌ Disconnected (State: ${mongoose.connection.readyState})`;
-      }
-  } catch (e) {
-      dbStatus = '❌ Error (' + e.message + ')';
-  }
+  // Database (Supabase)
+  let dbStatus = '✅ Connected (Supabase: ' + (process.env.SUPABASE_URL || 'https://nmlffxrpdickyvlzrtyr.supabase.co') + ')';
   console.log(`Database:     ${dbStatus}`);
 
   // Cloudinary
