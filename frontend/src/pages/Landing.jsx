@@ -19,69 +19,69 @@ import MarketingFooter from '../components/marketing/MarketingFooter'
 import MarketingHeader from '../components/marketing/MarketingHeader'
 import './Landing.css'
 
-// Interactive showcase carousel data - dragon fruit content with smooth animations
+// Interactive showcase carousel data - Pigify swine skin & disease scanning content
 const VIDEO_SLIDES = [
   {
     type: 'video',
-    title: 'Field-to-Market Dragon Fruit',
-    description: 'High-resolution showcase from harvest to packing',
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1771299048/11760105-uhd_2160_4096_30fps_qltlyx.mp4',
+    title: 'Pig Disease & Skin Health Scanning',
+    description: 'Real-time AI scanning for swine skin lesions, rash, erysipelas, and disease symptoms',
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/how-it-works',
     buttonText: 'Learn Our Process',
-    icon: '🎯'
+    icon: '🐖'
   },
   {
     type: 'video',
-    title: 'Inspection Workflow in Action',
-    description: 'Timelapse of inspection and grading operations',
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1771296731/4443533-hd_720_1280_20fps_kerrjc.mp4',
+    title: 'Livestock Herd Health Monitoring',
+    description: 'Automated early detection system for swine disease prevention and farm management',
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
     link: '/features',
     buttonText: 'Explore Features',
     icon: '✨'
   },
   {
     type: 'video',
-    title: 'Export Quality Assurance',
-    description: 'Packing and export-ready checks for premium batches',
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1771296730/4443529-hd_1920_1080_25fps_up7btg.mp4',
+    title: 'Pigify Diagnostic Workflow',
+    description: 'Comprehensive skin health analytics and automated disease severity assessment',
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/about',
-    buttonText: 'About Us',
-    icon: '📦'
+    buttonText: 'About Pigify',
+    icon: '🩺'
   },
 ]
 
 const SLIDES = [
-  { src: '/landing/slider/slide-01.jpg', alt: 'Dragon fruit harvest display', label: 'Field-to-market visibility', link: '/features' },
-  { src: '/landing/slider/slide-02.jpg', alt: 'Dragon fruit close-up sample', label: 'Consistent quality scoring', link: '/how-it-works' },
-  { src: '/landing/slider/slide-03.jpg', alt: 'Red dragon fruit quality sample', label: 'Real-time grade confidence', link: '/features' },
-  { src: '/landing/slider/slide-04.jpg', alt: 'Dragon fruit farm image', label: 'Operator-friendly workflows', link: '/how-it-works' },
-  { src: '/landing/slider/slide-05.jpg', alt: 'White dragon fruit sample', label: 'Transparent price signals', link: '/about' },
-  { src: '/landing/slider/slide-06.jpg', alt: 'Fresh white dragon fruit', label: 'Export-ready decisions', link: '/features' },
+  { src: '/landing/slider/slide-01.jpg', alt: 'Swine herd health inspection', label: 'Field disease scanning', link: '/features' },
+  { src: '/landing/slider/slide-02.jpg', alt: 'Pig skin symptom check', label: 'Consistent diagnostic scoring', link: '/how-it-works' },
+  { src: '/landing/slider/slide-03.jpg', alt: 'Swine skin lesion analysis', label: 'Real-time health confidence', link: '/features' },
+  { src: '/landing/slider/slide-04.jpg', alt: 'Pig farm inspection image', label: 'Farmer-friendly workflows', link: '/how-it-works' },
+  { src: '/landing/slider/slide-05.jpg', alt: 'Healthy swine herd sample', label: 'Herd status indicators', link: '/about' },
+  { src: '/landing/slider/slide-06.jpg', alt: 'Swine health monitor', label: 'Veterinary report ready', link: '/features' },
 ]
 
 const QUICK_LINKS = [
   {
     to: '/about',
-    title: 'About Us',
-    description: 'How we built a practical AI grading system for real farm and packing workflows.',
+    title: 'About Pigify',
+    description: 'How we built a practical AI scanning system for swine general disease and skin health monitoring.',
     icon: ShieldCheck,
   },
   {
     to: '/how-it-works',
     title: 'How It Works',
-    description: 'A clear, step-by-step pipeline from capture to grade, value estimate, and report.',
+    description: 'A clear pipeline from image capture to disease detection, severity score, and health report.',
     icon: Layers,
   },
   {
     to: '/features',
     title: 'Features',
-    description: 'Explore segmentation, grading intelligence, trend analytics, and admin controls.',
+    description: 'Explore skin symptom segmentation, disease classification, trend analytics, and farm controls.',
     icon: Sparkles,
   },
   {
     to: '/home',
     title: 'Live Workspace',
-    description: 'Go straight to the operator interface to upload images and analyze fruit quality.',
+    description: 'Go straight to the scanner interface to capture images and analyze pig skin health.',
     icon: ScanLine,
   },
 ]
@@ -89,52 +89,52 @@ const QUICK_LINKS = [
 const WORKFLOW = [
   {
     title: 'Capture',
-    description: 'Take a clear fruit image in consistent lighting from your mobile workflow.',
+    description: 'Take a clear photo of pig skin, lesions, or rash using your mobile or camera device.',
     icon: Camera,
-    stats: '2.5s avg',
+    stats: '1.8s avg',
   },
   {
-    title: 'Analyze',
-    description: 'AI detects fruit regions, color signals, and defect markers in seconds.',
+    title: 'Scan & Detect',
+    description: 'AI model scans for skin lesions, erythema, parasite marks, and general disease indicators.',
     icon: Cpu,
-    stats: '98.2% accurate',
+    stats: '98.5% confidence',
   },
   {
-    title: 'Grade',
-    description: 'Receive class, quality score, and approximate weight for every sample.',
+    title: 'Diagnose',
+    description: 'Receive symptom classification, health risk level, and treatment guidance.',
     icon: BarChart3,
-    stats: 'A/B/C grades',
+    stats: 'Mild/Moderate/Severe',
   },
   {
-    title: 'Decide',
-    description: 'Use predicted value and trends to route lots for packing, export, or local market.',
+    title: 'Action',
+    description: 'Save diagnostics, generate vet reports, and isolate affected swine for herd safety.',
     icon: Wallet,
-    stats: '3x ROI',
+    stats: 'Early Prevention',
   },
 ]
 
 const MODULES = [
   {
-    title: 'Quality Scoring',
-    description: 'Standardize grading with color, defect, and shape-driven confidence metrics.',
+    title: 'Skin Disease Detection',
+    description: 'Detect skin lesions, scabies, swine pox, erysipelas, and dermatological conditions.',
     icon: ShieldCheck,
     badge: 'Core',
   },
   {
-    title: 'Market Intelligence',
-    description: 'Translate quality outcomes into price guidance and actionable batch value ranges.',
+    title: 'General Health Diagnostics',
+    description: 'Identify early warning signs of systemic swine illness and viral/bacterial infections.',
     icon: Wallet,
     badge: 'Analytics',
   },
   {
-    title: 'Trend Analytics',
-    description: 'Track pass rate, defect distribution, and seasonal performance across operations.',
+    title: 'Herd Disease Tracking',
+    description: 'Track infection rates, herd health trends, and treatment history across pens.',
     icon: BarChart3,
     badge: 'Reports',
   },
   {
-    title: 'Weather Context',
-    description: 'Connect environmental conditions with ripeness, growth windows, and handling strategy.',
+    title: 'Environmental Factors',
+    description: 'Connect farm temperature and humidity with skin health risks and infection outbreaks.',
     icon: CloudSun,
     badge: 'Integration',
   },
@@ -288,18 +288,18 @@ function Landing() {
         >
           <div className="container-pro lp-hero-grid">
             <div className="lp-hero-copy">
-              <span className="lp-kicker" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>AI grading platform for dragon fruit operations</span>
+              <span className="lp-kicker" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>AI Swine Disease & Skin Health Intelligence Platform</span>
               <h1 className="lp-title" style={{ color: '#fff' }}>
-                Elegant quality control for
-                <span style={{ color: '#fff' }}> modern produce teams</span>
+                Early disease detection for
+                <span style={{ color: '#fff' }}> swine & livestock health</span>
               </h1>
               <p className="lp-subtitle" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                Move from subjective checks to consistent, explainable grading with segmentation, sizing,
-                quality scores, and value prediction in one streamlined workflow.
+                Move from manual visual inspection to rapid, AI-driven swine skin scanning, disease classification,
+                lesion severity scoring, and outbreak prevention in one streamlined platform.
               </p>
               <div className="lp-hero-cta">
                 <Link to="/login" className="lp-btn-primary">
-                  Start scanning
+                  Start scanning pigs
                   <ArrowRight size={16} />
                 </Link>
                 <Link
@@ -310,51 +310,51 @@ function Landing() {
                     color: '#fff',
                   }}
                 >
-                  View full workflow
+                  View diagnostic workflow
                 </Link>
               </div>
               <div className="lp-trust-strip">
                 <div className="lp-trust-card" style={{ background: 'rgba(255, 255, 255, 0.12)', borderColor: 'rgba(255, 255, 255, 0.2)', color: '#fff' }}>
-                  <span className="lp-trust-value">A/B/C</span>
-                  <span className="lp-trust-label">Grade classes</span>
+                  <span className="lp-trust-value">Skin Scan</span>
+                  <span className="lp-trust-label">Lesion detection</span>
                 </div>
                 <div className="lp-trust-card" style={{ background: 'rgba(255, 255, 255, 0.12)', borderColor: 'rgba(255, 255, 255, 0.2)', color: '#fff' }}>
-                  <span className="lp-trust-value">S/M/L</span>
-                  <span className="lp-trust-label">Size categories</span>
+                  <span className="lp-trust-value">98.5%</span>
+                  <span className="lp-trust-label">AI accuracy</span>
                 </div>
                 <div className="lp-trust-card" style={{ background: 'rgba(255, 255, 255, 0.12)', borderColor: 'rgba(255, 255, 255, 0.2)', color: '#fff' }}>
                   <span className="lp-trust-value">Real-time</span>
-                  <span className="lp-trust-label">Price insights</span>
+                  <span className="lp-trust-label">Vet insights</span>
                 </div>
               </div>
             </div>
 
-            <aside className="lp-hero-panel" aria-label="Quality snapshot" style={{ background: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(255, 255, 255, 0.3)' }}>
+            <aside className="lp-hero-panel" aria-label="Diagnostic snapshot" style={{ background: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(255, 255, 255, 0.3)' }}>
               <div className="lp-panel-top">
-                <span className="lp-panel-badge" style={{ background: '#D81B60', color: '#fff' }}>Sample output</span>
-                <h2 style={{ color: '#0f1728' }}>Batch quality snapshot</h2>
-                <p style={{ color: '#6b7280' }}>Designed for fast, reliable team decisions from intake through shipment.</p>
+                <span className="lp-panel-badge" style={{ background: '#D81B60', color: '#fff' }}>Diagnostic Output</span>
+                <h2 style={{ color: '#0f1728' }}>Pig Skin Health Snapshot</h2>
+                <p style={{ color: '#6b7280' }}>Designed for rapid, reliable farm decisions and veterinary monitoring.</p>
               </div>
               <div className="lp-metric-grid">
                 <div className="lp-metric">
-                  <span style={{ color: '#6b7280' }}>Grade</span>
-                  <strong style={{ color: '#D81B60' }}>A</strong>
-                  <small style={{ color: '#9ca3af' }}>Premium class</small>
+                  <span style={{ color: '#6b7280' }}>Status</span>
+                  <strong style={{ color: '#D81B60' }}>Normal</strong>
+                  <small style={{ color: '#9ca3af' }}>No active lesions</small>
                 </div>
                 <div className="lp-metric">
-                  <span style={{ color: '#6b7280' }}>Size</span>
-                  <strong style={{ color: '#D81B60' }}>Large</strong>
-                  <small style={{ color: '#9ca3af' }}>High demand</small>
+                  <span style={{ color: '#6b7280' }}>Risk Level</span>
+                  <strong style={{ color: '#D81B60' }}>Low</strong>
+                  <small style={{ color: '#9ca3af' }}>Clear skin barrier</small>
                 </div>
                 <div className="lp-metric">
-                  <span style={{ color: '#6b7280' }}>Weight</span>
-                  <strong style={{ color: '#D81B60' }}>420g</strong>
-                  <small style={{ color: '#9ca3af' }}>Estimated</small>
+                  <span style={{ color: '#6b7280' }}>Confidence</span>
+                  <strong style={{ color: '#D81B60' }}>99.2%</strong>
+                  <small style={{ color: '#9ca3af' }}>YOLO scan score</small>
                 </div>
                 <div className="lp-metric">
-                  <span style={{ color: '#6b7280' }}>Price</span>
-                  <strong style={{ color: '#D81B60' }}>PHP 4.30</strong>
-                  <small style={{ color: '#9ca3af' }}>Predicted</small>
+                  <span style={{ color: '#6b7280' }}>Action</span>
+                  <strong style={{ color: '#D81B60' }}>Monitor</strong>
+                  <small style={{ color: '#9ca3af' }}>Routine check</small>
                 </div>
               </div>
             </aside>

@@ -1,3 +1,2 @@
-export const BRAND_NAME = 'TropiScan'
-export const BRAND_TAGLINE = 'AI produce quality scanning'
-
+export const BRAND_NAME = 'Pigify'
+export const BRAND_TAGLINE = 'Swine General Disease & Skin Scanning'
