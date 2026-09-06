@@ -19,12 +19,12 @@ import MarketingFooter from '../components/marketing/MarketingFooter'
 import MarketingHeader from '../components/marketing/MarketingHeader'
 import './Landing.css'
 
-// Interactive showcase carousel data - Pigify swine skin & disease scanning content
+// Interactive showcase carousel data - Pigify swine disease & skin scanning content
 const VIDEO_SLIDES = [
   {
     type: 'video',
     title: 'Pig Disease & Skin Health Scanning',
-    description: 'Real-time AI scanning for swine skin lesions, rash, erysipelas, and disease symptoms',
+    description: 'Real-time AI scanning for swine skin lesions, rashes, erysipelas, and disease symptoms',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/how-it-works',
     buttonText: 'Learn Our Process',
@@ -32,8 +32,8 @@ const VIDEO_SLIDES = [
   },
   {
     type: 'video',
-    title: 'Livestock Herd Health Monitoring',
-    description: 'Automated early detection system for swine disease prevention and farm management',
+    title: 'Backyard Swine Health Monitoring',
+    description: 'Automated early detection system for swine disease prevention and herd management',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
     link: '/features',
     buttonText: 'Explore Features',
@@ -42,7 +42,7 @@ const VIDEO_SLIDES = [
   {
     type: 'video',
     title: 'Pigify Diagnostic Workflow',
-    description: 'Comprehensive skin health analytics and automated disease severity assessment',
+    description: 'Deep learning skin health analytics and automated severity assessment for backyard pig farms',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/about',
     buttonText: 'About Pigify',
@@ -50,38 +50,29 @@ const VIDEO_SLIDES = [
   },
 ]
 
-const SLIDES = [
-  { src: '/landing/slider/slide-01.jpg', alt: 'Swine herd health inspection', label: 'Field disease scanning', link: '/features' },
-  { src: '/landing/slider/slide-02.jpg', alt: 'Pig skin symptom check', label: 'Consistent diagnostic scoring', link: '/how-it-works' },
-  { src: '/landing/slider/slide-03.jpg', alt: 'Swine skin lesion analysis', label: 'Real-time health confidence', link: '/features' },
-  { src: '/landing/slider/slide-04.jpg', alt: 'Pig farm inspection image', label: 'Farmer-friendly workflows', link: '/how-it-works' },
-  { src: '/landing/slider/slide-05.jpg', alt: 'Healthy swine herd sample', label: 'Herd status indicators', link: '/about' },
-  { src: '/landing/slider/slide-06.jpg', alt: 'Swine health monitor', label: 'Veterinary report ready', link: '/features' },
-]
-
 const QUICK_LINKS = [
   {
     to: '/about',
     title: 'About Pigify',
-    description: 'How we built a practical AI scanning system for swine general disease and skin health monitoring.',
+    description: 'A deep learning-based swine disease and symptom monitoring system for backyard farms.',
     icon: ShieldCheck,
   },
   {
     to: '/how-it-works',
     title: 'How It Works',
-    description: 'A clear pipeline from image capture to disease detection, severity score, and health report.',
+    description: 'A step-by-step pipeline from image capture to disease detection, severity score, and health report.',
     icon: Layers,
   },
   {
     to: '/features',
     title: 'Features',
-    description: 'Explore skin symptom segmentation, disease classification, trend analytics, and farm controls.',
+    description: 'Explore skin symptom segmentation, disease classification, herd trend analytics, and farm controls.',
     icon: Sparkles,
   },
   {
     to: '/home',
-    title: 'Live Workspace',
-    description: 'Go straight to the scanner interface to capture images and analyze pig skin health.',
+    title: 'Live Scanner Workspace',
+    description: 'Go straight to the operator interface to capture images and scan pig health.',
     icon: ScanLine,
   },
 ]
@@ -118,7 +109,7 @@ const MODULES = [
     title: 'Skin Disease Detection',
     description: 'Detect skin lesions, scabies, swine pox, erysipelas, and dermatological conditions.',
     icon: ShieldCheck,
-    badge: 'Core',
+    badge: 'Core AI',
   },
   {
     title: 'General Health Diagnostics',
@@ -140,23 +131,10 @@ const MODULES = [
   },
 ]
 
-const SECTION_BOX_BACKGROUNDS = [
-  '/landing/slider/slide-01.jpg',
-  '/landing/slider/slide-02.jpg',
-  '/landing/slider/slide-03.jpg',
-  '/landing/slider/slide-04.jpg',
-  '/landing/slider/slide-05.jpg',
-  '/landing/slider/slide-06.jpg',
-]
-
 function Landing() {
   const [activeVideoSlide, setActiveVideoSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const videoRefs = useRef([])
-  const wallpapers = useMemo(
-    () => Array.from({ length: 2 }, () => ({ src: '/wallpaper-dragon/wallpaper-10.jpg', label: 'Wallpaper Dragon 10' })),
-    []
-  )
 
   // Auto-advance video slider when playing
   useEffect(() => {
@@ -184,7 +162,7 @@ function Landing() {
       if (!v) return
       try {
         if (idx === activeVideoSlide && isPlaying) {
-          v.play().catch(() => {})
+          v.play().catch(() => { })
         } else {
           v.pause()
         }
@@ -201,9 +179,8 @@ function Landing() {
       <main style={{ background: 'linear-gradient(180deg, #fdf2f8 0%, #FBE3E3 50%)' }}>
         {/* Video slider section */}
         <section
-          className="lp-video-hero df-parallax-surface df-parallax-dark"
-          aria-label="Dragon fruit showcase"
-          style={{ '--df-bg-image': `url(${wallpapers[0].src})` }}
+          className="lp-video-hero"
+          aria-label="Pigify Swine Disease Scanning Showcase"
         >
           <div className="lp-video-container">
             <div className="lp-video-wrapper">
@@ -237,7 +214,7 @@ function Landing() {
                 <span className="lp-slide-icon">{VIDEO_SLIDES[activeVideoSlide].icon}</span>
                 <h2>{VIDEO_SLIDES[activeVideoSlide].title}</h2>
                 <p>{VIDEO_SLIDES[activeVideoSlide].description}</p>
-                <Link 
+                <Link
                   to={VIDEO_SLIDES[activeVideoSlide].link}
                   className="lp-video-nav-btn"
                 >
@@ -283,19 +260,21 @@ function Landing() {
 
         <section
           id="overview"
-          className="lp-hero df-parallax-surface df-parallax-dark"
-          style={{ '--df-bg-image': `url(${wallpapers[1].src})`, color: '#fff' }}
+          className="lp-hero"
+          style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', color: '#fff' }}
         >
           <div className="container-pro lp-hero-grid">
             <div className="lp-hero-copy">
-              <span className="lp-kicker" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>AI Swine Disease & Skin Health Intelligence Platform</span>
+              <span className="lp-kicker" style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms
+              </span>
               <h1 className="lp-title" style={{ color: '#fff' }}>
                 Early disease detection for
-                <span style={{ color: '#fff' }}> swine & livestock health</span>
+                <span style={{ color: '#ec4899' }}> swine & livestock health</span>
               </h1>
               <p className="lp-subtitle" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
                 Move from manual visual inspection to rapid, AI-driven swine skin scanning, disease classification,
-                lesion severity scoring, and outbreak prevention in one streamlined platform.
+                lesion severity scoring, and outbreak prevention tailored specifically for backyard pig farms.
               </p>
               <div className="lp-hero-cta">
                 <Link to="/login" className="lp-btn-primary">
@@ -331,29 +310,29 @@ function Landing() {
 
             <aside className="lp-hero-panel" aria-label="Diagnostic snapshot" style={{ background: 'rgba(255, 255, 255, 0.95)', borderColor: 'rgba(255, 255, 255, 0.3)' }}>
               <div className="lp-panel-top">
-                <span className="lp-panel-badge" style={{ background: '#D81B60', color: '#fff' }}>Diagnostic Output</span>
+                <span className="lp-panel-badge" style={{ background: '#ec4899', color: '#fff' }}>Diagnostic Output</span>
                 <h2 style={{ color: '#0f1728' }}>Pig Skin Health Snapshot</h2>
-                <p style={{ color: '#6b7280' }}>Designed for rapid, reliable farm decisions and veterinary monitoring.</p>
+                <p style={{ color: '#6b7280' }}>Designed for rapid, reliable backyard farm decisions and veterinary monitoring.</p>
               </div>
               <div className="lp-metric-grid">
                 <div className="lp-metric">
                   <span style={{ color: '#6b7280' }}>Status</span>
-                  <strong style={{ color: '#D81B60' }}>Normal</strong>
+                  <strong style={{ color: '#ec4899' }}>Normal</strong>
                   <small style={{ color: '#9ca3af' }}>No active lesions</small>
                 </div>
                 <div className="lp-metric">
                   <span style={{ color: '#6b7280' }}>Risk Level</span>
-                  <strong style={{ color: '#D81B60' }}>Low</strong>
+                  <strong style={{ color: '#ec4899' }}>Low</strong>
                   <small style={{ color: '#9ca3af' }}>Clear skin barrier</small>
                 </div>
                 <div className="lp-metric">
                   <span style={{ color: '#6b7280' }}>Confidence</span>
-                  <strong style={{ color: '#D81B60' }}>99.2%</strong>
+                  <strong style={{ color: '#ec4899' }}>99.2%</strong>
                   <small style={{ color: '#9ca3af' }}>YOLO scan score</small>
                 </div>
                 <div className="lp-metric">
                   <span style={{ color: '#6b7280' }}>Action</span>
-                  <strong style={{ color: '#D81B60' }}>Monitor</strong>
+                  <strong style={{ color: '#ec4899' }}>Monitor</strong>
                   <small style={{ color: '#9ca3af' }}>Routine check</small>
                 </div>
               </div>
@@ -361,26 +340,20 @@ function Landing() {
           </div>
         </section>
 
-        {/* Removed old image slider - replaced by video hero above */}
-
-        <section
-          className="lp-section df-parallax-surface df-parallax-light"
-        >
+        <section className="lp-section">
           <div className="container-pro">
             <div className="lp-section-head">
-              <h2>Explore the platform</h2>
-              <p>Jump to the pages your team uses most often, with clear purpose and faster onboarding.</p>
+              <h2>Explore the Pigify platform</h2>
+              <p>Jump to the tools your backyard farm team uses most often for swine health monitoring.</p>
             </div>
 
             <div className="lp-link-grid">
-              {QUICK_LINKS.map(({ to, title, description, icon }, index) => (
+              {QUICK_LINKS.map(({ to, title, description, icon }) => (
                 <Link
                   to={to}
                   key={title}
                   className="lp-link-card"
-                  style={{ '--lp-box-bg-image': `url(${SECTION_BOX_BACKGROUNDS[index % SECTION_BOX_BACKGROUNDS.length]})` }}
                 >
-                  <div className="lp-box-bg" aria-hidden="true" />
                   <span className="lp-link-icon">
                     {createElement(icon, { size: 18 })}
                   </span>
@@ -398,14 +371,13 @@ function Landing() {
 
         <section
           id="workflow"
-          className="lp-section lp-section-alt df-parallax-surface df-parallax-light"
+          className="lp-section lp-section-alt"
         >
           <div className="container-pro">
             <div className="lp-section-head">
-              <h2>How operations flow</h2>
+              <h2>How backyard farm diagnostics flow</h2>
               <p>
-                Built for real-world usage: scan quickly, standardize decisions, and keep historical quality data
-                organized.
+                Built for real-world swine management: scan quickly, standardize skin disease detection, and keep historical herd health data organized.
               </p>
             </div>
 
@@ -414,9 +386,7 @@ function Landing() {
                 <article
                   key={title}
                   className="lp-flow-card"
-                  style={{ '--lp-box-bg-image': `url(${SECTION_BOX_BACKGROUNDS[(index + 2) % SECTION_BOX_BACKGROUNDS.length]})` }}
                 >
-                  <div className="lp-box-bg" aria-hidden="true" />
                   <span className="lp-flow-step">0{index + 1}</span>
                   <div className="lp-flow-icon">
                     {createElement(icon, { size: 18 })}
@@ -432,24 +402,22 @@ function Landing() {
 
         <section
           id="modules"
-          className="lp-section df-parallax-surface df-parallax-light"
+          className="lp-section"
         >
           <div className="container-pro">
             <div className="lp-section-head">
-              <h2>Core intelligence modules</h2>
-              <p>Each module is purpose-built to reduce guesswork and increase consistency across your team.</p>
+              <h2>Core swine health modules</h2>
+              <p>Purpose-built tools to reduce swine mortality, prevent disease outbreaks, and improve backyard farm productivity.</p>
             </div>
 
             <div className="lp-module-grid">
-              {MODULES.map(({ title, description, icon, badge }, index) => (
+              {MODULES.map(({ title, description, icon, badge }) => (
                 <article
                   key={title}
                   className="lp-module-card"
-                  style={{ '--lp-box-bg-image': `url(${SECTION_BOX_BACKGROUNDS[(index + 1) % SECTION_BOX_BACKGROUNDS.length]})` }}
                 >
-                  <div className="lp-box-bg" aria-hidden="true" />
                   {badge && <span className="lp-module-badge">{badge}</span>}
-                  <div className="lp-module-icon" style={{ color: '#EC6565' }}>
+                  <div className="lp-module-icon" style={{ color: '#ec4899' }}>
                     {createElement(icon, { size: 20 })}
                   </div>
                   <h3>{title}</h3>
@@ -460,14 +428,12 @@ function Landing() {
           </div>
         </section>
 
-        <section
-          className="lp-cta-band df-parallax-surface df-parallax-light"
-        >
+        <section className="lp-cta-band">
           <div className="container-pro lp-cta-content">
             <div>
-              <span className="lp-kicker" style={{ color: '#EC6565' }}>Ready to deploy?</span>
-              <h2>Give your grading process a professional standard.</h2>
-              <p>Sign in to start scanning, benchmarking, and improving every batch.</p>
+              <span className="lp-kicker" style={{ color: '#ec4899' }}>Ready to protect your swine herd?</span>
+              <h2>Give your backyard farm a professional AI disease monitoring standard.</h2>
+              <p>Sign in to start scanning pig skin health, tracking symptoms, and preventing herd disease outbreaks.</p>
             </div>
             <Link to="/login" className="lp-btn-primary">
               Go to login
@@ -483,4 +449,3 @@ function Landing() {
 }
 
 export default Landing
-

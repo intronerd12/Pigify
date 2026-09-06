@@ -10,43 +10,43 @@ const WORKFLOW = [
   {
     id: 'Stage 01',
     title: 'Capture',
-    description: 'Operators capture fruit images with clear framing and stable lighting in the scan workflow.',
+    description: 'Farmers capture pig skin images with clear framing using mobile or camera devices.',
     icon: Camera,
   },
   {
     id: 'Stage 02',
     title: 'Analyze',
-    description: 'Computer vision identifies fruit boundaries, defects, and ripeness indicators in near real-time.',
+    description: 'Deep learning models identify skin lesion boundaries, rash patterns, and disease indicators in real time.',
     icon: Cpu,
   },
   {
     id: 'Stage 03',
-    title: 'Grade',
-    description: 'The engine returns class, score, size, and estimated weight using standardized grading logic.',
+    title: 'Diagnose',
+    description: 'The engine returns disease classification, severity score (Mild/Moderate/Severe), and confidence metrics.',
     icon: BarChart3,
   },
   {
     id: 'Stage 04',
-    title: 'Value',
-    description: 'Predicted market value supports routing decisions for export, local market, or processing.',
+    title: 'Action & Treat',
+    description: 'Recommended veterinary treatment guidance supports fast isolation and herd disease prevention.',
     icon: DollarSign,
   },
 ]
 
 const DELIVERY = [
   {
-    title: 'Operator Feedback Loop',
-    description: 'Corrections from your team are stored for retraining and model tuning.',
+    title: 'Backyard Farmer Feedback Loop',
+    description: 'Field diagnostic logs from farmers help refine swine disease detection accuracy.',
     icon: RefreshCw,
   },
   {
-    title: 'Batch Reporting',
-    description: 'Summaries show pass rate, grade mix, and quality trends by date or lot.',
+    title: 'Herd Health Reporting',
+    description: 'Summaries show disease prevalence, symptom trends, and health history by pen or herd.',
     icon: ClipboardList,
   },
   {
-    title: 'Decision Transparency',
-    description: 'Each output includes interpretable signals, not just a black-box grade.',
+    title: 'Diagnostic Transparency',
+    description: 'Each scan output includes clear visual bounding boxes and explainable severity scores.',
     icon: CheckCircle2,
   },
 ]
@@ -77,14 +77,14 @@ function HowItWorks() {
         >
           <div className="container-pro mk-hero-grid">
             <div>
-              <span className="mk-kicker">How the platform works</span>
+              <span className="mk-kicker">How Pigify Works</span>
               <h1 className="mk-title">
                 A clear pipeline from
-                <span className="accent"> image capture to business decision</span>
+                <span className="accent"> image scan to health decision</span>
               </h1>
               <p className="mk-subtitle">
-                TropiScan is designed to remove ambiguity from grading. Every stage in the pipeline is structured so
-                teams can move faster without sacrificing consistency.
+                Pigify removes guesswork from swine health monitoring. Every stage in the diagnostic pipeline is structured so
+                backyard pig farmers can act early before diseases spread.
               </p>
               <div className="mk-actions">
                 <Link to="/features" className="lp-btn-primary">
@@ -92,7 +92,7 @@ function HowItWorks() {
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/about" className="lp-btn-secondary">
-                  Learn about the model
+                  Learn about the study
                 </Link>
               </div>
             </div>
@@ -100,24 +100,24 @@ function HowItWorks() {
             <aside className="mk-card">
               <div className="mk-card-head">
                 <BarChart3 size={16} />
-                Operational outcomes
+                Health outcomes
               </div>
-              <h3>Designed for repeatable quality</h3>
+              <h3>Designed for early swine disease detection</h3>
               <p>
-                The workflow balances speed and control so each decision is traceable, comparable, and actionable.
+                The workflow balances speed and diagnostic accuracy so each herd health decision is traceable and actionable.
               </p>
               <div className="mk-metric-strip">
                 <div className="mk-metric">
                   <span className="value">4 steps</span>
-                  <span className="label">Core pipeline</span>
+                  <span className="label">Diagnostic pipeline</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">Batch-ready</span>
-                  <span className="label">Reporting output</span>
+                  <span className="value">Backyard</span>
+                  <span className="label">Farm optimized</span>
                 </div>
                 <div className="mk-metric">
                   <span className="value">Feedback loop</span>
-                  <span className="label">Model learning</span>
+                  <span className="label">Continuous learning</span>
                 </div>
               </div>
             </aside>
@@ -130,8 +130,8 @@ function HowItWorks() {
         >
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>Core workflow stages</h2>
-              <p>From intake to value prediction, each stage is optimized for production teams.</p>
+              <h2>Core diagnostic workflow stages</h2>
+              <p>From image capture to health recommendation, each stage is optimized for backyard farm usage.</p>
             </div>
 
             <div className="mk-timeline">
@@ -160,8 +160,8 @@ function HowItWorks() {
         >
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>What you get after each scan</h2>
-              <p>Outputs are built to support immediate action and long-term performance improvement.</p>
+              <h2>What you get after each pig scan</h2>
+              <p>Outputs are built to support immediate farm isolation and long-term swine herd health tracking.</p>
             </div>
             <div className="mk-grid-3">
               {DELIVERY.map(({ title, description, icon }, index) => (
@@ -187,8 +187,8 @@ function HowItWorks() {
           <div className="container-pro">
             <div className="mk-cta">
               <div>
-                <h3>Ready to apply this workflow in your operation?</h3>
-                <p>Sign in and start analyzing real fruit images with production-ready reporting.</p>
+                <h3>Ready to monitor your backyard farm herd?</h3>
+                <p>Sign in and start scanning pig skin health with production-ready diagnostic reporting.</p>
               </div>
               <Link to="/login" className="lp-btn-primary">
                 Go to Login

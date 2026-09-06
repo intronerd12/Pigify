@@ -138,18 +138,18 @@ function About() {
         >
           <div className="container-pro mk-hero-grid">
             <div>
-              <span className="mk-kicker">About our platform</span>
+              <span className="mk-kicker">About Pigify</span>
               <h1 className="mk-title">
-                Practical AI for
-                <span className="accent"> professional grading operations</span>
+                Pigify: A Deep Learning-Based Swine Disease & Symptom Monitoring System for
+                <span className="accent"> Backyard Farms</span>
               </h1>
               <p className="mk-subtitle">
-                TropiScan was designed for teams that need fast, consistent, and explainable quality outcomes.
-                We combine computer vision and operation-focused UX so decisions are clear from intake to shipment.
+                Pigify was designed for small-scale swine farmers and livestock managers who need fast, consistent, and early disease detection.
+                We combine computer vision, YOLO skin symptom segmentation, and backyard farm-focused UX to monitor herd health and prevent disease outbreaks.
               </p>
               <div className="mk-actions">
                 <Link to="/how-it-works" className="lp-btn-primary">
-                  See the workflow
+                  See the diagnostic workflow
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/features" className="lp-btn-secondary">
@@ -161,30 +161,30 @@ function About() {
             <aside className="mk-card">
               <div className="mk-card-head">
                 <Layers size={16} />
-                Platform focus
+                Study focus
               </div>
-              <h3>Built for daily use at scale</h3>
+              <h3>Built for backyard farm health monitoring</h3>
               <p>
-                We focus on reliable grading, operator clarity, and measurable quality improvement across batches,
-                not one-off demos.
+                We focus on early swine disease detection, skin lesion segmentation, and actionable symptom monitoring across pig herds,
+                reducing swine mortality and supporting local farmers.
               </p>
               <ul className="mk-feature-list" style={{ marginTop: '12px' }}>
-                <li><CheckCircle2 size={16} /> Consistent A/B/C scoring framework</li>
-                <li><CheckCircle2 size={16} /> Size and defect-informed value prediction</li>
-                <li><CheckCircle2 size={16} /> Traceable records for continuous improvement</li>
+                <li><CheckCircle2 size={16} /> Skin lesion & rash disease classification</li>
+                <li><CheckCircle2 size={16} /> Mild / Moderate / Severe symptom severity scoring</li>
+                <li><CheckCircle2 size={16} /> Traceable health records for veterinary guidance</li>
               </ul>
               <div className="mk-metric-strip">
                 <div className="mk-metric">
                   <span className="value">YOLOv8/11</span>
-                  <span className="label">Detection backbone</span>
+                  <span className="label">Vision backbone</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">Batch-first</span>
-                  <span className="label">Workflow design</span>
+                  <span className="value">Backyard-first</span>
+                  <span className="label">Farm UX design</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">Explainable</span>
-                  <span className="label">Scoring outputs</span>
+                  <span className="value">Real-time</span>
+                  <span className="label">Symptom alerts</span>
                 </div>
               </div>
             </aside>
@@ -197,10 +197,9 @@ function About() {
         >
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>What defines our approach</h2>
+              <h2>What defines our research approach</h2>
               <p>
-                The platform is centered on clarity, reliability, and measurable operational value across the full
-                grading lifecycle.
+                Our research focuses on accessibility, early diagnostic accuracy, and practical disease management for backyard swine farmers.
               </p>
             </div>
             <div className="mk-grid-4">
@@ -226,9 +225,9 @@ function About() {
         >
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>Model lifecycle and governance</h2>
+              <h2>Model training & disease detection pipeline</h2>
               <p>
-                We run a structured loop that keeps model performance aligned with real farm and packhouse conditions.
+                We train deep learning models on swine skin lesion and disease symptom datasets to keep diagnostic accuracy high.
               </p>
             </div>
             <div className="mk-timeline">
@@ -256,9 +255,9 @@ function About() {
         >
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>Our Team</h2>
+              <h2>Our Research Team</h2>
               <p>
-                A focused group building practical AI tools for real-world dragon fruit grading workflows.
+                A dedicated research team developing Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms.
               </p>
             </div>
             <div className="mk-team-grid">
