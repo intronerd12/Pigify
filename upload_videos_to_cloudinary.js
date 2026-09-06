@@ -19,6 +19,8 @@ cloudinary.config({
 const videos = [
   path.join(__dirname, '15098476_1280_720_60fps.mp4'),
   path.join(__dirname, '13693034-hd_1280_720_25fps.mp4'),
+  path.join(__dirname, '12180338_1280_720_30fps.mp4'),
+  path.join(__dirname, '13693036-hd_1280_720_25fps.mp4'),
 ];
 
 async function uploadVideos() {

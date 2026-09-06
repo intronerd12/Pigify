@@ -9,10 +9,31 @@ import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand';
 import { API_BASE_URL } from '../config/api';
 import '../App.css';
 
-function AuthPro() {
-  // background video for login (Pigify swine health video)
-  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4';
+const AUTH_VIDEO_SLIDES = [
+  {
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
+    title: 'AI Swine Symptom Scan',
+    desc: 'Real-time lesion & skin rash scanning',
+  },
+  {
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
+    title: 'Backyard Swine Analytics',
+    desc: 'Deep learning herd health reports',
+  },
+  {
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
+    title: 'Swine Disease Prevention',
+    desc: 'Early detection & risk severity assessment',
+  },
+  {
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
+    title: 'Swine Health Workspace',
+    desc: 'Veterinary control & monitoring',
+  },
+];
 
+function AuthPro() {
+  const [activeVideoSlide, setActiveVideoSlide] = useState(0);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +43,14 @@ function AuthPro() {
   const [verifyCode, setVerifyCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-advance video slides every 7 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveVideoSlide((prev) => (prev + 1) % AUTH_VIDEO_SLIDES.length);
+    }, 7000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { name, email, password } = formData;
 
@@ -132,7 +161,7 @@ function AuthPro() {
     try {
       setIsLoading(true);
       const provider = googleProvider;
-      
+
       // Add custom parameters to force account selection if needed
       provider.setCustomParameters({ prompt: 'select_account' });
 
@@ -167,12 +196,12 @@ function AuthPro() {
 
       localStorage.setItem('user', JSON.stringify(data));
       toast.success(`Welcome back, ${data.name}!`);
-      
+
       // Use navigate for a smooth SPA transition and to avoid server-side 404s
       navigate(data.role === 'admin' ? '/admin' : '/home');
     } catch (error) {
       console.error('Social Auth Error:', error);
-      
+
       if (error.code === 'auth/popup-closed-by-user') {
         toast.error('Login popup was closed. Please try again.');
       } else if (error.code === 'auth/cancelled-by-user') {
@@ -212,7 +241,27 @@ function AuthPro() {
 
   return (
     <div className="auth-shell">
-      <video className="auth-video-bg" src={BG_VIDEO} autoPlay muted loop playsInline />
+      {AUTH_VIDEO_SLIDES.map((slide, idx) => (
+        <video
+          key={slide.video}
+          className={`auth-video-bg ${activeVideoSlide === idx ? 'active' : ''}`}
+          src={slide.video}
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            opacity: activeVideoSlide === idx ? 1 : 0,
+            transition: 'opacity 1s ease-in-out',
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
       <div className="auth-grid">
         <div className="auth-left">
           <div className="auth-left-top">
@@ -237,6 +286,35 @@ function AuthPro() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Video slide controls & active caption */}
+          <div className="auth-video-slide-caption" style={{ margin: '16px 0', padding: '12px 16px', background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)', borderRadius: '12px', color: '#fff' }}>
+            <div style={{ fontSize: '13px', fontWeight: '700', letterSpacing: '0.5px', textTransform: 'uppercase', opacity: 0.9 }}>
+              {AUTH_VIDEO_SLIDES[activeVideoSlide].title}
+            </div>
+            <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '2px' }}>
+              {AUTH_VIDEO_SLIDES[activeVideoSlide].desc}
+            </div>
+            <div style={{ display: 'flex', gap: '6px', marginTop: '10px' }}>
+              {AUTH_VIDEO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setActiveVideoSlide(i)}
+                  style={{
+                    width: activeVideoSlide === i ? '24px' : '8px',
+                    height: '8px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    background: activeVideoSlide === i ? '#ffffff' : 'rgba(255, 255, 255, 0.4)',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                  }}
+                  aria-label={`Go to video slide ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
 
           <div className="auth-left-foot">
@@ -319,38 +397,38 @@ function AuthPro() {
                   </div>
                 </div>
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="auth-btn-primary"
-              >
-                {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                ) : isLogin ? (
-                  'Sign In'
-                ) : (
-                  'Create Account'
-                )}
-              </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="auth-btn-primary"
+                >
+                  {isLoading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : isLogin ? (
+                    'Sign In'
+                  ) : (
+                    'Create Account'
+                  )}
+                </button>
 
-              <div className="auth-divider">
-                <span />
-                <div>or</div>
-                <span />
-              </div>
+                <div className="auth-divider">
+                  <span />
+                  <div>or</div>
+                  <span />
+                </div>
 
-              <button
-                type="button"
-                onClick={() => handleSocialLogin('google')}
-                disabled={isLoading}
-                className="auth-btn-google-full"
-              >
-                <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" style={{ width: 20, height: 20 }}>
-                  <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.147-1.133 8.213-3.293 2.1-2.173 2.72-5.453 2.72-8.24 0-.573-.053-1.093-.147-1.547H12.48z" />
-                </svg>
-                <span>Continue with Google</span>
-              </button>
-            </form>
+                <button
+                  type="button"
+                  onClick={() => handleSocialLogin('google')}
+                  disabled={isLoading}
+                  className="auth-btn-google-full"
+                >
+                  <svg aria-hidden="true" fill="currentColor" viewBox="0 0 24 24" style={{ width: 20, height: 20 }}>
+                    <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .533 5.333.533 12S5.867 24 12.48 24c3.44 0 6.147-1.133 8.213-3.293 2.1-2.173 2.72-5.453 2.72-8.24 0-.573-.053-1.093-.147-1.547H12.48z" />
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </form>
             ) : (
               <div className="auth-form">
                 <div className="auth-field">

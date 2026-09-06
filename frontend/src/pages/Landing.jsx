@@ -41,9 +41,18 @@ const VIDEO_SLIDES = [
   },
   {
     type: 'video',
-    title: 'Pigify Diagnostic Workflow',
+    title: 'Swine Symptom & Lesion Detection',
+    description: 'Computer vision analysis detecting swine rash, dermatological lesions, and parasitic infections',
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
+    link: '/home',
+    buttonText: 'Try AI Scanner',
+    icon: '🔍'
+  },
+  {
+    type: 'video',
+    title: 'Pigify Herd Health & Diagnostics',
     description: 'Deep learning skin health analytics and automated severity assessment for backyard pig farms',
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
+    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
     link: '/about',
     buttonText: 'About Pigify',
     icon: '🩺'

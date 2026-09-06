@@ -129,8 +129,21 @@ function Auth() {
     setFormData({ name: '', email: '', password: '' })
   }
 
-  // login background video (Pigify swine health video)
-  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4';
+  const AUTH_VIDEOS = [
+    'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
+    'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
+    'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
+    'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
+  ];
+
+  const [activeVideoIdx, setActiveVideoIdx] = useState(0);
+
+  useEffect(() => {
+    const vTimer = setInterval(() => {
+      setActiveVideoIdx((prev) => (prev + 1) % AUTH_VIDEOS.length);
+    }, 7000);
+    return () => clearInterval(vTimer);
+  }, []);
 
   const SLIDES = [
     { src: '/landing/slider/slide-01.jpg', alt: 'Field to market', label: 'Overview', link: '/how-it-works', cta: 'How it works' },
@@ -158,7 +171,7 @@ function Auth() {
   return (
     <div className="auth-container">
       {/* background video */}
-      <video className="auth-video-bg" src={BG_VIDEO} autoPlay muted loop playsInline />
+      <video className="auth-video-bg" src={AUTH_VIDEOS[activeVideoIdx]} autoPlay muted loop playsInline />
 
       <div className="auth-slider" style={{ marginBottom: '18px' }}>
         <div className="home-slider-shell">
