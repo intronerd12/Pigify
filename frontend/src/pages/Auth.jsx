@@ -129,8 +129,8 @@ function Auth() {
     setFormData({ name: '', email: '', password: '' })
   }
 
-  // login background video (dragon fruit showcase)
-  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1771296730/4443529-hd_1920_1080_25fps_up7btg.mp4';
+  // login background video (Pigify swine health video)
+  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4';
 
   const SLIDES = [
     { src: '/landing/slider/slide-01.jpg', alt: 'Field to market', label: 'Overview', link: '/how-it-works', cta: 'How it works' },

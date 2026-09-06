@@ -927,6 +927,7 @@ nav {
   object-fit: cover;
   z-index: 0;
   opacity: 0.55;
+  pointer-events: none;
 }
 
 .auth-card {
@@ -1033,6 +1034,7 @@ nav {
   object-fit: cover;
   z-index: 0;
   opacity: 0.5;
+  pointer-events: none;
 }
 
 .auth-grid {
@@ -1171,6 +1173,9 @@ nav {
   border-radius: 20px;
   padding: 28px;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .auth-card-header {

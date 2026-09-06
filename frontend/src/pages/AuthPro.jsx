@@ -10,8 +10,8 @@ import { API_BASE_URL } from '../config/api';
 import '../App.css';
 
 function AuthPro() {
-  // background video for login
-  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1771296730/4443529-hd_1920_1080_25fps_up7btg.mp4';
+  // background video for login (Pigify swine health video)
+  const BG_VIDEO = 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4';
 
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
@@ -199,13 +199,13 @@ function AuthPro() {
     setVerifyCode('');
   };
 
-  const authModeLabel = 'MongoDB Auth';
+  const authModeLabel = 'Pigify Auth Portal';
 
   const featureList = useMemo(
     () => [
-      { icon: <ScanLine size={18} />, title: 'Scan Insights', desc: 'Track scans, grades, and defects in one place.' },
-      { icon: <BarChart3 size={18} />, title: 'Analytics', desc: 'Real-time dashboards backed by your data.' },
-      { icon: <ShieldCheck size={18} />, title: 'Admin Controls', desc: 'Role-based access and user management.' },
+      { icon: <ScanLine size={18} />, title: 'Skin Disease Scanning', desc: 'Scan pig skin lesions, rash, and symptom severity.' },
+      { icon: <BarChart3 size={18} />, title: 'Herd Analytics', desc: 'Real-time dashboards for backyard swine health.' },
+      { icon: <ShieldCheck size={18} />, title: 'Veterinary Controls', desc: 'Role-based access and diagnostic report management.' },
     ],
     [],
   );
@@ -223,8 +223,8 @@ function AuthPro() {
                 <div className="auth-brand-tagline">{BRAND_TAGLINE}</div>
               </div>
             </div>
-            <div className="auth-left-title">Welcome to the admin-grade TropiScan portal.</div>
-            <div className="auth-left-subtitle">Sign in to view real metrics, manage users, and monitor API health.</div>
+            <div className="auth-left-title">Welcome to Pigify Health Portal</div>
+            <div className="auth-left-subtitle">Sign in to view swine health diagnostics, herd metrics, and disease analytics.</div>
           </div>
 
           <div className="auth-features">
