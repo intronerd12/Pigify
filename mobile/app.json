@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "Tropiscan",
+    "slug": "dragon-vision",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./screens/assets/icon.png",
+    "scheme": "tropiscan",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./screens/assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tropiscan.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow Tropiscan to use your location to show local weather and improve scan context."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./screens/assets/adaptive-icon.png",
+        "backgroundColor": "#C71585"
+      },
+      "package": "com.tropiscan.app",
+      "googleServicesFile": "./google-services.json",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./screens/assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Tropiscan to access your camera to scan dragonfruits."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Tropiscan to use your location to show local weather and improve scan context."
+        }
+      ],
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5d901776-6c75-4640-a113-441551dfac32"
+      }
+    }
+  }
+}

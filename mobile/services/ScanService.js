@@ -1,0 +1,802 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
+import { apiFetch } from './api';
+
+import { getUserNamespace, sanitizeForKey } from './storageScope';
+
+const STORAGE_KEY_BASE = 'dragon_scans_v1';
+const PENDING_KEY_BASE = 'dragon_scan_pending_ops_v1';
+const MAX_SCANS_STORED = 120;
+const MAX_SCANS_STORAGE_BYTES = 1_600_000;
+
+const activeFlushByKey = new Map();
+
+const getStorageKey = (user) => {
+  const ns = sanitizeForKey(getUserNamespace(user));
+  return ns ? `${STORAGE_KEY_BASE}:${ns}` : `${STORAGE_KEY_BASE}:anon`;
+};
+
+const getPendingKey = (user) => {
+  const ns = sanitizeForKey(getUserNamespace(user));
+  return ns ? `${PENDING_KEY_BASE}:${ns}` : `${PENDING_KEY_BASE}:anon`;
+};
+
+const getImagesDir = (user) => {
+  const ns = sanitizeForKey(getUserNamespace(user)) || 'anon';
+  return `${FileSystem.documentDirectory}scans/${ns}/`;
+};
+
+const safeParseArray = (raw) => {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
+const readPendingOps = async (user) => {
+  const key = getPendingKey(user);
+  const raw = await AsyncStorage.getItem(key);
+  return safeParseArray(raw);
+};
+
+const writePendingOps = async (ops, user) => {
+  await AsyncStorage.setItem(getPendingKey(user), JSON.stringify(Array.isArray(ops) ? ops : []));
+};
+
+const resolveUserMeta = (user) => {
+  const userId =
+    user?._id ??
+    user?.id ??
+    user?.userId ??
+    user?.uid ??
+    null;
+
+  const userName =
+    user?.name ??
+    user?.fullName ??
+    user?.username ??
+    null;
+
+  const userEmail =
+    user?.email ??
+    null;
+
+  const token = typeof user?.token === 'string' ? user.token : null;
+
+  return {
+    userId: userId ? String(userId) : null,
+    userName: userName ? String(userName) : null,
+    userEmail: userEmail ? String(userEmail).toLowerCase() : null,
+    token,
+  };
+};
+
+const normalizeComparable = (value) => String(value ?? '').trim().toLowerCase();
+
+const normalizeGrade = (value) => {
+  if (value === undefined || value === null) return 'N/A';
+
+  const raw = String(value).trim().toUpperCase();
+  if (!raw || raw === '-' || raw === '--') return 'N/A';
+
+  if (
+    raw === 'N/A' ||
+    raw === 'NA' ||
+    raw === 'NONE' ||
+    raw === 'NO GRADE' ||
+    raw === 'NO RESULT' ||
+    raw === 'UNKNOWN'
+  ) {
+    return 'N/A';
+  }
+
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric)) {
+    const mapped = { 5: 'A', 4: 'B', 3: 'C', 2: 'D', 1: 'E' }[Math.round(numeric)];
+    if (mapped) return mapped;
+  }
+
+  const contextual = raw.match(/\b(?:GRADE|CLASS)\s*([A-E])(?:\+|-)?\b/);
+  if (contextual?.[1]) return contextual[1];
+
+  const letterOnly = raw.match(/\b([A-E])(?:\+|-)?\b/);
+  if (letterOnly?.[1]) return letterOnly[1];
+
+  return 'N/A';
+};
+
+const normalizeLocalScan = (scan, index = 0) => {
+  const fallbackId = `local-${index}`;
+  const normalizedId = String(scan?.id ?? scan?.localScanId ?? fallbackId).trim() || fallbackId;
+
+  return {
+    ...scan,
+    id: normalizedId,
+    localScanId: String(scan?.localScanId ?? normalizedId).trim() || normalizedId,
+    grade: normalizeGrade(scan?.grade),
+  };
+};
+
+const belongsToUser = (scan, userMeta) => {
+  const rowUserId = String(scan?.user?._id ?? scan?.user ?? scan?.userId ?? scan?.user_id ?? '').trim();
+  const rowEmail = normalizeComparable(scan?.operatorEmail ?? scan?.email ?? scan?.user?.email);
+  const rowName = normalizeComparable(scan?.operatorName ?? scan?.user?.name);
+
+  if (userMeta?.userId && rowUserId) {
+    return rowUserId === String(userMeta.userId);
+  }
+
+  if (userMeta?.userEmail && rowEmail) {
+    return rowEmail === normalizeComparable(userMeta.userEmail);
+  }
+
+  if (userMeta?.userName && rowName) {
+    return rowName === normalizeComparable(userMeta.userName);
+  }
+
+  return false;
+};
+
+const normalizeRemoteScan = (scan, index = 0) => {
+  const normalizedId =
+    String(scan?.localScanId ?? scan?._id ?? scan?.id ?? `remote-${Date.now()}-${index}`).trim();
+
+  return {
+    id: normalizedId,
+    localScanId: String(scan?.localScanId ?? normalizedId).trim(),
+    timestamp: scan?.timestamp || scan?.createdAt || new Date().toISOString(),
+    imageUri: String(scan?.imageUrl ?? scan?.imageUri ?? '').trim(),
+    grade: normalizeGrade(scan?.grade),
+    notes: String(scan?.details ?? scan?.notes ?? '').trim(),
+    fruit_type: String(scan?.fruitType ?? scan?.fruit_type ?? 'Dragon Fruit').trim(),
+    estimated_price_per_kg: toFiniteNumber(scan?.estimated_price_per_kg ?? scan?.estimatedPricePerKg, 0),
+    fruit_area_ratio: toFiniteNumber(scan?.fruit_area_ratio ?? scan?.fruitAreaRatio, 0),
+    size_category: String(scan?.size_category ?? scan?.sizeCategory ?? 'N/A').trim() || 'N/A',
+    market_value_label: String(scan?.market_value_label ?? scan?.marketValueLabel ?? 'N/A').trim() || 'N/A',
+    weight_grams_est: Math.round(toFiniteNumber(scan?.weight_grams_est ?? scan?.weightGramsEst, 0)),
+    shelf_life_label: String(scan?.shelf_life_label ?? scan?.shelfLifeLabel ?? 'No result').trim() || 'No result',
+    ripeness_score: Math.round(toFiniteNumber(scan?.ripeness_score ?? scan?.ripenessScore, 0)),
+    quality_score: Math.round(toFiniteNumber(scan?.quality_score ?? scan?.qualityScore, 0)),
+    location: scan?.location ?? null,
+    source: String(scan?.source ?? 'web_app').trim() || 'web_app',
+  };
+};
+
+const mergeScans = (localScans, remoteScans) => {
+  const merged = new Map();
+
+  const upsert = (scan) => {
+    const key = String(scan?.localScanId || scan?.id || '').trim() || `${scan?.timestamp || ''}-${merged.size}`;
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, scan);
+      return;
+    }
+
+    const preferredImage =
+      (typeof existing?.imageUri === 'string' && existing.imageUri.startsWith('file') && existing.imageUri) ||
+      scan?.imageUri ||
+      existing?.imageUri;
+
+    merged.set(key, {
+      ...existing,
+      ...scan,
+      id: existing?.id || scan?.id || key,
+      localScanId: existing?.localScanId || scan?.localScanId || key,
+      imageUri: preferredImage || '',
+    });
+  };
+
+  remoteScans.forEach(upsert);
+  localScans.forEach(upsert);
+
+  return Array.from(merged.values()).sort(
+    (a, b) => new Date(b?.timestamp || 0).getTime() - new Date(a?.timestamp || 0).getTime()
+  );
+};
+
+const fetchRemoteScans = async ({ user } = {}) => {
+  const userMeta = resolveUserMeta(user);
+  if (!userMeta.userId && !userMeta.userEmail && !userMeta.userName) {
+    return [];
+  }
+
+  const headers = { Accept: 'application/json' };
+  if (userMeta.token) {
+    headers.Authorization = `Bearer ${userMeta.token}`;
+  }
+
+  try {
+    const res = await apiFetch('/api/scan', { headers, cache: 'no-store' });
+    if (!res.ok) {
+      return [];
+    }
+    const payload = await safeReadJson(res);
+    if (!Array.isArray(payload)) return [];
+
+    return payload
+      .filter((scan) => belongsToUser(scan, userMeta))
+      .slice(0, MAX_SCANS_STORED)
+      .map((scan, index) => normalizeRemoteScan(scan, index));
+  } catch {
+    return [];
+  }
+};
+
+const getUploadMeta = (imageUri) => {
+  const uriStr = String(imageUri || '');
+  const cleanUri = uriStr.split('?')[0];
+  const extRaw = cleanUri.includes('.') ? cleanUri.split('.').pop() : '';
+  const ext = String(extRaw || '').toLowerCase();
+  const mime =
+    ext === 'png'
+      ? 'image/png'
+      : ext === 'webp'
+        ? 'image/webp'
+        : 'image/jpeg';
+  const fileName = ext === 'png' || ext === 'webp' ? `scan.${ext}` : 'scan.jpg';
+  return { mime, fileName };
+};
+
+const ensureDirExists = async (dir) => {
+  const dirInfo = await FileSystem.getInfoAsync(dir);
+  if (!dirInfo.exists) {
+    await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
+  }
+};
+
+const safeReadJson = async (res) => {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+const toFiniteNumber = (value, fallback = 0) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+};
+
+const truncateText = (value, maxLength = 280) => {
+  const text = typeof value === 'string' ? value : String(value ?? '');
+  return text.length <= maxLength ? text : `${text.slice(0, Math.max(0, maxLength - 1))}\u2026`;
+};
+
+const estimateStringBytes = (value) => {
+  try {
+    return new Blob([String(value ?? '')]).size;
+  } catch {
+    return String(value ?? '').length * 2;
+  }
+};
+
+const isStorageOverflowError = (error) => {
+  const message = String(error?.message || error || '').toLowerCase();
+  return (
+    message.includes('cursorwindow') ||
+    message.includes('row too big') ||
+    message.includes('database or disk is full')
+  );
+};
+
+const sanitizeScanForStorage = (scan) => {
+  if (!scan || typeof scan !== 'object') return scan;
+
+  const recommendations = Array.isArray(scan.recommendations)
+    ? scan.recommendations
+        .filter((item) => typeof item === 'string' && item.trim().length > 0)
+        .slice(0, 4)
+        .map((item) => truncateText(item, 140))
+    : [];
+
+  return {
+    id: scan.id,
+    localScanId: scan.localScanId || scan.id,
+    timestamp: scan.timestamp,
+    imageUri: scan.imageUri,
+    grade: normalizeGrade(scan?.grade),
+    notes: truncateText(scan.notes || scan.details || '', 320),
+    fruit_type: truncateText(scan.fruit_type || scan.fruitType || '', 120),
+    is_valid_fruit: scan.is_valid_fruit,
+    warning_message: truncateText(scan.warning_message || '', 200),
+    estimated_price_per_kg: toFiniteNumber(scan.estimated_price_per_kg, 0),
+    fruit_area_ratio: toFiniteNumber(scan.fruit_area_ratio, 0),
+    size_category: scan.size_category || 'N/A',
+    market_value_label: scan.market_value_label || 'N/A',
+    weight_grams_est: Math.round(toFiniteNumber(scan.weight_grams_est, 0)),
+    shelf_life_label: scan.shelf_life_label || 'No result',
+    disease_status: truncateText(scan.disease_status || '', 120),
+    defect_level: scan.defect_level || 'none',
+    ripeness_score: Math.round(toFiniteNumber(scan.ripeness_score, 0)),
+    quality_score: Math.round(toFiniteNumber(scan.quality_score, 0)),
+    harvest_stage: scan.harvest_stage || 'No result',
+    recommendations,
+    location: scan.location || null,
+    source: scan.source || 'mobile_app',
+  };
+};
+
+const enforceStorageBudget = (scans) => {
+  let normalized = (Array.isArray(scans) ? scans : []).map(sanitizeScanForStorage).slice(0, MAX_SCANS_STORED);
+  let serialized = JSON.stringify(normalized);
+
+  while (normalized.length > 0 && estimateStringBytes(serialized) > MAX_SCANS_STORAGE_BYTES) {
+    normalized = normalized.slice(0, normalized.length - 1);
+    serialized = JSON.stringify(normalized);
+  }
+
+  return { scans: normalized, serialized };
+};
+
+const persistScans = async (scans, user) => {
+  const { scans: pruned, serialized } = enforceStorageBudget(scans);
+  await AsyncStorage.setItem(getStorageKey(user), serialized);
+  return pruned;
+};
+
+const buildScanPayload = (scan, user) => {
+  const { userId, userName, userEmail } = resolveUserMeta(user);
+  return {
+    grade: normalizeGrade(scan?.grade),
+    details: scan?.notes || scan?.fruit_type || 'No details provided',
+    imageUrl: scan?.imageUri,
+    location: scan?.location,
+    timestamp: scan?.timestamp || new Date().toISOString(),
+    userId: userId || undefined,
+    operatorName: userName || undefined,
+    operatorEmail: userEmail || undefined,
+    fruitType: scan?.fruit_type || undefined,
+    localScanId: scan?.id || undefined,
+    source: 'mobile_app',
+  };
+};
+
+const syncScanPayloadToBackend = async (payload, { user } = {}) => {
+  const { token } = resolveUserMeta(user);
+  const headers = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await apiFetch('/api/scan', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorBody = await safeReadJson(res);
+    throw new Error(errorBody?.message || `Scan sync failed (${res.status})`);
+  }
+
+  return safeReadJson(res);
+};
+
+const syncScanToBackend = async (scan, { user } = {}) => {
+  return syncScanPayloadToBackend(buildScanPayload(scan, user), { user });
+};
+
+const deleteScanFromBackend = async (localScanId, { user } = {}) => {
+  const id = String(localScanId || '').trim();
+  if (!id) return null;
+
+  const { userId, userEmail, token } = resolveUserMeta(user);
+  const query = new URLSearchParams();
+  if (userId) query.set('userId', userId);
+  if (userEmail) query.set('operatorEmail', userEmail);
+  const queryString = query.toString();
+
+  const url = `/api/scan/${encodeURIComponent(id)}${queryString ? `?${queryString}` : ''}`;
+  const headers = { Accept: 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await apiFetch(url, {
+    method: 'DELETE',
+    headers,
+  });
+
+  // Record might already be removed server-side, which is equivalent to success.
+  if (res.status === 404) {
+    return null;
+  }
+
+  if (!res.ok) {
+    const errorBody = await safeReadJson(res);
+    throw new Error(errorBody?.message || `Scan delete sync failed (${res.status})`);
+  }
+
+  return safeReadJson(res);
+};
+
+const deleteAllScansFromBackend = async ({ user, source } = {}) => {
+  const { userId, userEmail, token } = resolveUserMeta(user);
+  if (!userId && !userEmail) {
+    return null;
+  }
+
+  const query = new URLSearchParams();
+  if (userId) query.set('userId', userId);
+  if (userEmail) query.set('operatorEmail', userEmail);
+  if (source) query.set('source', String(source));
+  const queryString = query.toString();
+
+  const headers = { Accept: 'application/json' };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await apiFetch(`/api/scan${queryString ? `?${queryString}` : ''}`, {
+    method: 'DELETE',
+    headers,
+  });
+
+  if (!res.ok) {
+    const errorBody = await safeReadJson(res);
+    throw new Error(errorBody?.message || `Bulk scan delete failed (${res.status})`);
+  }
+
+  return safeReadJson(res);
+};
+
+const enqueuePendingOperation = async (operation, { user } = {}) => {
+  const type = operation?.type === 'delete' ? 'delete' : 'upsert';
+  const localScanId = String(operation?.localScanId || '').trim();
+  if (!localScanId) return;
+
+  const current = await readPendingOps(user);
+  const withoutSameScanId = current.filter((item) => String(item?.localScanId || '') !== localScanId);
+
+  const next = {
+    type,
+    localScanId,
+    queuedAt: new Date().toISOString(),
+  };
+  if (type === 'upsert') {
+    if (operation?.payload) {
+      next.payload = operation.payload;
+    } else if (operation?.scan) {
+      next.payload = buildScanPayload(operation.scan, user);
+    }
+  }
+
+  await writePendingOps([...withoutSameScanId, next], user);
+};
+
+const flushPendingSyncInternal = async ({ user } = {}) => {
+  const queue = await readPendingOps(user);
+  if (!queue.length) return { synced: 0, remaining: 0 };
+
+  const pending = [];
+  let synced = 0;
+
+  for (const op of queue) {
+    const type = op?.type;
+    const localScanId = String(op?.localScanId || '').trim();
+    if (!localScanId) continue;
+
+    try {
+      if (type === 'delete') {
+        await deleteScanFromBackend(localScanId, { user });
+        synced += 1;
+        continue;
+      }
+
+      if (type === 'upsert' && (op?.payload || op?.scan)) {
+        const payload = op?.payload || buildScanPayload(op.scan, user);
+        await syncScanPayloadToBackend(payload, { user });
+        synced += 1;
+        continue;
+      }
+
+      pending.push(op);
+    } catch {
+      pending.push(op);
+    }
+  }
+
+  await writePendingOps(pending, user);
+  return { synced, remaining: pending.length };
+};
+
+export const ScanService = {
+  analyzeImage: async (imageUri) => {
+    try {
+      const { mime, fileName } = getUploadMeta(imageUri);
+
+      const formData = new FormData();
+      formData.append('image', {
+        uri: imageUri,
+        type: mime,
+        name: fileName,
+      });
+      formData.append('client', 'mobile');
+
+      const response = await apiFetch('/api/scan/analyze', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await safeReadJson(response);
+        throw new Error(errorData?.message || errorData?.detail || 'Analysis failed');
+      }
+
+      const result = await response.json();
+      if (!result || typeof result !== 'object') return result;
+      return {
+        ...result,
+        grade: normalizeGrade(result?.grade),
+      };
+    } catch (e) {
+      console.error('Error analyzing image:', e);
+      throw e;
+    }
+  },
+
+  uploadTrainingSample: async (imageUri, { source } = {}) => {
+    try {
+      const { mime, fileName } = getUploadMeta(imageUri);
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        type: mime,
+        name: fileName,
+      });
+      if (source) {
+        formData.append('source', String(source));
+      }
+
+      const response = await apiFetch('/api/train/upload', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await safeReadJson(response);
+        throw new Error(errorData?.message || 'Upload failed');
+      }
+
+      return await response.json();
+    } catch (e) {
+      console.error('Error uploading training sample:', e);
+      throw e;
+    }
+  },
+
+  flushPendingSync: async ({ user } = {}) => {
+    const flushKey = getPendingKey(user);
+    const running = activeFlushByKey.get(flushKey);
+    if (running) return running;
+
+    const nextRun = flushPendingSyncInternal({ user }).finally(() => {
+      activeFlushByKey.delete(flushKey);
+    });
+    activeFlushByKey.set(flushKey, nextRun);
+    return nextRun;
+  },
+
+  getPendingSyncCount: async ({ user } = {}) => {
+    const queue = await readPendingOps(user);
+    return queue.length;
+  },
+
+  getScans: async ({ user } = {}) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(getStorageKey(user));
+      void ScanService.flushPendingSync({ user });
+      const parsed = jsonValue != null ? safeParseArray(jsonValue) : [];
+      const remoteScans = await fetchRemoteScans({ user });
+      if (!parsed.length && !remoteScans.length) return [];
+
+      const needsCompaction = parsed.some(
+        (scan) =>
+          scan &&
+          typeof scan === 'object' &&
+          (typeof scan.segmentation_preview_base64 === 'string' ||
+            Array.isArray(scan.detections) ||
+            Array.isArray(scan.disease_detections))
+      );
+
+      let localScans = parsed;
+      if (needsCompaction || parsed.length > MAX_SCANS_STORED) {
+        localScans = await persistScans(parsed, user);
+      }
+
+      const normalizedLocalScans = localScans
+        .filter((scan) => scan && typeof scan === 'object')
+        .map((scan, index) => normalizeLocalScan(scan, index));
+
+      return mergeScans(normalizedLocalScans, remoteScans);
+    } catch (e) {
+      console.error('Error reading scans', e);
+      if (isStorageOverflowError(e)) {
+        try {
+          await AsyncStorage.removeItem(getStorageKey(user));
+          console.warn('Cleared oversized scan history row from local storage.');
+        } catch {}
+      }
+      return [];
+    }
+  },
+
+  addScan: async (scan, { user } = {}) => {
+    const scanId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const timestamp = new Date().toISOString();
+    let finalImageUri = scan?.imageUri;
+
+    try {
+      const imagesDir = getImagesDir(user);
+      await ensureDirExists(imagesDir);
+
+      const fileName = `scan_${Date.now()}.jpg`;
+      const newPath = imagesDir + fileName;
+      await FileSystem.copyAsync({
+        from: scan.imageUri,
+        to: newPath,
+      });
+      finalImageUri = newPath;
+    } catch (e) {
+      console.error('Error copying scan image to local storage', e);
+    }
+
+    const newScan = {
+      id: scanId,
+      timestamp,
+      ...scan,
+      imageUri: finalImageUri,
+      grade: normalizeGrade(scan?.grade),
+    };
+
+    try {
+      const currentScans = await ScanService.getScans({ user });
+      await persistScans([newScan, ...currentScans], user);
+    } catch (e) {
+      console.error('Error saving scan locally', e);
+    }
+
+    try {
+      await enqueuePendingOperation(
+        {
+          type: 'upsert',
+          localScanId: newScan.id,
+          payload: buildScanPayload(newScan, user),
+        },
+        { user }
+      );
+      void ScanService.flushPendingSync({ user });
+    } catch (e) {
+      console.error('Error queueing scan sync', e);
+    }
+
+    return newScan;
+  },
+
+  getStats: async ({ user } = {}) => {
+    try {
+      const scans = await ScanService.getScans({ user });
+      const total = scans.length;
+      if (total === 0) return { total: 0, best: '-', avg: '0%' };
+
+      const gradeMap = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+      const sum = scans.reduce((acc, scan) => acc + (gradeMap[scan.grade] || 0), 0);
+      const avgNum = sum / total;
+      const avgPercent = Math.round((avgNum / 5) * 100);
+
+      const grades = scans.map((s) => s.grade);
+      let best = '-';
+      if (grades.includes('A')) best = 'A';
+      else if (grades.includes('B')) best = 'B';
+      else if (grades.includes('C')) best = 'C';
+      else if (grades.includes('D')) best = 'D';
+      else if (grades.includes('E')) best = 'E';
+
+      return {
+        total,
+        best,
+        avg: `${avgPercent}%`,
+      };
+    } catch (e) {
+      console.error('Error getting stats', e);
+      return { total: 0, best: '-', avg: '0%' };
+    }
+  },
+
+  deleteScan: async (scanId, { user } = {}) => {
+    try {
+      const currentScans = await ScanService.getScans({ user });
+      const idStr = String(scanId);
+      const idx = currentScans.findIndex((s) => String(s?.id) === idStr);
+
+      if (idx >= 0) {
+        const removed = currentScans[idx];
+        const updatedScans = [...currentScans.slice(0, idx), ...currentScans.slice(idx + 1)];
+        await persistScans(updatedScans, user);
+
+        const uri = removed?.imageUri;
+        if (typeof uri === 'string' && uri.length > 0) {
+          try {
+            const info = await FileSystem.getInfoAsync(uri);
+            if (info.exists) {
+              await FileSystem.deleteAsync(uri, { idempotent: true });
+            }
+          } catch {}
+        }
+      }
+
+      await enqueuePendingOperation(
+        {
+          type: 'delete',
+          localScanId: idStr,
+        },
+        { user }
+      );
+      void ScanService.flushPendingSync({ user });
+
+      return { deleted: idx >= 0 };
+    } catch (e) {
+      console.error('Error deleting scan', e);
+      throw e;
+    }
+  },
+
+  deleteAllScans: async ({ user, source } = {}) => {
+    try {
+      const raw = await AsyncStorage.getItem(getStorageKey(user));
+      const localScans = safeParseArray(raw);
+
+      await deleteAllScansFromBackend({ user, source });
+
+      await AsyncStorage.removeItem(getStorageKey(user));
+      await AsyncStorage.removeItem(getPendingKey(user));
+
+      const localImageUris = localScans
+        .map((scan) => String(scan?.imageUri || ''))
+        .filter((uri) => uri.startsWith('file:'));
+
+      for (const uri of localImageUris) {
+        try {
+          const info = await FileSystem.getInfoAsync(uri);
+          if (info.exists) {
+            await FileSystem.deleteAsync(uri, { idempotent: true });
+          }
+        } catch {}
+      }
+
+      return { deleted: true };
+    } catch (e) {
+      console.error('Error deleting all scans', e);
+      throw e;
+    }
+  },
+
+  clearScans: async ({ user, deleteImages = false } = {}) => {
+    try {
+      await AsyncStorage.removeItem(getStorageKey(user));
+      await AsyncStorage.removeItem(getPendingKey(user));
+      if (deleteImages) {
+        const dir = getImagesDir(user);
+        const info = await FileSystem.getInfoAsync(dir);
+        if (info.exists) {
+          await FileSystem.deleteAsync(dir, { idempotent: true });
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  },
+};
