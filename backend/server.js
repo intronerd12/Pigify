@@ -38,6 +38,23 @@ connectDB();
 // ─── Configure Cloudinary ─────────────────────────────────────────────────────
 const cloudinary = configureCloudinary();
 
+// ─── Root Status Endpoint ───────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    service: 'Pigify Swine Telemetry & AI Backend',
+    version: '1.0.0',
+    endpoints: {
+      status: '/status',
+      health: '/api/health',
+      auth: '/api/auth',
+      scan: '/api/scan',
+      community: '/api/community',
+      weather: '/api/weather'
+    }
+  });
+});
+
 // ─── Status Endpoint ──────────────────────────────────────────────────────────
 app.get('/status', async (req, res) => {
   const status = {
