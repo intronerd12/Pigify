@@ -227,7 +227,6 @@ function AuthPro() {
   const handleSocialLogin = async () => {
     try {
       setIsLoading(true);
-      googleProvider.setCustomParameters({ prompt: 'select_account' });
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
 
