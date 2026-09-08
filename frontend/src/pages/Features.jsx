@@ -100,8 +100,8 @@ function Features() {
                 <span className="accent"> production-grade quality control</span>
               </h1>
               <p className="mk-subtitle">
-                TropiScan combines model intelligence and operator workflows in one platform so your team can grade,
-                route, and report with confidence.
+                Pigify combines deep learning swine vision and herd workflows in one platform so backyard farmers can detect,
+                isolate, and treat diseases with confidence.
               </p>
               <div className="mk-actions">
                 <Link to="/home" className="lp-btn-primary">

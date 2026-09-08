@@ -3,12 +3,19 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, BarChart3, ScanLine, Activity, LogOut, AlertTriangle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+import { supabase } from '../../utils/supabase';
+
 const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Supabase signOut error:', err);
+    }
     localStorage.removeItem('user');
     toast.success('Logged out successfully');
     navigate('/');

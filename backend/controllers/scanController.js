@@ -1,6 +1,4 @@
-const Scan = require('../models/Scan');
-const User = require('../models/User');
-const mongoose = require('mongoose');
+const { supabaseAdmin } = require('../config/supabase');
 
 const normalizeText = (value) => {
   if (value === undefined || value === null) return undefined;
@@ -19,95 +17,57 @@ const normalizeNumber = (value) => {
   return Number.isFinite(n) ? n : undefined;
 };
 
-const buildOwnerScope = (queryParams = {}) => {
-  const rawOperatorEmail = normalizeText(queryParams?.operatorEmail);
-  const rawUserId = normalizeText(queryParams?.userId);
-  const operatorEmail = rawOperatorEmail ? rawOperatorEmail.toLowerCase() : null;
-
-  const scope = {};
-  if (operatorEmail) {
-    scope.operatorEmail = operatorEmail;
-  }
-  if (rawUserId && mongoose.Types.ObjectId.isValid(rawUserId)) {
-    scope.user = rawUserId;
-  }
-
-  return scope;
-};
-
-// @desc    Get all scans
-// @route   GET /api/scans
-// @access  Private (Admin) or Public (depending on requirements)
+// @desc    Get all scans (admin)
+// @route   GET /api/scan
+// @access  Private (Admin)
 const getScans = async (req, res) => {
   try {
-    const scans = await Scan.find().sort({ timestamp: -1, createdAt: -1 }).populate('user', 'name email');
-    res.status(200).json(scans);
+    const { data: scans, error } = await supabaseAdmin
+      .from('scans')
+      .select('*')
+      .order('timestamp', { ascending: false });
+
+    if (error) return res.status(500).json({ message: error.message });
+    return res.status(200).json(scans || []);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
 // @desc    Create a new scan
-// @route   POST /api/scans
-// @access  Private (User)
+// @route   POST /api/scan
+// @access  Public/Private
 const createScan = async (req, res) => {
   try {
     const {
-      grade,
-      details,
-      imageUrl,
-      location,
-      timestamp,
-      userId,
-      operatorName,
-      operatorEmail,
-      fruitType,
-      localScanId,
-      source,
-      estimated_price_per_kg,
-      estimatedPricePerKg,
-      fruit_area_ratio,
-      fruitAreaRatio,
-      size_category,
-      sizeCategory,
-      market_value_label,
-      marketValueLabel,
-      weight_grams_est,
-      weightGramsEst,
-      ripeness_score,
-      ripenessScore,
-      quality_score,
-      qualityScore,
-      shelf_life_label,
-      shelfLifeLabel,
+      grade, details, imageUrl, location, timestamp,
+      userId, operatorName, operatorEmail, fruitType, localScanId, source,
+      estimated_price_per_kg, estimatedPricePerKg,
+      fruit_area_ratio, fruitAreaRatio,
+      size_category, sizeCategory,
+      market_value_label, marketValueLabel,
+      weight_grams_est, weightGramsEst,
+      ripeness_score, ripenessScore,
+      quality_score, qualityScore,
+      shelf_life_label, shelfLifeLabel,
     } = req.body;
 
     const normalizedEmail = normalizeText(operatorEmail)?.toLowerCase();
-    const userIdCandidate = normalizeText(userId);
-    let resolvedUser = null;
-
-    if (userIdCandidate && mongoose.Types.ObjectId.isValid(userIdCandidate)) {
-      resolvedUser = await User.findById(userIdCandidate).select('_id name email');
-    } else if (normalizedEmail) {
-      resolvedUser = await User.findOne({ email: normalizedEmail }).select('_id name email');
-    }
-
     const parsedTimestamp = timestamp ? new Date(timestamp) : null;
     const safeTimestamp = parsedTimestamp && !Number.isNaN(parsedTimestamp.getTime())
-      ? parsedTimestamp
-      : new Date();
+      ? parsedTimestamp.toISOString()
+      : new Date().toISOString();
 
-    const normalizedLocalScanId = normalizeText(localScanId);
     const payload = {
       grade: normalizeGrade(grade),
       details: normalizeText(details),
-      imageUrl: normalizeText(imageUrl),
+      image_url: normalizeText(imageUrl),
       location: normalizeText(location),
       timestamp: safeTimestamp,
-      operatorName: normalizeText(operatorName) || resolvedUser?.name,
-      operatorEmail: normalizedEmail || resolvedUser?.email,
-      fruitType: normalizeText(fruitType),
-      localScanId: normalizedLocalScanId,
+      operator_name: normalizeText(operatorName),
+      operator_email: normalizedEmail,
+      fruit_type: normalizeText(fruitType),
+      local_scan_id: normalizeText(localScanId),
       source: normalizeText(source) || 'mobile_app',
       estimated_price_per_kg: normalizeNumber(estimated_price_per_kg ?? estimatedPricePerKg),
       fruit_area_ratio: normalizeNumber(fruit_area_ratio ?? fruitAreaRatio),
@@ -119,37 +79,55 @@ const createScan = async (req, res) => {
       shelf_life_label: normalizeText(shelf_life_label ?? shelfLifeLabel),
     };
 
-    if (resolvedUser?._id) {
-      payload.user = resolvedUser._id;
+    // Link to Supabase user if userId provided
+    if (normalizeText(userId)) {
+      payload.user_id = normalizeText(userId);
     }
 
-    let scan = null;
-    let statusCode = 200;
-    if (normalizedLocalScanId) {
-      const dedupeQuery = { localScanId: normalizedLocalScanId };
-      if (normalizedEmail) {
-        dedupeQuery.operatorEmail = normalizedEmail;
-      } else if (resolvedUser?._id) {
-        dedupeQuery.user = resolvedUser._id;
-      }
+    let scan;
+    let statusCode = 201;
 
-      scan = await Scan.findOneAndUpdate(
-        dedupeQuery,
-        { $set: payload },
-        { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
-      ).populate('user', 'name email');
+    // Deduplication by localScanId + operatorEmail
+    if (payload.local_scan_id && normalizedEmail) {
+      const { data: existing } = await supabaseAdmin
+        .from('scans')
+        .select('id, created_at, updated_at')
+        .eq('local_scan_id', payload.local_scan_id)
+        .eq('operator_email', normalizedEmail)
+        .maybeSingle();
 
-      if (scan?.createdAt && scan?.updatedAt && scan.createdAt.getTime() === scan.updatedAt.getTime()) {
-        statusCode = 201;
+      if (existing) {
+        const { data: updated, error } = await supabaseAdmin
+          .from('scans')
+          .update(payload)
+          .eq('id', existing.id)
+          .select()
+          .single();
+        if (error) return res.status(500).json({ message: error.message });
+        scan = updated;
+        statusCode = 200;
+      } else {
+        const { data: created, error } = await supabaseAdmin
+          .from('scans')
+          .insert(payload)
+          .select()
+          .single();
+        if (error) return res.status(500).json({ message: error.message });
+        scan = created;
       }
     } else {
-      scan = await Scan.create(payload);
-      statusCode = 201;
+      const { data: created, error } = await supabaseAdmin
+        .from('scans')
+        .insert(payload)
+        .select()
+        .single();
+      if (error) return res.status(500).json({ message: error.message });
+      scan = created;
     }
 
-    res.status(statusCode).json(scan);
+    return res.status(statusCode).json(scan);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
@@ -163,27 +141,22 @@ const deleteScanByLocalScanId = async (req, res) => {
       return res.status(400).json({ message: 'localScanId is required' });
     }
 
-    const ownerScope = buildOwnerScope(req.query);
-    if (!Object.keys(ownerScope).length) {
+    const operatorEmail = normalizeText(req.query.operatorEmail)?.toLowerCase();
+    const userId = normalizeText(req.query.userId);
+
+    if (!operatorEmail && !userId) {
       return res.status(400).json({ message: 'userId or operatorEmail is required' });
     }
 
-    const query = { ...ownerScope };
-    if (mongoose.Types.ObjectId.isValid(scanIdentifier)) {
-      query.$or = [
-        { localScanId: scanIdentifier },
-        { _id: scanIdentifier },
-      ];
-    } else {
-      query.localScanId = scanIdentifier;
-    }
+    let query = supabaseAdmin.from('scans').delete().eq('local_scan_id', scanIdentifier);
+    if (operatorEmail) query = query.eq('operator_email', operatorEmail);
+    else if (userId) query = query.eq('user_id', userId);
 
-    const deleted = await Scan.findOneAndDelete(query);
-    if (!deleted) {
-      return res.status(404).json({ message: 'Scan not found' });
-    }
+    const { data: deleted, error } = await query.select().maybeSingle();
+    if (error) return res.status(500).json({ message: error.message });
+    if (!deleted) return res.status(404).json({ message: 'Scan not found' });
 
-    return res.status(200).json({ message: 'Scan deleted', id: deleted._id });
+    return res.status(200).json({ message: 'Scan deleted', id: deleted.id });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -194,21 +167,25 @@ const deleteScanByLocalScanId = async (req, res) => {
 // @access  Private (User)
 const deleteAllScansForUser = async (req, res) => {
   try {
-    const ownerScope = buildOwnerScope(req.query);
-    if (!Object.keys(ownerScope).length) {
+    const operatorEmail = normalizeText(req.query.operatorEmail)?.toLowerCase();
+    const userId = normalizeText(req.query.userId);
+
+    if (!operatorEmail && !userId) {
       return res.status(400).json({ message: 'userId or operatorEmail is required' });
     }
 
-    const source = normalizeText(req.query?.source);
-    const query = { ...ownerScope };
-    if (source) {
-      query.source = source;
-    }
+    let query = supabaseAdmin.from('scans').delete();
+    if (operatorEmail) query = query.eq('operator_email', operatorEmail);
+    else if (userId) query = query.eq('user_id', userId);
 
-    const result = await Scan.deleteMany(query);
+    if (req.query.source) query = query.eq('source', req.query.source);
+
+    const { data, error } = await query.select('id');
+    if (error) return res.status(500).json({ message: error.message });
+
     return res.status(200).json({
       message: 'Scans deleted',
-      deletedCount: Number(result?.deletedCount || 0),
+      deletedCount: data?.length || 0,
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -216,55 +193,22 @@ const deleteAllScansForUser = async (req, res) => {
 };
 
 // @desc    Get scan statistics
-// @route   GET /api/scans/stats
+// @route   GET /api/scan/stats
 // @access  Private (Admin)
 const getScanStats = async (req, res) => {
   try {
-    const total = await Scan.countDocuments();
-    
-    // Aggregation for grades
-    const gradeStats = await Scan.aggregate([
-      { $group: { _id: "$grade", count: { $sum: 1 } } }
-    ]);
+    const { count: total } = await supabaseAdmin.from('scans').select('*', { count: 'exact', head: true });
 
-    // Aggregation for last 7 days
-    const last7Days = await Scan.aggregate([
-      {
-        $match: {
-          timestamp: {
-            $gte: new Date(new Date().setDate(new Date().getDate() - 7))
-          }
-        }
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m-%d", date: "$timestamp" } },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
+    // Grade distribution
+    const { data: allScans } = await supabaseAdmin.from('scans').select('grade');
+    const gradeMap = {};
+    (allScans || []).forEach((s) => {
+      const g = s.grade || 'UNKNOWN';
+      gradeMap[g] = (gradeMap[g] || 0) + 1;
+    });
+    const gradeStats = Object.entries(gradeMap).map(([_id, count]) => ({ _id, count }));
 
-    // Aggregation for last 6 months
-    const last6Months = await Scan.aggregate([
-      {
-        $match: {
-          timestamp: {
-            $gte: new Date(new Date().setMonth(new Date().getMonth() - 6))
-          }
-        }
-      },
-      {
-        $group: {
-          _id: { $dateToString: { format: "%Y-%m", date: "$timestamp" } },
-          count: { $sum: 1 }
-        }
-      },
-      { $sort: { _id: 1 } }
-    ]);
-    
-    // Determine best grade (A > B > C > D > F)
-    const grades = gradeStats.map(g => g._id);
+    const grades = Object.keys(gradeMap);
     let best = '-';
     if (grades.includes('A')) best = 'A';
     else if (grades.includes('B')) best = 'B';
@@ -272,198 +216,141 @@ const getScanStats = async (req, res) => {
     else if (grades.includes('D')) best = 'D';
     else if (grades.includes('E')) best = 'E';
 
-    // Calculate average pass rate or similar metric if needed
-    // For now, just returning grade distribution
-    
-    res.status(200).json({
-      total,
-      best,
-      gradeStats,
-      last7Days,
-      last6Months
+    // Last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const { data: recentScans } = await supabaseAdmin
+      .from('scans')
+      .select('timestamp')
+      .gte('timestamp', sevenDaysAgo.toISOString());
+
+    const dayMap = {};
+    (recentScans || []).forEach((s) => {
+      const day = s.timestamp?.slice(0, 10);
+      if (day) dayMap[day] = (dayMap[day] || 0) + 1;
     });
+    const last7Days = Object.entries(dayMap).map(([_id, count]) => ({ _id, count })).sort((a, b) => a._id.localeCompare(b._id));
+
+    // Last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    const { data: monthlyScans } = await supabaseAdmin
+      .from('scans')
+      .select('timestamp')
+      .gte('timestamp', sixMonthsAgo.toISOString());
+
+    const monthMap = {};
+    (monthlyScans || []).forEach((s) => {
+      const month = s.timestamp?.slice(0, 7);
+      if (month) monthMap[month] = (monthMap[month] || 0) + 1;
+    });
+    const last6Months = Object.entries(monthMap).map(([_id, count]) => ({ _id, count })).sort((a, b) => a._id.localeCompare(b._id));
+
+    return res.status(200).json({ total, best, gradeStats, last7Days, last6Months });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
 
+// Helper to build 7-day buckets
 const buildLast7DayBuckets = () => {
   const today = new Date();
-  const buckets = [];
-  for (let i = 6; i >= 0; i -= 1) {
+  return Array.from({ length: 7 }, (_, i) => {
     const day = new Date(today);
     day.setHours(0, 0, 0, 0);
-    day.setDate(today.getDate() - i);
-    const isoDate = day.toISOString().slice(0, 10);
-    buckets.push({
-      isoDate,
+    day.setDate(today.getDate() - (6 - i));
+    return {
+      isoDate: day.toISOString().slice(0, 10),
       label: day.toLocaleDateString('en-US', { weekday: 'short' }),
-      total: 0,
-      mobile: 0,
-      web: 0,
-    });
-  }
-  return buckets;
+      total: 0, mobile: 0, web: 0,
+    };
+  });
 };
 
+// @desc    Get analytics data
+// @route   GET /api/scan/analytics
+// @access  Private (Admin)
 const getScanAnalytics = async (req, res) => {
   try {
     const now = new Date();
     const sevenDaysAgo = new Date(now);
     sevenDaysAgo.setHours(0, 0, 0, 0);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     const [
-      totalScans,
-      totalUsers,
-      activeUsers,
-      usersLoggedIn24h,
-      gradeStats,
-      sourceStats,
-      recentScanCounts,
-      loginCounts,
-      rotSignals,
-      insectSignals,
-      fungalSignals,
+      { count: totalScans },
+      { count: totalUsers },
+      { count: activeUsers },
+      { data: allScans },
+      { data: logins24hProfiles },
     ] = await Promise.all([
-      Scan.countDocuments(),
-      User.countDocuments(),
-      User.countDocuments({ status: 'active' }),
-      User.countDocuments({ last_login_at: { $gte: twentyFourHoursAgo } }),
-      Scan.aggregate([
-        { $group: { _id: '$grade', count: { $sum: 1 } } },
-      ]),
-      Scan.aggregate([
-        { $group: { _id: '$source', count: { $sum: 1 } } },
-      ]),
-      Scan.aggregate([
-        {
-          $match: {
-            timestamp: { $gte: sevenDaysAgo },
-          },
-        },
-        {
-          $project: {
-            day: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
-            source: {
-              $toLower: { $ifNull: ['$source', 'unknown'] },
-            },
-          },
-        },
-        {
-          $group: {
-            _id: { day: '$day', source: '$source' },
-            count: { $sum: 1 },
-          },
-        },
-      ]),
-      User.aggregate([
-        {
-          $match: {
-            last_login_at: { $gte: sevenDaysAgo },
-          },
-        },
-        {
-          $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$last_login_at' } },
-            count: { $sum: 1 },
-          },
-        },
-      ]),
-      Scan.countDocuments({ details: { $regex: /(rot|decay)/i } }),
-      Scan.countDocuments({ details: { $regex: /insect/i } }),
-      Scan.countDocuments({ details: { $regex: /fungal|fungus|mold/i } }),
+      supabaseAdmin.from('scans').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('profiles').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+      supabaseAdmin.from('scans').select('grade, source, timestamp').gte('timestamp', sevenDaysAgo.toISOString()),
+      supabaseAdmin.from('profiles').select('last_login_at').gte('last_login_at', twentyFourHoursAgo.toISOString()),
     ]);
 
     const trendBuckets = buildLast7DayBuckets();
-    const trendByDay = new Map(trendBuckets.map((item) => [item.isoDate, item]));
+    const trendByDay = new Map(trendBuckets.map((b) => [b.isoDate, b]));
 
-    for (const row of recentScanCounts) {
-      const day = row?._id?.day;
-      const rawSource = row?._id?.source || 'unknown';
-      const count = row?.count || 0;
+    const gradeMap = {};
+    const sourceMap = {};
+    let rotSignals = 0, insectSignals = 0, fungalSignals = 0;
+
+    (allScans || []).forEach((s) => {
+      const grade = String(s.grade || 'UNKNOWN').toUpperCase();
+      gradeMap[grade] = (gradeMap[grade] || 0) + 1;
+
+      const src = String(s.source || 'unknown').toLowerCase();
+      const srcLabel = src.includes('mobile') ? 'Mobile' : src.includes('web') ? 'Web' : 'Unknown';
+      sourceMap[srcLabel] = (sourceMap[srcLabel] || 0) + 1;
+
+      const day = s.timestamp?.slice(0, 10);
       const bucket = trendByDay.get(day);
-      if (!bucket) continue;
-
-      const normalizedSource = String(rawSource).toLowerCase();
-      const isMobile = normalizedSource.includes('mobile');
-      const isWeb = normalizedSource.includes('web');
-
-      bucket.total += count;
-      if (isMobile) bucket.mobile += count;
-      else if (isWeb) bucket.web += count;
-      else bucket.web += count;
-    }
-
-    const loginByDay = new Map(
-      loginCounts.map((row) => [row?._id, row?.count || 0])
-    );
-    const loginTrend = trendBuckets.map((item) => ({
-      date: item.isoDate,
-      label: item.label,
-      logins: loginByDay.get(item.isoDate) || 0,
-    }));
-
-    const scanTrend = trendBuckets.map(({ isoDate, label, total, mobile, web }) => ({
-      date: isoDate,
-      label,
-      scans: total,
-      mobileScans: mobile,
-      webScans: web,
-    }));
-
-    const gradeOrder = ['A', 'B', 'C', 'D', 'E', 'UNKNOWN'];
-    const gradeMap = new Map(
-      gradeStats.map((row) => [String(row?._id || 'UNKNOWN').toUpperCase(), row?.count || 0])
-    );
-    const gradeDistribution = gradeOrder
-      .filter((grade) => gradeMap.has(grade) || grade !== 'UNKNOWN')
-      .map((grade) => ({
-        grade,
-        count: gradeMap.get(grade) || 0,
-      }))
-      .filter((row) => row.count > 0 || row.grade !== 'UNKNOWN');
-
-    const normalizedSourceRows = sourceStats.map((row) => {
-      const sourceValue = String(row?._id || 'unknown').toLowerCase();
-      let label = 'Other';
-      if (sourceValue.includes('mobile')) label = 'Mobile';
-      else if (sourceValue.includes('web')) label = 'Web';
-      else if (sourceValue === 'unknown') label = 'Unknown';
-      return { source: label, count: row?.count || 0 };
+      if (bucket) {
+        bucket.total += 1;
+        if (src.includes('mobile')) bucket.mobile += 1;
+        else bucket.web += 1;
+      }
     });
 
-    const sourceMap = normalizedSourceRows.reduce((acc, row) => {
-      acc[row.source] = (acc[row.source] || 0) + row.count;
-      return acc;
-    }, {});
+    // Login trend from profiles.last_login_at
+    const { data: loginProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('last_login_at')
+      .gte('last_login_at', sevenDaysAgo.toISOString());
 
-    const sourceDistribution = Object.entries(sourceMap).map(([source, count]) => ({
-      source,
-      count,
-    }));
+    const loginByDay = {};
+    (loginProfiles || []).forEach((p) => {
+      const day = p.last_login_at?.slice(0, 10);
+      if (day) loginByDay[day] = (loginByDay[day] || 0) + 1;
+    });
 
-    const mobileScans = sourceDistribution
-      .filter((row) => row.source === 'Mobile')
-      .reduce((sum, row) => sum + row.count, 0);
-    const webScans = sourceDistribution
-      .filter((row) => row.source === 'Web')
-      .reduce((sum, row) => sum + row.count, 0);
+    const gradeOrder = ['A', 'B', 'C', 'D', 'E', 'UNKNOWN'];
+    const gradeDistribution = gradeOrder
+      .map((grade) => ({ grade, count: gradeMap[grade] || 0 }))
+      .filter((r) => r.count > 0);
 
-    res.status(200).json({
+    const sourceDistribution = Object.entries(sourceMap).map(([source, count]) => ({ source, count }));
+
+    return res.status(200).json({
       generatedAt: new Date().toISOString(),
       totals: {
-        scans: totalScans,
-        users: totalUsers,
-        activeUsers,
-        mobileScans,
-        webScans,
-        logins24h: usersLoggedIn24h,
+        scans: totalScans || 0,
+        users: totalUsers || 0,
+        activeUsers: activeUsers || 0,
+        mobileScans: sourceMap['Mobile'] || 0,
+        webScans: sourceMap['Web'] || 0,
+        logins24h: logins24hProfiles?.length || 0,
       },
-      scanTrend,
-      loginTrend,
+      scanTrend: trendBuckets.map(({ isoDate, label, total, mobile, web }) => ({
+        date: isoDate, label, scans: total, mobileScans: mobile, webScans: web,
+      })),
+      loginTrend: trendBuckets.map(({ isoDate, label }) => ({
+        date: isoDate, label, logins: loginByDay[isoDate] || 0,
+      })),
       gradeDistribution,
       sourceDistribution,
       diseaseSignals: [
@@ -473,7 +360,7 @@ const getScanAnalytics = async (req, res) => {
       ],
     });
   } catch (error) {
-    res.status(500).json({ message: error.message || 'Failed to load analytics data' });
+    return res.status(500).json({ message: error.message || 'Failed to load analytics data' });
   }
 };
 

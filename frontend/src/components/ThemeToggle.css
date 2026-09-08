@@ -1,0 +1,210 @@
+/* ==========================================================================
+   PIGIFY THEME TOGGLE - HIGH-TECH TACTILE SWITCHER
+   ========================================================================== */
+
+.pigify-theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.pigify-theme-switch:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.pigify-theme-switch:active {
+  transform: translateY(0);
+}
+
+/* Corner Reticles for High-Tech Instrument Feel */
+.pts-corner {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.pts-tl {
+  top: 3px;
+  left: 3px;
+  border-top: 1.5px solid #f43f5e;
+  border-left: 1.5px solid #f43f5e;
+}
+
+.pts-br {
+  bottom: 3px;
+  right: 3px;
+  border-bottom: 1.5px solid #10b981;
+  border-right: 1.5px solid #10b981;
+}
+
+/* Track */
+.pts-track {
+  position: relative;
+  width: 48px;
+  height: 24px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Background Icons inside Track */
+.pts-icons-bg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 6px;
+  pointer-events: none;
+}
+
+.pts-bg-sun {
+  color: #f59e0b;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+.pts-bg-moon {
+  color: #38bdf8;
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+/* Sliding Thumb */
+.pts-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Dark Mode State */
+.pigify-theme-switch.is-dark {
+  background: rgba(13, 20, 36, 0.85);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.pigify-theme-switch.is-dark .pts-thumb {
+  transform: translateX(24px);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+}
+
+.pigify-theme-switch.is-dark .pts-icon-moon {
+  color: #38bdf8;
+  filter: drop-shadow(0 0 3px #38bdf8);
+  animation: ptsMoonRock 2s ease-in-out infinite alternate;
+}
+
+.pigify-theme-switch.is-dark .pts-bg-moon {
+  opacity: 0;
+}
+
+.pigify-theme-switch.is-dark .pts-bg-sun {
+  opacity: 0.45;
+}
+
+/* Light Mode State */
+.pigify-theme-switch.is-light {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(226, 232, 240, 0.9);
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
+}
+
+.pigify-theme-switch.is-light .pts-track {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.pigify-theme-switch.is-light .pts-thumb {
+  transform: translateX(0);
+  background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+  border: 1px solid rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.45);
+}
+
+.pigify-theme-switch.is-light .pts-icon-sun {
+  color: #ffffff;
+  filter: drop-shadow(0 0 2px #d97706);
+  animation: ptsSunSpin 6s linear infinite;
+}
+
+.pigify-theme-switch.is-light .pts-bg-sun {
+  opacity: 0;
+}
+
+.pigify-theme-switch.is-light .pts-bg-moon {
+  opacity: 0.45;
+  color: #64748b;
+}
+
+/* Label text */
+.pts-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pigify-theme-switch.is-dark .pts-label {
+  color: #94a3b8;
+}
+
+.pigify-theme-switch.is-light .pts-label {
+  color: #334155;
+}
+
+.pts-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 6px #38bdf8;
+}
+
+.pts-dot-light {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+@keyframes ptsSunSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ptsMoonRock {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}

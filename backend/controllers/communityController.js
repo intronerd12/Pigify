@@ -1,8 +1,6 @@
-const mongoose = require('mongoose');
 const fs = require('fs');
 const CommunityPost = require('../models/CommunityPost');
 const CommunityNotification = require('../models/CommunityNotification');
-const User = require('../models/User');
 const { cloudinary } = require('../config/cloudinary');
 
 const DRAGON_TOPIC_REGEX = /\b(dragon\s*fruit|dragonfruit|pitaya|hylocereus|selenicereus|red\s*dragon|white\s*dragon|yellow\s*dragon)\b/i;

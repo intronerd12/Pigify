@@ -1,0 +1,983 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap');
+
+/* ==========================================================================
+   PIGIFY AUTH PRO - HIGH-TECH VETERINARY CLINICAL AI INTERFACE
+   ========================================================================== */
+
+:root {
+  --p-primary: #f43f5e;
+  --p-primary-hover: #fb7185;
+  --p-primary-dark: #be123c;
+  --p-emerald: #10b981;
+  --p-emerald-glow: rgba(16, 185, 129, 0.35);
+  --p-rose-glow: rgba(244, 63, 94, 0.35);
+  --p-cyan: #06b6d4;
+  --p-bg-deep: #060911;
+  --p-card-bg: rgba(13, 19, 32, 0.85);
+  --p-card-border: rgba(255, 255, 255, 0.1);
+  --p-input-bg: rgba(20, 29, 48, 0.7);
+  --p-input-border: rgba(255, 255, 255, 0.12);
+  --p-text-main: #f8fafc;
+  --p-text-muted: #94a3b8;
+  --p-text-faint: #64748b;
+}
+
+/* Base Shell */
+.pigify-auth-shell {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(244, 63, 94, 0.14) 0%, transparent 42%),
+    radial-gradient(circle at 88% 22%, rgba(16, 185, 129, 0.1) 0%, transparent 46%),
+    radial-gradient(circle at 50% 90%, rgba(6, 182, 212, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #070a13 0%, #0c1322 50%, #070a13 100%);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--p-text-main);
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+/* Ambient Cyber & Lighting Overlays */
+.pigify-ambient-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 15%, rgba(244, 63, 94, 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(16, 185, 129, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 50% 85%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(6, 9, 17, 0.72) 0%, rgba(6, 9, 17, 0.85) 60%, #060911 100%);
+}
+
+.pigify-grid-mesh {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(circle at 50% 50%, black 50%, transparent 95%);
+}
+
+/* Background Telemetry Markers */
+.pigify-bg-hud-left {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  z-index: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.pigify-bg-hud-right {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  z-index: 2;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1.5px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.pigify-hud-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--p-emerald);
+  box-shadow: 0 0 10px var(--p-emerald);
+  animation: pigifyPulse 2s infinite;
+}
+
+@keyframes pigifyPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.6; }
+}
+
+/* Main Container Frame */
+.pigify-auth-frame {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1160px;
+  display: grid;
+  grid-template-columns: 1.15fr 0.88fr;
+  border-radius: 24px;
+  background: var(--p-card-bg);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid var(--p-card-border);
+  box-shadow:
+    0 30px 80px -15px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* Corner Reticle Accents for Instrument Feel */
+.pigify-auth-frame::before,
+.pigify-auth-frame::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.pigify-auth-frame::before {
+  top: 10px;
+  left: 10px;
+  border-top: 2px solid rgba(244, 63, 94, 0.6);
+  border-left: 2px solid rgba(244, 63, 94, 0.6);
+}
+
+.pigify-auth-frame::after {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.6);
+  border-right: 2px solid rgba(16, 185, 129, 0.6);
+}
+
+/* ==========================================================================
+   LEFT PANEL - CLINICAL AI SHOWCASE & TELEMETRY
+   ========================================================================== */
+
+.pigify-showcase-panel {
+  padding: 32px 34px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(244, 63, 94, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+}
+
+.pigify-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.pigify-brand-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.pigify-brand-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  background: linear-gradient(135deg, #ffffff 30%, #fbcfe8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pigify-brand-name-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  color: #fb7185;
+  -webkit-text-fill-color: #fb7185;
+}
+
+.pigify-brand-sub {
+  font-size: 12px;
+  color: var(--p-text-muted);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  margin-top: 1px;
+}
+
+.pigify-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #34d399;
+  letter-spacing: 0.5px;
+}
+
+.pigify-hero-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.9px;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.pigify-hero-title span {
+  background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.pigify-hero-subtitle {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--p-text-muted);
+  margin-bottom: 22px;
+}
+
+/* AI Scanner Viewfinder Carousel Card */
+.pigify-scanner-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  margin-bottom: 22px;
+}
+
+.pigify-scanner-media {
+  position: relative;
+  width: 100%;
+  height: 175px;
+  overflow: hidden;
+}
+
+.pigify-scanner-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(1.1) brightness(0.9);
+}
+
+.pigify-scanner-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 40%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.pigify-scanner-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pigify-hud-target-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(244, 63, 94, 0.35);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  letter-spacing: 0.8px;
+}
+
+.pigify-hud-model-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.75);
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* Viewfinder Crosshair & Corner Marks */
+.pigify-viewfinder-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90px;
+  height: 90px;
+  border: 1px dashed rgba(244, 63, 94, 0.45);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+.pigify-scanline-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(244, 63, 94, 0.8) 50%, transparent 100%);
+  box-shadow: 0 0 10px #f43f5e;
+  animation: pigifyScanSweep 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pigifyScanSweep {
+  0% { top: 10%; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { top: 90%; opacity: 0; }
+}
+
+.pigify-scanner-caption-bar {
+  padding: 12px 16px;
+  background: rgba(14, 21, 35, 0.95);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pigify-scanner-info h4 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pigify-scanner-info p {
+  font-size: 12px;
+  color: var(--p-text-muted);
+  margin: 0;
+}
+
+.pigify-scanner-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pigify-scanner-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.pigify-scanner-dot.active {
+  width: 22px;
+  background: var(--p-primary);
+  box-shadow: 0 0 8px var(--p-rose-glow);
+}
+
+/* 3 Clinical Intelligence Feature Rows */
+.pigify-feature-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.pigify-feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.25s ease;
+}
+
+.pigify-feature-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(244, 63, 94, 0.2);
+  transform: translateX(3px);
+}
+
+.pigify-feature-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
+
+.pigify-feature-card:nth-child(2) .pigify-feature-icon {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.pigify-feature-card:nth-child(3) .pigify-feature-icon {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.25);
+  color: #38bdf8;
+}
+
+.pigify-feature-text strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+}
+
+.pigify-feature-text span {
+  display: block;
+  font-size: 12px;
+  color: var(--p-text-muted);
+  line-height: 1.4;
+}
+
+/* Panel Footer */
+.pigify-showcase-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11px;
+  color: var(--p-text-faint);
+}
+
+.pigify-engine-status {
+  font-family: 'JetBrains Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   RIGHT PANEL - OPERATOR ACCESS TERMINAL (LOGIN / REGISTER)
+   ========================================================================== */
+
+.pigify-terminal-panel {
+  padding: 30px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(9, 14, 25, 0.7);
+  position: relative;
+}
+
+/* Terminal Nav Bar */
+.pigify-terminal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.pigify-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--p-text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.pigify-back-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
+}
+
+.pigify-security-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Segmented Tab Switcher */
+.pigify-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 16px;
+}
+
+.pigify-tab-btn {
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--p-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pigify-tab-btn:hover {
+  color: #fff;
+}
+
+.pigify-tab-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(244, 63, 94, 0.12) 100%);
+  color: #ffffff;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.2);
+}
+
+/* Form Heading */
+.pigify-form-header {
+  margin-bottom: 20px;
+}
+
+.pigify-form-header h3 {
+  font-family: 'Sora', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+  margin: 0 0 6px 0;
+}
+
+.pigify-form-header p {
+  font-size: 13px;
+  color: var(--p-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Form Elements */
+.pigify-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pigify-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pigify-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pigify-input-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.pigify-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.pigify-input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--p-text-faint);
+  pointer-events: none;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.pigify-text-input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border-radius: 10px;
+  background: var(--p-input-bg);
+  border: 1px solid var(--p-input-border);
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+
+.pigify-text-input::placeholder {
+  color: rgba(148, 163, 184, 0.5);
+  font-size: 13px;
+}
+
+.pigify-text-input:focus {
+  background: rgba(26, 38, 64, 0.85);
+  border-color: var(--p-primary);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.22);
+}
+
+.pigify-input-wrapper:focus-within .pigify-input-icon {
+  color: var(--p-primary);
+}
+
+.pigify-input-with-toggle {
+  padding-right: 44px;
+}
+
+.pigify-toggle-visibility {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--p-text-faint);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.pigify-toggle-visibility:hover {
+  color: #fff;
+}
+
+/* Password Strength Bar */
+.pigify-pwd-strength {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.pigify-pwd-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  height: 3px;
+}
+
+.pigify-pwd-bar-seg {
+  height: 100%;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.pigify-pwd-bar-seg.active-1 { background-color: #ef4444; }
+.pigify-pwd-bar-seg.active-2 { background-color: #f59e0b; }
+.pigify-pwd-bar-seg.active-3 { background-color: #3b82f6; }
+.pigify-pwd-bar-seg.active-4 { background-color: #10b981; }
+
+.pigify-pwd-label {
+  font-size: 11px;
+  color: var(--p-text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Main CTA Button */
+.pigify-cta-submit {
+  width: 100%;
+  padding: 13px 18px;
+  border-radius: 11px;
+  border: none;
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%);
+  color: #ffffff;
+  font-family: 'Sora', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 6px 20px -3px rgba(244, 63, 94, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.pigify-cta-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px -3px rgba(244, 63, 94, 0.6);
+  background: linear-gradient(135deg, #fb7185 0%, #f43f5e 50%, #e11d48 100%);
+}
+
+.pigify-cta-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pigify-cta-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* High-Tech Divider */
+.pigify-auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
+}
+
+.pigify-auth-divider span {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+}
+
+.pigify-auth-divider label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--p-text-faint);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Clean Professional Google Button */
+.pigify-btn-google {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pigify-btn-google:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.pigify-btn-google:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Switch Prompt at bottom */
+.pigify-mode-switch-prompt {
+  text-align: center;
+  font-size: 13px;
+  color: var(--p-text-muted);
+  margin-top: 14px;
+}
+
+.pigify-mode-switch-prompt button {
+  background: none;
+  border: none;
+  color: #fb7185;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s;
+}
+
+.pigify-mode-switch-prompt button:hover {
+  color: #fff;
+}
+
+/* Security Badges Row */
+.pigify-terminal-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11px;
+  color: var(--p-text-faint);
+  margin-top: 20px;
+}
+
+.pigify-badge-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Verification State Box */
+.pigify-verification-box {
+  padding: 24px 20px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.pigify-verification-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px auto;
+}
+
+.pigify-verification-box h4 {
+  font-family: 'Sora', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.pigify-verification-box p {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+}
+
+.pigify-verification-email-pill {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  word-break: break-all;
+}
+
+/* Spinner */
+.pigify-spin {
+  animation: pigifySpinAnim 0.9s linear infinite;
+}
+
+@keyframes pigifySpinAnim {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (MOBILE & TABLET ADAPTATION)
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .pigify-auth-frame {
+    grid-template-columns: 1fr;
+    max-width: 540px;
+  }
+
+  .pigify-showcase-panel {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 30px 28px;
+  }
+
+  .pigify-hero-title {
+    font-size: 24px;
+  }
+
+  .pigify-scanner-media {
+    height: 140px;
+  }
+
+  .pigify-terminal-panel {
+    padding: 30px 28px;
+  }
+
+  .pigify-bg-hud-left,
+  .pigify-bg-hud-right {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .pigify-auth-shell {
+    padding: 12px;
+  }
+
+  .pigify-auth-frame {
+    border-radius: 18px;
+  }
+
+  .pigify-showcase-panel {
+    display: none;
+  }
+
+  .pigify-terminal-panel {
+    padding: 24px 20px;
+  }
+
+  .pigify-terminal-badges {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

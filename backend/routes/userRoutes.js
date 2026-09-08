@@ -1,12 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { getUsers, updateUser, deleteUser, uploadAvatar } = require('../controllers/userController');
+const { protect, ensureActiveAccount, requireAdmin } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
-// TODO: Add protect and admin middleware
-router.get('/', getUsers);
-router.put('/:id', updateUser);
-router.post('/:id/avatar', upload.single('avatar'), uploadAvatar);
-router.delete('/:id', deleteUser);
+// All user management routes require authentication + admin role
+router.get('/', protect, ensureActiveAccount, requireAdmin, getUsers);
+router.put('/:id', protect, ensureActiveAccount, requireAdmin, updateUser);
+router.post('/:id/avatar', protect, uploadAvatar);
+router.delete('/:id', protect, ensureActiveAccount, requireAdmin, deleteUser);
 
 module.exports = router;

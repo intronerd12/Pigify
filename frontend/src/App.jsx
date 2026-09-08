@@ -24,6 +24,9 @@ import ScannedItems from './pages/admin/ScannedItems'
 import ApiMonitoring from './pages/admin/ApiMonitoring'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import { API_BASE_URL } from './config/api'
+import { ThemeProvider } from './context/ThemeContext'
+import './theme.css'
+import './components/marketing/MarketingNav.css'
 import './App.css'
 
 function App() {
@@ -94,42 +97,44 @@ function App() {
   }, [])
 
   return (
-    <BrowserRouter>
-      <Toaster position="top-center" reverseOrder={false} />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/features" element={<Features />} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/overview" element={<Overview />} />
-        <Route path="/ai-analysis" element={<AiAnalysis />} />
-        <Route path="/sorting-grading" element={<SortingGrading />} />
-        <Route path="/environment" element={<Environment />} />
-        <Route path="/community" element={<CommunityForum />} />
-        <Route path="/user-features" element={<Navigate to="/community" replace />} />
-        <Route path="/marketplace" element={<Navigate to="/community" replace />} />
-        <Route path="/user-admin" element={<Navigate to="/community" replace />} />
-        
-        {/* Admin Routes - Protected */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="scans" element={<ScannedItems />} />
-            <Route path="api-health" element={<ApiMonitoring />} />
-            <Route path="*" element={<Navigate to="/admin" replace />} />
-          </Route>
-          <Route path="/admin/features" element={<AdminFeatures />} />
-          <Route path="/admin/ai-analysis" element={<AdminAiAnalysis />} />
-          <Route path="/admin/marketplace" element={<AdminMarketplace />} />
-        </Route>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Toaster position="top-center" reverseOrder={false} />
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/features" element={<Features />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/overview" element={<Overview />} />
+          <Route path="/ai-analysis" element={<AiAnalysis />} />
+          <Route path="/sorting-grading" element={<SortingGrading />} />
+          <Route path="/environment" element={<Environment />} />
+          <Route path="/community" element={<CommunityForum />} />
+          <Route path="/user-features" element={<Navigate to="/community" replace />} />
+          <Route path="/marketplace" element={<Navigate to="/community" replace />} />
+          <Route path="/user-admin" element={<Navigate to="/community" replace />} />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          {/* Admin Routes - Protected */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="users" element={<UserManagement />} />
+              <Route path="analytics" element={<Analytics />} />
+              <Route path="scans" element={<ScannedItems />} />
+              <Route path="api-health" element={<ApiMonitoring />} />
+              <Route path="*" element={<Navigate to="/admin" replace />} />
+            </Route>
+            <Route path="/admin/features" element={<AdminFeatures />} />
+            <Route path="/admin/ai-analysis" element={<AdminAiAnalysis />} />
+            <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 

@@ -35,6 +35,10 @@ Wallpaper Dragon/
 *.pth
 *.onnx
 *.ckpt
+*.mp4
+*.webm
+*.mov
+*.avi
 
 # Keep production YOLO weights in repo for Render deployment.
 !backend/ml_models/yolo_best.pt
