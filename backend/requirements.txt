@@ -3,3 +3,6 @@ uvicorn
 python-multipart
 numpy
 pillow
+ultralytics
+opencv-python-headless
+gradio
