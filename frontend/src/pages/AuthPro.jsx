@@ -311,7 +311,7 @@ function AuthPro() {
 
             {/* Hero Copy */}
             <h1 className="pigify-hero-title">
-              Grading <span>Swine Health</span> & AI Diagnostics
+              <span>Swine Health</span> & AI Diagnostics
             </h1>
             <p className="pigify-hero-subtitle">
               Deep learning-based lesion scanning, real-time symptom classification, and automated biosecurity analytics built specifically for backyard pig farms.
