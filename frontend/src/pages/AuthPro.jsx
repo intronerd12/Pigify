@@ -149,20 +149,8 @@ function AuthPro() {
 
       if (!data.session) throw new Error('Login failed — no session returned. Please try again.');
 
-      // Sync with backend to get role and user profile with resilient fallback
-      let synced = null;
-      try {
-        synced = await syncWithBackend(data.session.access_token, data.user?.user_metadata?.full_name);
-      } catch (syncErr) {
-        console.warn('Backend sync note, using Supabase session data directly:', syncErr);
-        synced = {
-          id: data.user.id,
-          email: data.user.email,
-          name: data.user?.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
-          role: data.user.email?.toLowerCase().includes('admin') ? 'admin' : 'user',
-          token: data.session.access_token,
-        };
-      }
+      // Sync with backend to get role and user profile
+      const synced = await syncWithBackend(data.session.access_token, data.user?.user_metadata?.full_name);
       localStorage.setItem('user', JSON.stringify(synced));
       toast.success(`Welcome back, ${synced.name || 'User'}!`);
       navigate(synced.role === 'admin' ? '/admin' : '/home');
@@ -193,19 +181,7 @@ function AuthPro() {
 
       // Immediate session (e.g. if email confirmation is disabled)
       if (data.session) {
-        let synced = null;
-        try {
-          synced = await syncWithBackend(data.session.access_token, name);
-        } catch (syncErr) {
-          console.warn('Backend sync note, using Supabase session data directly:', syncErr);
-          synced = {
-            id: data.user.id,
-            email: data.user.email,
-            name: name || data.user.email?.split('@')[0] || 'User',
-            role: data.user.email?.toLowerCase().includes('admin') ? 'admin' : 'user',
-            token: data.session.access_token,
-          };
-        }
+        const synced = await syncWithBackend(data.session.access_token, name);
         localStorage.setItem('user', JSON.stringify(synced));
         toast.success(`Welcome to Pigify, ${synced.name || name}!`);
         navigate(synced.role === 'admin' ? '/admin' : '/home');
@@ -335,7 +311,7 @@ function AuthPro() {
 
             {/* Hero Copy */}
             <h1 className="pigify-hero-title">
-              Veterinary-Grade <span>Swine Health</span> & AI Diagnostics
+              Grading <span>Swine Health</span> & AI Diagnostics
             </h1>
             <p className="pigify-hero-subtitle">
               Deep learning-based lesion scanning, real-time symptom classification, and automated biosecurity analytics built specifically for backyard pig farms.
