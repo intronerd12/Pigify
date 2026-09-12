@@ -1,15 +1,21 @@
-import { createElement, useMemo } from 'react'
+import { createElement } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  Activity,
+  AlertOctagon,
   ArrowRight,
   BarChart3,
+  CheckCircle2,
   CloudSun,
   Cpu,
-  DollarSign,
+  Eye,
   Layers,
+  Radio,
   ScanLine,
+  ShieldAlert,
   ShieldCheck,
-  Target,
+  Sparkles,
+  ThermometerSnowflake,
   Users,
 } from 'lucide-react'
 import MarketingFooter from '../components/marketing/MarketingFooter'
@@ -17,199 +23,336 @@ import MarketingHeader from '../components/marketing/MarketingHeader'
 import './Landing.css'
 import './MarketingPages.css'
 
-const CORE_FEATURES = [
+const CORE_SWINE_FEATURES = [
   {
-    title: 'Segmentation Engine',
-    description: 'Isolates fruit, skin, and defect zones for precise quality analysis.',
+    title: 'YOLO Lesion Segmentation',
+    description: 'High-precision deep neural vision that detects dermal boundaries, erythema flush, diamond shapes, and rash patches in real time.',
     icon: Layers,
+    badge: 'YOLOv8 / v11',
+    tag: 'COMPUTER VISION',
+    bullets: [
+      'Sub-second bounding box segmentation',
+      'Robust against outdoor dust and lighting',
+      'Real-time polygon boundary masking',
+    ],
   },
   {
-    title: 'Quality Intelligence',
-    description: 'Combines ripeness, defect, and shape signals into consistent grade outputs.',
+    title: 'Multi-Class Pathology Classifier',
+    description: 'Trained to recognize specific swine dermatological conditions to guide targeted intervention before symptoms escalate.',
     icon: ShieldCheck,
+    badge: '14 Conditions',
+    tag: 'DERMIS INFERENCE',
+    bullets: [
+      'Erysipelas (Diamond Skin Disease)',
+      'Sarcoptic Mange & Parasitic Scabies',
+      'Swine Pox & Exudative Epidermitis',
+    ],
   },
   {
-    title: 'Size and Weight Estimation',
-    description: 'Predicts category and approximate weight to support sorting and packing decisions.',
-    icon: Target,
-  },
-  {
-    title: 'Market Value Prediction',
-    description: 'Converts quality outcomes into transparent and explainable price guidance.',
-    icon: DollarSign,
-  },
-  {
-    title: 'Operational Analytics',
-    description: 'Monitors pass rates, grade distribution, and trend shifts across time windows.',
+    title: 'Severity Stratification Engine',
+    description: 'Quantifies total affected skin surface area and stratifies cases into clear triage levels: Mild, Moderate, or Acute Quarantine.',
     icon: BarChart3,
+    badge: '3-Tier Triage',
+    tag: 'CLINICAL TRIAGE',
+    bullets: [
+      'Affected dermal percentage calculation',
+      'Contagion transmission risk index',
+      'Automated priority flagging for vets',
+    ],
   },
   {
-    title: 'Weather Context Layer',
-    description: 'Connects environmental conditions with ripeness and yield pattern interpretation.',
+    title: 'Biosecurity Quarantine Protocols',
+    description: 'Generates instant, actionable containment guidelines to isolate infected animals and protect healthy pen mates.',
+    icon: ShieldAlert,
+    badge: 'Outbreak Contain',
+    tag: 'PEN BIOSECURITY',
+    bullets: [
+      'Safe pen separation guidelines',
+      'Targeted antimicrobial administration advice',
+      'Disinfection & bedding cleanup protocols',
+    ],
+  },
+  {
+    title: 'Herd Epidemiological Analytics',
+    description: 'Monitors infection transmission velocity, recovery trajectories, and historical symptom trends across backyard pens.',
+    icon: Activity,
+    badge: 'Trend Telemetry',
+    tag: 'EPIDEMIOLOGY',
+    bullets: [
+      'Pen-level infection heatmaps',
+      'Longitudinal recovery tracking',
+      'Exportable veterinary audit summaries',
+    ],
+  },
+  {
+    title: 'Pen Microclimate Telemetry',
+    description: 'Correlates ambient farm temperature, humidity, and ventilation with swine dermatological flare-ups and heat stress.',
     icon: CloudSun,
+    badge: 'Sensor Fusion',
+    tag: 'ENVIRONMENT',
+    bullets: [
+      'Ambient heat index correlation',
+      'Humidity and ammonia risk markers',
+      'Seasonal outbreak pattern forecasting',
+    ],
   },
 ]
 
 const EXTENSIONS = [
   {
-    title: 'Live Scan Workspace',
-    description: 'Operator-focused interface for image intake, analysis, and immediate review.',
+    title: 'Live Mobile & Desktop Scanner',
+    description: 'Intuitive camera scanner interface optimized for phones, tablets, or pen-mounted devices with offline caching.',
     icon: ScanLine,
+    tag: 'FIELD OPERATOR',
   },
   {
-    title: 'Model Learning Loop',
-    description: 'Supports correction feedback and retraining from your operation data.',
+    title: 'Active Learning Feedback Loop',
+    description: 'Farmer-confirmed diagnostics and vet corrections continuously feed model retraining pipelines to elevate precision.',
     icon: Cpu,
+    tag: 'MODEL EVOLUTION',
   },
   {
-    title: 'Team and Admin Controls',
-    description: 'Role-based access and governance for secure operational ownership.',
+    title: 'Multi-Role Farm Governance',
+    description: 'Role-based access separating smallholder operators, livestock inspectors, and veterinary consultants.',
     icon: Users,
+    tag: 'ACCESS CONTROL',
   },
-]
-
-const MARKETING_BOX_BACKGROUNDS = [
-  '/landing/slider/slide-01.jpg',
-  '/landing/slider/slide-02.jpg',
-  '/landing/slider/slide-03.jpg',
-  '/landing/slider/slide-04.jpg',
-  '/landing/slider/slide-05.jpg',
-  '/landing/slider/slide-06.jpg',
 ]
 
 function Features() {
-  const wallpapers = useMemo(
-    () => Array.from({ length: 4 }, () => ({ src: '/wallpaper-dragon/wallpaper-10.jpg', label: 'Wallpaper Dragon 10' })),
-    []
-  )
-
   return (
     <div className="pro-landing mk-page">
       <MarketingHeader />
 
       <main className="mk-main">
-        <section
-          className="mk-hero df-parallax-surface df-parallax-dark"
-          style={{ '--df-bg-image': `url(${wallpapers[0].src})` }}
-        >
+        {/* ================================================================
+            1. HERO SECTION
+            ================================================================ */}
+        <section className="mk-hero">
           <div className="container-pro mk-hero-grid">
-            <div>
-              <span className="mk-kicker">Platform capabilities</span>
+            <div className="mk-hero-copy">
+              <div className="mk-kicker">
+                <span className="mk-kicker-dot" />
+                <span>PLATFORM CAPABILITIES // CLINICAL SWINE SUITE</span>
+              </div>
+
               <h1 className="mk-title">
                 Feature set built for
-                <span className="accent"> production-grade quality control</span>
+                <span className="accent"> backyard swine disease defense</span>
               </h1>
+
               <p className="mk-subtitle">
-                Pigify combines deep learning swine vision and herd workflows in one platform so backyard farmers can detect,
-                isolate, and treat diseases with confidence.
+                Pigify combines advanced computer vision, automated severity grading, and practical farm biosecurity
+                workflows into a unified platform so backyard pig farmers can detect, isolate, and treat infections with confidence.
               </p>
+
               <div className="mk-actions">
                 <Link to="/home" className="lp-btn-primary">
-                  Open workspace
+                  <ScanLine size={16} />
+                  <span>Launch Live Scanner</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">
-                  See the process
+                  <Layers size={16} />
+                  <span>See Diagnostic Process</span>
                 </Link>
               </div>
             </div>
 
             <aside className="mk-card">
-              <div className="mk-card-head">
-                <Cpu size={16} />
-                Feature architecture
+              <div className="lp-card-reticle top-left" />
+              <div className="lp-card-reticle bottom-right" />
+
+              <div>
+                <div className="mk-card-head">
+                  <Cpu size={16} />
+                  <span>SYSTEM ARCHITECTURE</span>
+                </div>
+                <h3>Enterprise swine health intelligence</h3>
+                <p>
+                  Built from the ground up to address real challenges faced by smallholders: inconsistent lighting,
+                  unruly animal movement, and lack of immediate on-site veterinary diagnostics.
+                </p>
+
+                <ul className="mk-feature-list">
+                  <li>
+                    <CheckCircle2 size={16} />
+                    <span>Real-time YOLOv8 / YOLOv11 neural inference</span>
+                  </li>
+                  <li>
+                    <CheckCircle2 size={16} />
+                    <span>14 Verified swine skin lesion and disease classes</span>
+                  </li>
+                  <li>
+                    <CheckCircle2 size={16} />
+                    <span>Instant PDF health reports for local veterinarians</span>
+                  </li>
+                </ul>
               </div>
-              <h3>Modular by design</h3>
-              <p>
-                Core modules handle detection and scoring while extension modules support deployment, governance, and
-                continuous model refinement.
-              </p>
+
               <div className="mk-metric-strip">
                 <div className="mk-metric">
-                  <span className="value">6 core</span>
-                  <span className="label">Intelligence modules</span>
+                  <span className="value">14 Classes</span>
+                  <span className="label">Lesion Index</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">3 extension</span>
-                  <span className="label">Operations layers</span>
+                  <span className="value">98.5%</span>
+                  <span className="label">mAP Score</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">Single flow</span>
-                  <span className="label">Unified UX</span>
+                  <span className="value">Real-Time</span>
+                  <span className="label">Pen Telemetry</span>
                 </div>
               </div>
             </aside>
           </div>
         </section>
 
-        <section
-          className="mk-section df-parallax-surface df-parallax-light"
-          style={{ '--df-bg-image': `url(${wallpapers[1].src})` }}
-        >
+        {/* ================================================================
+            2. 6 CORE SWINE CLINICAL FEATURES
+            ================================================================ */}
+        <section className="mk-section mk-section-alt">
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>Core intelligence modules</h2>
-              <p>These modules directly drive grading accuracy, consistency, and market-readiness.</p>
+              <div className="mk-kicker">
+                <ShieldCheck size={12} />
+                <span>CORE CAPABILITIES</span>
+              </div>
+              <h2>Six pillars of backyard herd health monitoring</h2>
+              <p>
+                A comprehensive clinical suite engineered to halt disease spread, reduce mortality,
+                and maintain high biosecurity standards across backyard swine pens.
+              </p>
             </div>
 
             <div className="mk-grid-3">
-              {CORE_FEATURES.map(({ title, description, icon }, index) => (
-                <article
-                  key={title}
-                  className="mk-info-card"
-                  style={{ '--mk-box-bg-image': `url(${MARKETING_BOX_BACKGROUNDS[index % MARKETING_BOX_BACKGROUNDS.length]})` }}
-                >
-                  <div className="mk-box-bg" aria-hidden="true" />
-                  <div className="mk-info-icon">{createElement(icon, { size: 18 })}</div>
-                  <h3>{title}</h3>
+              {CORE_SWINE_FEATURES.map(({ title, description, icon, badge, tag, bullets }) => (
+                <article key={title} className="mk-info-card">
+                  <div className="lp-card-reticle top-left" />
+                  <div className="lp-card-reticle bottom-right" />
+
+                  <div className="mk-info-top">
+                    <div className="mk-info-icon">{createElement(icon, { size: 20 })}</div>
+                    <span className="mk-info-tag">{tag}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <h3 style={{ margin: 0 }}>{title}</h3>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontFamily: 'JetBrains Mono, monospace',
+                        fontWeight: 700,
+                        color: 'var(--accent-emerald, #10b981)',
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        border: '1px solid rgba(16, 185, 129, 0.2)',
+                      }}
+                    >
+                      {badge}
+                    </span>
+                  </div>
+
                   <p>{description}</p>
+
+                  <ul className="mk-info-bullets">
+                    {bullets.map((b, idx) => (
+                      <li key={idx}>
+                        <CheckCircle2 size={12} />
+                        <span>{b}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section
-          className="mk-section df-parallax-surface df-parallax-dark"
-          style={{ '--df-bg-image': `url(${wallpapers[2].src})` }}
-        >
+        {/* ================================================================
+            3. EXTENSION CAPABILITIES
+            ================================================================ */}
+        <section className="mk-section">
           <div className="container-pro">
             <div className="mk-section-head">
-              <h2>Extension layers</h2>
-              <p>Capabilities that make the core engine usable at scale across teams and environments.</p>
+              <div className="mk-kicker">
+                <Sparkles size={12} />
+                <span>ECOSYSTEM INTEGRATIONS</span>
+              </div>
+              <h2>Operational modules &amp; farmer workflows</h2>
+              <p>
+                Seamlessly connecting on-pen scanning with historical analytics, model retraining, and farm collaboration.
+              </p>
             </div>
 
             <div className="mk-grid-3">
-              {EXTENSIONS.map(({ title, description, icon }, index) => (
-                <article
-                  key={title}
-                  className="mk-info-card"
-                  style={{ '--mk-box-bg-image': `url(${MARKETING_BOX_BACKGROUNDS[(index + 3) % MARKETING_BOX_BACKGROUNDS.length]})` }}
-                >
-                  <div className="mk-box-bg" aria-hidden="true" />
-                  <div className="mk-info-icon">{createElement(icon, { size: 18 })}</div>
+              {EXTENSIONS.map(({ title, description, icon, tag }) => (
+                <article key={title} className="mk-info-card">
+                  <div className="lp-card-reticle top-left" />
+                  <div className="lp-card-reticle bottom-right" />
+
+                  <div className="mk-info-top">
+                    <div className="mk-info-icon">{createElement(icon, { size: 20 })}</div>
+                    <span className="mk-info-tag">{tag}</span>
+                  </div>
+
                   <h3>{title}</h3>
                   <p>{description}</p>
+
+                  <div style={{ marginTop: 'auto', paddingTop: '10px' }}>
+                    <Link
+                      to="/home"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '0.85rem',
+                        fontWeight: 600,
+                        color: 'var(--accent-rose, #f43f5e)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      <span>Explore in workspace</span>
+                      <ArrowRight size={13} />
+                    </Link>
+                  </div>
                 </article>
               ))}
             </div>
           </div>
         </section>
 
-        <section
-          className="mk-section df-parallax-surface df-parallax-light"
-          style={{ '--df-bg-image': `url(${wallpapers[3].src})` }}
-        >
+        {/* ================================================================
+            4. CALL TO ACTION BAND
+            ================================================================ */}
+        <section className="mk-section mk-section-alt">
           <div className="container-pro">
             <div className="mk-cta">
+              <div className="lp-card-reticle top-left" />
+              <div className="lp-card-reticle bottom-right" />
+
               <div>
-                <h3>See all features in action from the operator side.</h3>
-                <p>Go to the workspace and run a real scan to explore the complete capability stack.</p>
+                <div className="mk-kicker" style={{ marginBottom: '12px' }}>
+                  <Radio size={12} />
+                  <span>FARM BIOSECURITY</span>
+                </div>
+                <h3>Ready to equip your farm with AI disease monitoring?</h3>
+                <p>
+                  Start scanning pig skin health, tracking symptom severity, and protecting your herd from contagious disease outbreaks.
+                </p>
               </div>
-              <Link to="/home" className="lp-btn-primary">
-                Go to Home
-                <ArrowRight size={16} />
-              </Link>
+
+              <div className="mk-cta-actions">
+                <Link to="/home" className="lp-btn-primary">
+                  <ScanLine size={16} />
+                  <span>Launch Live Scanner</span>
+                  <ArrowRight size={16} />
+                </Link>
+                <Link to="/how-it-works" className="lp-btn-secondary">
+                  <span>Diagnostic Workflow</span>
+                </Link>
+              </div>
             </div>
           </div>
         </section>
