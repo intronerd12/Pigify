@@ -22,7 +22,7 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
           <BrandMark size={40} />
           <div className="user-header-brand-copy">
             <span className="user-header-brand-name">{BRAND_NAME}</span>
-            <span className="user-header-brand-tag">Swine Clinical Intelligence</span>
+            <span className="user-header-brand-tag">Swine Health Study</span>
           </div>
         </Link>
 

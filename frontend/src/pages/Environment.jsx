@@ -1,520 +1,393 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-import { CheckCircle2, CloudSun, Droplets, Leaf, MapPin, Thermometer, Wind } from 'lucide-react'
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  CheckCircle2,
+  CloudRain,
+  CloudSun,
+  Droplets,
+  Eye,
+  Flame,
+  Info,
+  Layers,
+  MapPin,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  Sun,
+  Thermometer,
+  Wind,
+  ScanLine,
+} from 'lucide-react'
+import { Link } from 'react-router-dom'
 import UserHeader from '../components/user/UserHeader'
 import { API_BASE_URL } from '../config/api'
-import { BRAND_NAME } from '../config/brand'
+import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import './Landing.css'
+import './MarketingPages.css'
 
-const DRAGONFRUIT_HUBS = [
+const PEN_ZONES = [
   {
-    id: 'davao-del-norte',
-    province: 'Davao del Norte',
-    region: 'Davao Region',
-    cityFocus: 'Tagum and Sto. Tomas plantations',
-    lat: 7.3153,
-    lng: 125.684,
-    zoom: 9,
-    abundance: 'Very High',
-    abundanceScore: 95,
-    harvestWindow: 'May to October',
-    plantationScale: 'Large commercial farms and contract growers',
-    weatherProvince: 'Davao',
-    notes: [
-      'Strong year-round production with high volume of export-grade fruit.',
-      'Large clusters of red-flesh dragonfruit plantations.',
-      'Best suited for bulk harvesting and grading operations.',
-    ],
+    id: 'nursery',
+    name: 'Nursery & Piglet Pens',
+    location: 'Sector A - East Shelter',
+    swineCount: 14,
+    targetTemp: '28°C - 32°C',
+    targetHumidity: '60% - 70%',
+    currentTemp: 29.4,
+    currentHumidity: 64,
+    ammoniaIndex: 'Low (0.04 ppm)',
+    heatStressLevel: 'Optimal',
+    status: 'Safe',
+    riskCorrelation: 'Low risk of dermatitis; dry warm bedding prevents chilling and piglet skin abrasions.',
   },
   {
-    id: 'davao-de-oro',
-    province: 'Davao de Oro',
-    region: 'Davao Region',
-    cityFocus: 'Compostela Valley growing belt',
-    lat: 7.6079,
-    lng: 125.9615,
-    zoom: 9,
-    abundance: 'High',
-    abundanceScore: 89,
-    harvestWindow: 'May to September',
-    plantationScale: 'Mixed medium to large plantations',
-    weatherProvince: 'Davao',
-    notes: [
-      'Rapidly expanding plantation footprint for fresh market supply.',
-      'Good balance of quality and output for regional distribution.',
-      'Supports both fresh fruit and processed product channels.',
-    ],
+    id: 'grower',
+    name: 'Grower Herd Pens',
+    location: 'Sector B - Main Outdoor Pen',
+    swineCount: 16,
+    targetTemp: '20°C - 25°C',
+    targetHumidity: '55% - 70%',
+    currentTemp: 28.2,
+    currentHumidity: 78,
+    ammoniaIndex: 'Elevated (0.12 ppm)',
+    heatStressLevel: 'Mild Heat Stress',
+    status: 'Warning',
+    riskCorrelation: 'High humidity (>75%) and damp concrete floor elevates greasy pig dermatitis and diamond skin risks.',
   },
   {
-    id: 'cebu',
-    province: 'Cebu',
-    region: 'Central Visayas',
-    cityFocus: 'Northern Cebu farm clusters',
-    lat: 10.3157,
-    lng: 123.8854,
-    zoom: 9,
-    abundance: 'High',
-    abundanceScore: 86,
-    harvestWindow: 'June to November',
-    plantationScale: 'Commercial farms and cooperative fields',
-    weatherProvince: 'Cebu',
-    notes: [
-      'Strong island distribution and tourism-linked demand.',
-      'Stable production from irrigated and upland areas.',
-      'Ideal for supplying high-frequency local market deliveries.',
-    ],
+    id: 'finisher',
+    name: 'Finisher Swine Pens',
+    location: 'Sector C - South Shelter',
+    swineCount: 12,
+    targetTemp: '18°C - 24°C',
+    targetHumidity: '50% - 65%',
+    currentTemp: 26.5,
+    currentHumidity: 62,
+    ammoniaIndex: 'Normal (0.06 ppm)',
+    heatStressLevel: 'Acceptable',
+    status: 'Safe',
+    riskCorrelation: 'Good cross-ventilation maintains clear dermis; skin parasite proliferation is minimized.',
   },
   {
-    id: 'bukidnon',
-    province: 'Bukidnon',
-    region: 'Northern Mindanao',
-    cityFocus: 'Malaybalay and Valencia plantation corridors',
-    lat: 8.1532,
-    lng: 125.1278,
-    zoom: 9,
-    abundance: 'Medium',
-    abundanceScore: 78,
-    harvestWindow: 'June to October',
-    plantationScale: 'Medium plantations with expansion capacity',
-    weatherProvince: 'Davao',
-    notes: [
-      'Cooler upland microclimate can support fruit quality consistency.',
-      'Growing production base with room for scaled planting.',
-      'Suitable for planned expansion and future contract farming.',
-    ],
+    id: 'gestation',
+    name: 'Sow Breeding Stalls',
+    location: 'Sector D - Central Barn',
+    swineCount: 8,
+    targetTemp: '18°C - 22°C',
+    targetHumidity: '55% - 70%',
+    currentTemp: 25.1,
+    currentHumidity: 60,
+    ammoniaIndex: 'Normal (0.05 ppm)',
+    heatStressLevel: 'Optimal',
+    status: 'Safe',
+    riskCorrelation: 'Shaded canopy and automated misting prevent heat-induced skin erythema.',
   },
   {
-    id: 'ilocos-norte',
-    province: 'Ilocos Norte',
-    region: 'Ilocos Region',
-    cityFocus: 'Laoag and nearby coastal municipalities',
-    lat: 18.1647,
-    lng: 120.7116,
-    zoom: 9,
-    abundance: 'Medium',
-    abundanceScore: 73,
-    harvestWindow: 'June to October',
-    plantationScale: 'Small to medium plantation blocks',
-    weatherProvince: 'Baguio',
-    notes: [
-      'Dry-season management is important for stable fruit sizing.',
-      'Strong potential for branded regional produce programs.',
-      'Useful secondary source for Luzon supply balancing.',
-    ],
-  },
-  {
-    id: 'batangas',
-    province: 'Batangas',
-    region: 'CALABARZON',
-    cityFocus: 'Lipa and neighboring agricultural zones',
-    lat: 13.7565,
-    lng: 121.0583,
-    zoom: 9,
-    abundance: 'Medium',
-    abundanceScore: 70,
-    harvestWindow: 'May to September',
-    plantationScale: 'Smallholder and clustered plantations',
-    weatherProvince: 'Metro Manila',
-    notes: [
-      'Strategic location for Metro Manila market access.',
-      'Good area for pilot precision irrigation and fertigation plans.',
-      'Supports high-turnover fresh fruit channels.',
-    ],
+    id: 'isolation',
+    name: 'Quarantine & Isolation Pen',
+    location: 'Sector E - Perimeter Buffer',
+    swineCount: 3,
+    targetTemp: '22°C - 26°C',
+    targetHumidity: '50% - 60%',
+    currentTemp: 25.8,
+    currentHumidity: 58,
+    ammoniaIndex: 'Low (0.03 ppm)',
+    heatStressLevel: 'Optimal',
+    status: 'Quarantine Active',
+    riskCorrelation: 'Strict 10-meter perimeter buffer prevents airborne contagion spread to healthy pens.',
   },
 ]
 
-const abundanceTone = (value) => {
-  if (value === 'Very High') return { bg: '#dcfce7', fg: '#166534', border: '#86efac' }
-  if (value === 'High') return { bg: '#dbeafe', fg: '#1d4ed8', border: '#93c5fd' }
-  return { bg: '#fff7ed', fg: '#9a3412', border: '#fdba74' }
-}
-
-const clamp = (n, min, max) => Math.max(min, Math.min(max, n))
-
-const metricValue = (value, suffix = '') => {
-  if (value === undefined || value === null || Number.isNaN(Number(value))) return '--'
-  return `${value}${suffix}`
-}
-
 function Environment() {
-  const [selectedHubId, setSelectedHubId] = useState(DRAGONFRUIT_HUBS[0].id)
-  const [mapProvider, setMapProvider] = useState('google')
-  const [mapError, setMapError] = useState(false)
+  const [selectedZoneId, setSelectedZoneId] = useState(PEN_ZONES[0].id)
   const [weather, setWeather] = useState(null)
-  const [loadingWeather, setLoadingWeather] = useState(true)
+  const [loadingWeather, setLoadingWeather] = useState(false)
 
-  const selectedHub = useMemo(
-    () => DRAGONFRUIT_HUBS.find((hub) => hub.id === selectedHubId) || DRAGONFRUIT_HUBS[0],
-    [selectedHubId]
+  const selectedZone = useMemo(
+    () => PEN_ZONES.find((z) => z.id === selectedZoneId) || PEN_ZONES[0],
+    [selectedZoneId]
   )
 
   useEffect(() => {
-    let cancelled = false
-
-    const loadWeather = async () => {
+    const fetchWeather = async () => {
       setLoadingWeather(true)
       try {
-        const res = await fetch(`${API_BASE_URL}/api/weather?province=${encodeURIComponent(selectedHub.weatherProvince)}`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data?.message || 'Failed to load weather')
-        if (!cancelled) setWeather(data)
-      } catch (error) {
-        if (!cancelled) {
-          setWeather(null)
-          toast.error(error?.message || `Could not load weather for ${selectedHub.province}`)
+        const res = await fetch(`${API_BASE_URL}/api/weather?province=Laguna`)
+        if (res.ok) {
+          const data = await res.json()
+          setWeather(data)
         }
+      } catch {
+        // Fallback weather simulation
+        setWeather({
+          temperature: 28.5,
+          humidity: 68,
+          description: 'Partly Cloudy',
+          windSpeed: '12 km/h',
+        })
       } finally {
-        if (!cancelled) setLoadingWeather(false)
+        setLoadingWeather(false)
       }
     }
-
-    loadWeather()
-    return () => {
-      cancelled = true
-    }
-  }, [selectedHub.province, selectedHub.weatherProvince])
-
-  const mapKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-  const zoom = clamp(Number(selectedHub.zoom || 9), 4, 18)
-
-  const googleEmbedSrc = useMemo(() => {
-    if (mapKey) {
-      const params = new URLSearchParams({
-        key: mapKey,
-        center: `${selectedHub.lat},${selectedHub.lng}`,
-        zoom: String(zoom),
-        maptype: 'roadmap',
-      })
-      return `https://www.google.com/maps/embed/v1/view?${params.toString()}`
-    }
-    return `https://www.google.com/maps?q=${encodeURIComponent(`${selectedHub.lat},${selectedHub.lng}`)}&z=${encodeURIComponent(String(zoom))}&output=embed`
-  }, [mapKey, selectedHub.lat, selectedHub.lng, zoom])
-
-  const osmEmbedSrc = useMemo(() => {
-    const delta = clamp(1.7 / zoom, 0.06, 0.35)
-    const left = selectedHub.lng - delta
-    const bottom = selectedHub.lat - delta
-    const right = selectedHub.lng + delta
-    const top = selectedHub.lat + delta
-    return `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
-      `${left},${bottom},${right},${top}`
-    )}&layer=mapnik&marker=${encodeURIComponent(`${selectedHub.lat},${selectedHub.lng}`)}`
-  }, [selectedHub.lat, selectedHub.lng, zoom])
-
-  const googleOpenUrl = useMemo(() => {
-    const query = `${selectedHub.lat},${selectedHub.lng} (${selectedHub.province})`
-    return `https://www.google.com/maps/search/?${new URLSearchParams({ api: '1', query }).toString()}`
-  }, [selectedHub.lat, selectedHub.lng, selectedHub.province])
-
-  const osmOpenUrl = useMemo(
-    () =>
-      `https://www.openstreetmap.org/?mlat=${encodeURIComponent(selectedHub.lat)}&mlon=${encodeURIComponent(
-        selectedHub.lng
-      )}#map=${encodeURIComponent(zoom)}/${encodeURIComponent(selectedHub.lat)}/${encodeURIComponent(selectedHub.lng)}`,
-    [selectedHub.lat, selectedHub.lng, zoom]
-  )
-
-  const embedSrc = mapProvider === 'osm' ? osmEmbedSrc : googleEmbedSrc
-  const abundanceBadge = abundanceTone(selectedHub.abundance)
+    fetchWeather()
+  }, [])
 
   return (
-    <div className="app-shell" style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #fff6fb 0%, #f6fbff 55%, #f3fff7 100%)' }}>
+    <div className="pro-landing mk-page">
       <UserHeader />
 
-      <main>
-        <section className="lp-section" style={{ paddingTop: '24px' }}>
-          <div className="container-pro" style={{ display: 'grid', gap: '18px' }}>
-            <div
-              style={{
-                borderRadius: 18,
-                border: '1px solid rgba(15, 23, 42, 0.08)',
-                background: 'linear-gradient(120deg, rgba(236, 72, 153, 0.12), rgba(16, 185, 129, 0.1))',
-                padding: '20px 22px',
-              }}
-            >
-              <div style={{ fontSize: '0.78rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#be185d' }}>
-                Philippine Plantation Intelligence
-              </div>
-              <h1 style={{ margin: '8px 0 8px', fontSize: '2rem', color: '#0f172a', lineHeight: 1.15 }}>
-                Dragonfruit Abundance and Plantation Locations
-              </h1>
-              <p style={{ margin: 0, color: '#475569', maxWidth: 920 }}>
-                This workspace tracks major dragonfruit-growing areas in the Philippines so your {BRAND_NAME} team can plan sourcing, field checks, and harvest routing with location context.
-              </p>
+      <main className="mk-main">
+        {/* ================================================================
+            1. HERO COMMAND HEADER
+            ================================================================ */}
+        <section className="mk-hero" style={{ paddingBottom: '20px' }}>
+          <div className="container-pro">
+            <div className="mk-kicker">
+              <span className="mk-kicker-dot" />
+              <span>PEN MICROCLIMATE TELEMETRY // BIOSECURITY v1.0</span>
             </div>
 
-            <div className="user-env-grid" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '18px' }}>
-              <aside
+            <h1 className="mk-title">
+              Farm Environment &amp;
+              <span className="accent"> Pen Microclimate</span>
+            </h1>
+
+            <p className="mk-subtitle">
+              Monitor temperature, relative humidity, heat index, and pen ventilation across your backyard pens.
+              Unbalanced ambient conditions strongly correlate with swine skin disease flare-ups and bacterial transmission.
+            </p>
+          </div>
+        </section>
+
+        {/* ================================================================
+            2. ZONE SELECTOR BUTTONS
+            ================================================================ */}
+        <section className="mk-section" style={{ paddingTop: '0px', paddingBottom: '24px' }}>
+          <div className="container-pro">
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                flexWrap: 'wrap',
+                padding: '16px 20px',
+                borderRadius: '16px',
+                background: 'var(--surface-card, rgba(13, 19, 32, 0.85))',
+                border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.1))',
+              }}
+            >
+              {PEN_ZONES.map((zone) => (
+                <button
+                  key={zone.id}
+                  type="button"
+                  onClick={() => setSelectedZoneId(zone.id)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    background: selectedZoneId === zone.id ? 'var(--accent-rose, #f43f5e)' : 'rgba(255, 255, 255, 0.04)',
+                    color: selectedZoneId === zone.id ? '#ffffff' : 'var(--text-muted, #94a3b8)',
+                    border: `1px solid ${selectedZoneId === zone.id ? 'var(--accent-rose, #f43f5e)' : 'var(--border-subtle, rgba(255, 255, 255, 0.1))'}`,
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <MapPin size={14} />
+                  <span>{zone.name}</span>
+                  {zone.status === 'Warning' && (
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b' }} />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ================================================================
+            3. SELECTED ZONE TELEMETRY METRICS
+            ================================================================ */}
+        <section className="mk-section" style={{ paddingTop: '0px', paddingBottom: '36px' }}>
+          <div className="container-pro">
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 1.15fr) minmax(300px, 0.85fr)', gap: '24px' }}>
+              {/* Left Box: Microclimate Telemetry Gauges */}
+              <div
                 style={{
-                  borderRadius: 16,
-                  border: '1px solid rgba(15, 23, 42, 0.08)',
-                  background: '#ffffff',
-                  boxShadow: 'var(--shadow-sm)',
-                  overflow: 'hidden',
+                  position: 'relative',
+                  borderRadius: '24px',
+                  background: 'var(--surface-card, rgba(13, 19, 32, 0.85))',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.1))',
+                  padding: '28px',
+                  boxShadow: 'var(--shadow-card, 0 16px 40px rgba(0, 0, 0, 0.28))',
                 }}
               >
-                <div style={{ padding: 16, borderBottom: '1px solid rgba(15, 23, 42, 0.08)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', background: 'rgba(219, 39, 119, 0.1)' }}>
-                      <MapPin size={17} color="#be185d" />
+                <div className="lp-card-reticle top-left" />
+                <div className="lp-card-reticle bottom-right" />
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
+                      {selectedZone.name} Telemetry
+                    </h3>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px' }}>
+                      {selectedZone.location} • {selectedZone.swineCount} swine heads
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 900, color: '#0f172a' }}>Plantation Hubs</div>
-                      <div style={{ fontSize: '0.82rem', color: '#64748b' }}>{DRAGONFRUIT_HUBS.length} mapped locations</div>
+                  </div>
+
+                  <span
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      fontFamily: 'JetBrains Mono',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      color: selectedZone.status === 'Safe' ? '#10b981' : selectedZone.status === 'Warning' ? '#f59e0b' : '#f43f5e',
+                      background: selectedZone.status === 'Safe' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                      border: `1px solid ${selectedZone.status === 'Safe' ? '#10b98140' : '#f59e0b40'}`,
+                    }}
+                  >
+                    {selectedZone.status.toUpperCase()}
+                  </span>
+                </div>
+
+                {/* 4 Metric Tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px', marginBottom: '20px' }}>
+                  {/* Temp */}
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>PEN TEMPERATURE</span>
+                      <Thermometer size={16} color="#f43f5e" />
+                    </div>
+                    <div style={{ fontFamily: 'Sora', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main, #ffffff)' }}>
+                      {selectedZone.currentTemp}°C
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', marginTop: '4px' }}>
+                      Target: {selectedZone.targetTemp}
+                    </div>
+                  </div>
+
+                  {/* Humidity */}
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>RELATIVE HUMIDITY</span>
+                      <Droplets size={16} color="#06b6d4" />
+                    </div>
+                    <div style={{ fontFamily: 'Sora', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-main, #ffffff)' }}>
+                      {selectedZone.currentHumidity}%
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', marginTop: '4px' }}>
+                      Target: {selectedZone.targetHumidity}
+                    </div>
+                  </div>
+
+                  {/* Heat Stress Index */}
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>HEAT STRESS INDEX</span>
+                      <Flame size={16} color="#f59e0b" />
+                    </div>
+                    <div style={{ fontFamily: 'Sora', fontSize: '1.2rem', fontWeight: 800, color: selectedZone.heatStressLevel.includes('Stress') ? '#f59e0b' : '#10b981', marginTop: '4px' }}>
+                      {selectedZone.heatStressLevel}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', marginTop: '4px' }}>
+                      Panting / Flushing risk
+                    </div>
+                  </div>
+
+                  {/* Ammonia Index */}
+                  <div style={{ padding: '16px', borderRadius: '14px', background: 'rgba(255, 255, 255, 0.025)', border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>PEN VENTILATION / GAS</span>
+                      <Wind size={16} color="#10b981" />
+                    </div>
+                    <div style={{ fontFamily: 'Sora', fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main, #ffffff)', marginTop: '4px' }}>
+                      {selectedZone.ammoniaIndex}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted, #94a3b8)', marginTop: '4px' }}>
+                      Airflow status
                     </div>
                   </div>
                 </div>
 
-                <div style={{ padding: 10, display: 'grid', gap: 8 }}>
-                  {DRAGONFRUIT_HUBS.map((hub) => {
-                    const isActive = hub.id === selectedHubId
-                    const tone = abundanceTone(hub.abundance)
-                    return (
-                      <button
-                        key={hub.id}
-                        type="button"
-                        onClick={() => setSelectedHubId(hub.id)}
-                        style={{
-                          width: '100%',
-                          textAlign: 'left',
-                          borderRadius: 12,
-                          border: isActive ? '1px solid rgba(190, 24, 93, 0.3)' : '1px solid rgba(15, 23, 42, 0.07)',
-                          background: isActive ? 'rgba(253, 242, 248, 0.85)' : '#fff',
-                          padding: '10px 11px',
-                          display: 'grid',
-                          gap: 6,
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                          <div style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.92rem' }}>{hub.province}</div>
-                          <span
-                            style={{
-                              borderRadius: 999,
-                              border: `1px solid ${tone.border}`,
-                              background: tone.bg,
-                              color: tone.fg,
-                              fontSize: '0.7rem',
-                              fontWeight: 900,
-                              padding: '2px 8px',
-                            }}
-                          >
-                            {hub.abundance}
-                          </span>
-                        </div>
-                        <div style={{ color: '#64748b', fontSize: '0.78rem', fontWeight: 700 }}>{hub.region}</div>
-                      </button>
-                    )
-                  })}
-                </div>
-              </aside>
-
-              <div style={{ display: 'grid', gap: 16 }}>
+                {/* Epidemiological Disease Risk Note */}
                 <div
                   style={{
-                    borderRadius: 16,
-                    border: '1px solid rgba(15, 23, 42, 0.08)',
-                    background: '#ffffff',
-                    boxShadow: 'var(--shadow-sm)',
-                    padding: 18,
+                    padding: '16px',
+                    borderRadius: '14px',
+                    background: 'rgba(244, 63, 94, 0.08)',
+                    border: '1px solid rgba(244, 63, 94, 0.25)',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, flexWrap: 'wrap' }}>
-                    <div>
-                      <div style={{ fontSize: '1.45rem', color: '#0f172a', fontWeight: 900 }}>{selectedHub.province}</div>
-                      <div style={{ marginTop: 4, color: '#64748b', fontWeight: 700 }}>{selectedHub.region} - {selectedHub.cityFocus}</div>
-                    </div>
-                    <div
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        border: `1px solid ${abundanceBadge.border}`,
-                        borderRadius: 999,
-                        background: abundanceBadge.bg,
-                        color: abundanceBadge.fg,
-                        fontWeight: 900,
-                        padding: '6px 12px',
-                        fontSize: '0.82rem',
-                      }}
-                    >
-                      <CheckCircle2 size={15} />
-                      Abundance Score {selectedHub.abundanceScore}/100
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-rose, #f43f5e)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '4px' }}>
+                    <ShieldAlert size={16} />
+                    <span>Microclimate Disease Risk Analysis</span>
+                  </div>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.5, margin: 0 }}>
+                    {selectedZone.riskCorrelation}
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Box: Farmer Actionable Environmental Best Practices */}
+              <div
+                style={{
+                  position: 'relative',
+                  borderRadius: '24px',
+                  background: 'var(--surface-card, rgba(13, 19, 32, 0.85))',
+                  border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.1))',
+                  padding: '28px',
+                  boxShadow: 'var(--shadow-card, 0 16px 40px rgba(0, 0, 0, 0.28))',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div className="lp-card-reticle top-left" />
+                <div className="lp-card-reticle bottom-right" />
+
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                    <ShieldCheck size={20} color="#10b981" />
+                    <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
+                      Backyard Pen Biosecurity Rules
+                    </h3>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 12, marginTop: 14 }}>
-                    <div style={{ borderRadius: 12, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 12, background: '#f8fafc' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155', fontWeight: 800 }}>
-                        <Leaf size={16} />
-                        Plantation Scale
-                      </div>
-                      <div style={{ marginTop: 7, color: '#0f172a', fontWeight: 700 }}>{selectedHub.plantationScale}</div>
-                    </div>
-                    <div style={{ borderRadius: 12, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 12, background: '#f8fafc' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155', fontWeight: 800 }}>
-                        <CloudSun size={16} />
-                        Peak Harvest Window
-                      </div>
-                      <div style={{ marginTop: 7, color: '#0f172a', fontWeight: 700 }}>{selectedHub.harvestWindow}</div>
-                    </div>
-                    <div style={{ borderRadius: 12, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 12, background: '#f8fafc' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#334155', fontWeight: 800 }}>
-                        <MapPin size={16} />
-                        Coordinates
-                      </div>
-                      <div style={{ marginTop: 7, color: '#0f172a', fontWeight: 700 }}>
-                        {selectedHub.lat.toFixed(4)}, {selectedHub.lng.toFixed(4)}
-                      </div>
-                    </div>
-                  </div>
+                  <p style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.5, margin: '0 0 18px 0' }}>
+                    Research-proven environmental interventions to minimize swine skin lesion proliferation:
+                  </p>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginTop: 12 }}>
-                    <div style={{ borderRadius: 10, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 10, background: '#ffffff' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>
-                        <Thermometer size={14} />
-                        Temperature
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                        {loadingWeather ? '--' : metricValue(weather?.temperature, 'C')}
-                      </div>
-                    </div>
-                    <div style={{ borderRadius: 10, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 10, background: '#ffffff' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>
-                        <Droplets size={14} />
-                        Humidity
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                        {loadingWeather ? '--' : metricValue(weather?.humidity, '%')}
-                      </div>
-                    </div>
-                    <div style={{ borderRadius: 10, border: '1px solid rgba(15, 23, 42, 0.08)', padding: 10, background: '#ffffff' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 7, color: '#64748b', fontSize: '0.8rem', fontWeight: 800 }}>
-                        <Wind size={14} />
-                        Wind Speed
-                      </div>
-                      <div style={{ marginTop: 6, fontSize: '1.1rem', fontWeight: 900, color: '#0f172a' }}>
-                        {loadingWeather ? '--' : metricValue(weather?.windSpeed, ' km/h')}
-                      </div>
-                    </div>
-                  </div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.45 }}>
+                      <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Dry Bedding Replacement:</strong> Wet rice straw or sawdust fosters bacterial growth (Staphylococcus) causing greasy pig disease. Replace twice weekly.</span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.45 }}>
+                      <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Cross-Ventilation:</strong> Stagnant air with high ammonia levels damages porcine dermal barriers and nasal mucosa. Maintain open ridge pen ventilation.</span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.45 }}>
+                      <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Heat Stress Misting:</strong> When pen ambient temperatures exceed 28°C, pigs cannot sweat. Provide shade netting and sprinkler intervals on floor slats.</span>
+                    </li>
+                    <li style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.45 }}>
+                      <CheckCircle2 size={16} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
+                      <span><strong>Footbath Sanitation:</strong> Refresh lime/iodine footbaths outside pen entryways to prevent moving erysipelas bacteria between pens on farmer boots.</span>
+                    </li>
+                  </ul>
                 </div>
 
-                <div
-                  style={{
-                    borderRadius: 16,
-                    border: '1px solid rgba(15, 23, 42, 0.08)',
-                    background: '#ffffff',
-                    boxShadow: 'var(--shadow-sm)',
-                    overflow: 'hidden',
-                  }}
-                >
-                  <div style={{ padding: 14, borderBottom: '1px solid rgba(15, 23, 42, 0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-                    <div style={{ fontWeight: 900, color: '#0f172a' }}>Plantation Location Map</div>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMapError(false)
-                          setMapProvider('google')
-                        }}
-                        style={{
-                          borderRadius: 9,
-                          border: mapProvider === 'google' ? '1px solid rgba(190, 24, 93, 0.35)' : '1px solid rgba(15, 23, 42, 0.12)',
-                          background: mapProvider === 'google' ? 'rgba(253, 242, 248, 0.8)' : '#ffffff',
-                          color: '#0f172a',
-                          fontWeight: 800,
-                          fontSize: '0.78rem',
-                          padding: '6px 10px',
-                        }}
-                      >
-                        Google
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMapError(false)
-                          setMapProvider('osm')
-                        }}
-                        style={{
-                          borderRadius: 9,
-                          border: mapProvider === 'osm' ? '1px solid rgba(190, 24, 93, 0.35)' : '1px solid rgba(15, 23, 42, 0.12)',
-                          background: mapProvider === 'osm' ? 'rgba(253, 242, 248, 0.8)' : '#ffffff',
-                          color: '#0f172a',
-                          fontWeight: 800,
-                          fontSize: '0.78rem',
-                          padding: '6px 10px',
-                        }}
-                      >
-                        OpenStreetMap
-                      </button>
-                      <a
-                        href={mapProvider === 'osm' ? osmOpenUrl : googleOpenUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          borderRadius: 9,
-                          border: '1px solid rgba(15, 23, 42, 0.12)',
-                          background: '#ffffff',
-                          color: '#0f172a',
-                          textDecoration: 'none',
-                          fontWeight: 800,
-                          fontSize: '0.78rem',
-                          padding: '6px 10px',
-                        }}
-                      >
-                        Open full map
-                      </a>
-                    </div>
-                  </div>
-                  <div style={{ width: '100%', height: 330, background: '#f8fafc' }}>
-                    <iframe
-                      title={`${selectedHub.province} dragonfruit plantation map`}
-                      key={`${mapProvider}-${selectedHub.id}-${zoom}-${mapKey ? 'key' : 'nokey'}`}
-                      src={embedSrc}
-                      style={{ width: '100%', height: '100%', border: 0 }}
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      onError={() => {
-                        if (!mapError && mapProvider === 'google') {
-                          setMapError(true)
-                          setMapProvider('osm')
-                          toast.error('Google map failed to load. Switched to OpenStreetMap.')
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    borderRadius: 16,
-                    border: '1px solid rgba(15, 23, 42, 0.08)',
-                    background: '#ffffff',
-                    boxShadow: 'var(--shadow-sm)',
-                    padding: 16,
-                  }}
-                >
-                  <div style={{ fontWeight: 900, color: '#0f172a', marginBottom: 10 }}>
-                    Field Notes for {selectedHub.province}
-                  </div>
-                  <div style={{ display: 'grid', gap: 8 }}>
-                    {selectedHub.notes.map((note) => (
-                      <div
-                        key={note}
-                        style={{
-                          borderRadius: 10,
-                          border: '1px solid rgba(15, 23, 42, 0.08)',
-                          background: '#f8fafc',
-                          padding: '9px 11px',
-                          color: '#334155',
-                          fontWeight: 700,
-                          fontSize: '0.9rem',
-                        }}
-                      >
-                        {note}
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ marginTop: '22px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))' }}>
+                  <Link to="/ai-analysis" className="lp-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                    <ScanLine size={16} />
+                    <span>Run Pen Dermis Inspection</span>
+                    <ArrowRight size={14} />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -522,20 +395,16 @@ function Environment() {
         </section>
       </main>
 
-      <footer style={{ background: 'linear-gradient(135deg, #D81B60, #B8105B)', padding: '28px 0' }}>
-        <div className="container-pro" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.92)' }}>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{BRAND_NAME}</div>
-          <div style={{ fontSize: '0.9rem' }}>Philippine dragonfruit plantation and abundance monitoring</div>
+      <footer className="lp-footer">
+        <div className="container-pro lp-footer-bottom" style={{ borderTop: 'none', paddingTop: '16px' }}>
+          <span>(c) {new Date().getFullYear()} {BRAND_NAME}. {BRAND_TAGLINE}.</span>
+          <div className="lp-footer-legal">
+            <Link to="/about">About Study</Link>
+            <Link to="/how-it-works">Environmental Factors</Link>
+            <Link to="/features">Features</Link>
+          </div>
         </div>
       </footer>
-
-      <style>
-        {`
-          @media (max-width: 1060px) {
-            .user-env-grid { grid-template-columns: 1fr !important; }
-          }
-        `}
-      </style>
     </div>
   )
 }

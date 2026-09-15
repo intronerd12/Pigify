@@ -257,7 +257,7 @@ const ScannedItems = () => {
         <div className="si-empty-card">
           <div className="si-empty-title">No scans recorded yet</div>
           <div className="si-empty-desc">
-            Once users scan dragon fruit in the mobile app, records will appear here with grade, operator, and source details.
+            Once users scan swine in the mobile or web app, records will appear here with condition, severity triage, operator, and pen details.
           </div>
         </div>
       ) : (

@@ -23,6 +23,7 @@ import Analytics from './pages/admin/Analytics'
 import ScannedItems from './pages/admin/ScannedItems'
 import ApiMonitoring from './pages/admin/ApiMonitoring'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import UserProtectedRoute from './components/UserProtectedRoute'
 import { API_BASE_URL } from './config/api'
 import { ThemeProvider } from './context/ThemeContext'
 import './theme.css'
@@ -106,15 +107,18 @@ function App() {
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/features" element={<Features />} />
           <Route path="/login" element={<Auth />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/overview" element={<Overview />} />
-          <Route path="/ai-analysis" element={<AiAnalysis />} />
-          <Route path="/sorting-grading" element={<SortingGrading />} />
-          <Route path="/environment" element={<Environment />} />
-          <Route path="/community" element={<CommunityForum />} />
-          <Route path="/user-features" element={<Navigate to="/community" replace />} />
-          <Route path="/marketplace" element={<Navigate to="/community" replace />} />
-          <Route path="/user-admin" element={<Navigate to="/community" replace />} />
+          {/* User Routes - Protected against unauthorized URL copy/paste bypass */}
+          <Route element={<UserProtectedRoute />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/overview" element={<Overview />} />
+            <Route path="/ai-analysis" element={<AiAnalysis />} />
+            <Route path="/sorting-grading" element={<SortingGrading />} />
+            <Route path="/environment" element={<Environment />} />
+            <Route path="/community" element={<CommunityForum />} />
+            <Route path="/user-features" element={<Navigate to="/community" replace />} />
+            <Route path="/marketplace" element={<Navigate to="/community" replace />} />
+            <Route path="/user-admin" element={<Navigate to="/community" replace />} />
+          </Route>
 
           {/* Admin Routes - Protected */}
           <Route element={<ProtectedRoute />}>

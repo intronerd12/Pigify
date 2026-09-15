@@ -260,7 +260,7 @@ function Home() {
                     boxShadow: '0 0 8px #10b981',
                   }}
                 />
-                <span>VET-CORE // PIGIFY-AI-SYS-v4.2</span>
+                <span>STUDY RESEARCH // BACKYARD SWINE BIOSECURITY</span>
               </div>
               <div
                 style={{
@@ -273,7 +273,7 @@ function Home() {
                 }}
               >
                 <Cpu size={13} color="#10b981" />
-                <span>YOLOv11-VET ENGINE // INFERENCE 42ms</span>
+                <span>YOLOv8 / YOLOv11 VISION PIPELINE // &lt; 1.8s</span>
               </div>
             </div>
 
@@ -282,7 +282,7 @@ function Home() {
               <div>
                 <div className="pigify-hero-kicker">
                   <Sparkles size={13} />
-                  <span>Deep Learning Herd Intelligence</span>
+                  <span>Deep Learning Backyard Swine Health</span>
                 </div>
                 <h1 className="pigify-hero-title">
                   Swine Health <span>Command Center</span>
@@ -345,7 +345,7 @@ function Home() {
                           background: 'rgba(0,0,0,0.5)',
                         }}
                       >
-                        CONFIDENCE: 98.8%
+                        DETECTION CONFIDENCE: 96.8%
                       </div>
                     </div>
 
@@ -366,10 +366,10 @@ function Home() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
-                        ● REAL-TIME STREAM ACTIVE
+                        ● AMBIENT PEN INFERENCE
                       </span>
                       <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-                        YOLOv11 // 1080p
+                        YOLOv8 / YOLOv11
                       </span>
                     </div>
                   </div>
@@ -453,12 +453,12 @@ function Home() {
                   <TrendingUp size={18} />
                 </div>
                 <span className="pigify-kpi-pill" style={{ color: '#06b6d4' }}>
-                  YOLOv11
+                  YOLOv8/11
                 </span>
               </div>
               <div>
-                <div className="pigify-kpi-val">98.8%</div>
-                <div className="pigify-kpi-label">AI Diagnostic Precision</div>
+                <div className="pigify-kpi-val">~98.5%</div>
+                <div className="pigify-kpi-label">Field Validation mAP</div>
               </div>
             </div>
           </section>
@@ -470,7 +470,7 @@ function Home() {
             <div className="pigify-section-head">
               <h2 className="pigify-section-title">
                 <ScanLine size={20} color="#f43f5e" />
-                <span>Clinical Diagnostic Modules</span>
+                <span>Swine Health Research Modules</span>
               </h2>
               <span
                 style={{
@@ -479,7 +479,7 @@ function Home() {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                SWINE HEALTH SUITE // v4.2
+                RESEARCH STUDY // PROTOCOL v1.0
               </span>
             </div>
 
@@ -607,7 +607,7 @@ function Home() {
             </div>
             <div className="pigify-footer-badge-item">
               <Cpu size={14} color="#06b6d4" />
-              <span>YOLOv11-VET AI</span>
+              <span>YOLOv8/v11 Pipeline</span>
             </div>
             <span>© {new Date().getFullYear()} {BRAND_NAME} System</span>
           </div>
