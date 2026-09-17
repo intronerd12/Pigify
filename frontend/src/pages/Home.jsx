@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -105,6 +105,7 @@ function Home() {
   const navigate = useNavigate();
   const [health, setHealth] = useState('checking...');
   const [user, setUser] = useState(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -125,6 +126,38 @@ function Home() {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Viewport & visibility observer for hero video to save CPU/GPU on lower-end devices
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !document.hidden) {
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      },
+      { threshold: 0.25 }
+    );
+    observer.observe(v);
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        v.pause();
+      } else {
+        v.play().catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, []);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -308,11 +341,13 @@ function Home() {
               <div className="pigify-hero-scanner-card">
                 <div className="pigify-hero-scanner-media">
                   <video
+                    ref={videoRef}
                     src="https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4"
-                    autoPlay
                     muted
                     loop
                     playsInline
+                    preload="metadata"
+                    aria-label="Swine AI Scan Demo"
                   />
                   <div className="pigify-hero-scanner-hud">
                     <div className="pigify-hero-scanner-hud-top">

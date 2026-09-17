@@ -14,12 +14,38 @@ const NAV_ITEMS = [
   { to: '/home', label: 'Live Scanner' },
 ]
 
+const PREFETCH_MAP = {
+  '/': () => import('../../pages/Landing'),
+  '/about': () => import('../../pages/About'),
+  '/how-it-works': () => import('../../pages/HowItWorks'),
+  '/features': () => import('../../pages/Features'),
+  '/home': () => import('../../pages/Home'),
+  '/login': () => import('../../pages/AuthPro'),
+}
+
+const prefetchRoute = (to) => {
+  const loader = PREFETCH_MAP[to]
+  if (loader) {
+    try {
+      loader().catch(() => {})
+    } catch (_err) {
+      void _err
+    }
+  }
+}
+
 function MarketingHeader() {
   return (
     <header className="lp-header-wrap">
       <div className="container-pro lp-header">
         {/* Brand Link */}
-        <Link to="/" className="lp-brand" aria-label={`${BRAND_NAME} Home`}>
+        <Link
+          to="/"
+          className="lp-brand"
+          aria-label={`${BRAND_NAME} Home`}
+          onMouseEnter={() => prefetchRoute('/')}
+          onTouchStart={() => prefetchRoute('/')}
+        >
           <BrandMark size={38} />
           <div className="lp-brand-copy">
             <span className="lp-brand-name">{BRAND_NAME}</span>
@@ -34,6 +60,8 @@ function MarketingHeader() {
               <NavLink
                 key={item.to}
                 to={item.to}
+                onMouseEnter={() => prefetchRoute(item.to)}
+                onTouchStart={() => prefetchRoute(item.to)}
                 className={({ isActive }) =>
                   `lp-nav-link${isActive ? ' active' : ''}`
                 }
@@ -44,7 +72,12 @@ function MarketingHeader() {
           </nav>
 
           <div className="lp-header-actions">
-            <Link to="/login" className="lp-header-login-btn">
+            <Link
+              to="/login"
+              className="lp-header-login-btn"
+              onMouseEnter={() => prefetchRoute('/login')}
+              onTouchStart={() => prefetchRoute('/login')}
+            >
               <LogIn size={15} />
               <span>Login</span>
             </Link>

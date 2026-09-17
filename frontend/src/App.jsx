@@ -1,27 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import toast from 'react-hot-toast'
-import Landing from './pages/Landing'
-import About from './pages/About'
-import HowItWorks from './pages/HowItWorks'
-import Features from './pages/Features'
-import Home from './pages/Home'
-import Auth from './pages/AuthPro'
-import Overview from './pages/Overview'
-import AiAnalysis from './pages/AiAnalysis'
-import SortingGrading from './pages/SortingGrading'
-import CommunityForum from './pages/CommunityForum'
-import Environment from './pages/Environment'
-import AdminLayout from './components/admin/AdminLayout'
-import Dashboard from './pages/admin/Dashboard'
-import AdminFeatures from './pages/admin/AdminFeatures'
-import AdminAiAnalysis from './pages/admin/AdminAiAnalysis'
-import AdminMarketplace from './pages/admin/AdminMarketplace'
-import UserManagement from './pages/admin/UserManagement'
-import Analytics from './pages/admin/Analytics'
-import ScannedItems from './pages/admin/ScannedItems'
-import ApiMonitoring from './pages/admin/ApiMonitoring'
+import PageLoader from './components/PageLoader'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import UserProtectedRoute from './components/UserProtectedRoute'
 import { API_BASE_URL } from './config/api'
@@ -29,6 +10,32 @@ import { ThemeProvider } from './context/ThemeContext'
 import './theme.css'
 import './components/marketing/MarketingNav.css'
 import './App.css'
+
+// Public & Marketing Pages (Lazy-loaded)
+const Landing = lazy(() => import('./pages/Landing'))
+const About = lazy(() => import('./pages/About'))
+const HowItWorks = lazy(() => import('./pages/HowItWorks'))
+const Features = lazy(() => import('./pages/Features'))
+const Auth = lazy(() => import('./pages/AuthPro'))
+
+// User Tab Pages (Lazy-loaded)
+const Home = lazy(() => import('./pages/Home'))
+const Overview = lazy(() => import('./pages/Overview'))
+const AiAnalysis = lazy(() => import('./pages/AiAnalysis'))
+const SortingGrading = lazy(() => import('./pages/SortingGrading'))
+const Environment = lazy(() => import('./pages/Environment'))
+const CommunityForum = lazy(() => import('./pages/CommunityForum'))
+
+// Admin Pages (Lazy-loaded)
+const AdminLayout = lazy(() => import('./components/admin/AdminLayout'))
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
+const AdminFeatures = lazy(() => import('./pages/admin/AdminFeatures'))
+const AdminAiAnalysis = lazy(() => import('./pages/admin/AdminAiAnalysis'))
+const AdminMarketplace = lazy(() => import('./pages/admin/AdminMarketplace'))
+const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
+const Analytics = lazy(() => import('./pages/admin/Analytics'))
+const ScannedItems = lazy(() => import('./pages/admin/ScannedItems'))
+const ApiMonitoring = lazy(() => import('./pages/admin/ApiMonitoring'))
 
 function App() {
   const forcedLogoutRef = useRef(false)
@@ -101,42 +108,44 @@ function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Toaster position="top-center" reverseOrder={false} />
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/how-it-works" element={<HowItWorks />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/login" element={<Auth />} />
-          {/* User Routes - Protected against unauthorized URL copy/paste bypass */}
-          <Route element={<UserProtectedRoute />}>
-            <Route path="/home" element={<Home />} />
-            <Route path="/overview" element={<Overview />} />
-            <Route path="/ai-analysis" element={<AiAnalysis />} />
-            <Route path="/sorting-grading" element={<SortingGrading />} />
-            <Route path="/environment" element={<Environment />} />
-            <Route path="/community" element={<CommunityForum />} />
-            <Route path="/user-features" element={<Navigate to="/community" replace />} />
-            <Route path="/marketplace" element={<Navigate to="/community" replace />} />
-            <Route path="/user-admin" element={<Navigate to="/community" replace />} />
-          </Route>
-
-          {/* Admin Routes - Protected */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="analytics" element={<Analytics />} />
-              <Route path="scans" element={<ScannedItems />} />
-              <Route path="api-health" element={<ApiMonitoring />} />
-              <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/login" element={<Auth />} />
+            {/* User Routes - Protected against unauthorized URL copy/paste bypass */}
+            <Route element={<UserProtectedRoute />}>
+              <Route path="/home" element={<Home />} />
+              <Route path="/overview" element={<Overview />} />
+              <Route path="/ai-analysis" element={<AiAnalysis />} />
+              <Route path="/sorting-grading" element={<SortingGrading />} />
+              <Route path="/environment" element={<Environment />} />
+              <Route path="/community" element={<CommunityForum />} />
+              <Route path="/user-features" element={<Navigate to="/community" replace />} />
+              <Route path="/marketplace" element={<Navigate to="/community" replace />} />
+              <Route path="/user-admin" element={<Navigate to="/community" replace />} />
             </Route>
-            <Route path="/admin/features" element={<AdminFeatures />} />
-            <Route path="/admin/ai-analysis" element={<AdminAiAnalysis />} />
-            <Route path="/admin/marketplace" element={<AdminMarketplace />} />
-          </Route>
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+            {/* Admin Routes - Protected */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="scans" element={<ScannedItems />} />
+                <Route path="api-health" element={<ApiMonitoring />} />
+                <Route path="*" element={<Navigate to="/admin" replace />} />
+              </Route>
+              <Route path="/admin/features" element={<AdminFeatures />} />
+              <Route path="/admin/ai-analysis" element={<AdminAiAnalysis />} />
+              <Route path="/admin/marketplace" element={<AdminMarketplace />} />
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </ThemeProvider>
   )

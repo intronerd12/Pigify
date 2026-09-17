@@ -168,16 +168,45 @@ const MODULES = [
 function Landing() {
   const [activeVideoSlide, setActiveVideoSlide] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
-  const videoRefs = useRef([])
+  const [isInView, setIsInView] = useState(false)
+  const videoSectionRef = useRef(null)
+  const videoRef = useRef(null)
 
-  // Auto-advance video slider when playing
+  // Pause/play based on section intersection with viewport
   useEffect(() => {
-    if (!isPlaying) return undefined
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsInView(entry.isIntersecting)
+      },
+      { threshold: 0.2 }
+    )
+    if (videoSectionRef.current) {
+      observer.observe(videoSectionRef.current)
+    }
+    return () => observer.disconnect()
+  }, [])
+
+  // Auto-advance video slider only when playing and visible in viewport
+  useEffect(() => {
+    if (!isPlaying || !isInView) return undefined
     const intervalId = window.setInterval(() => {
       setActiveVideoSlide((prev) => (prev + 1) % VIDEO_SLIDES.length)
     }, 6500)
     return () => window.clearInterval(intervalId)
-  }, [isPlaying])
+  }, [isPlaying, isInView])
+
+  // Pause on tab switch / minimize
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        videoRef.current?.pause()
+      } else if (isPlaying && isInView) {
+        videoRef.current?.play().catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [isPlaying, isInView])
 
   const goToVideoSlide = (index) => {
     const nextIndex = (index + VIDEO_SLIDES.length) % VIDEO_SLIDES.length
@@ -189,22 +218,19 @@ function Landing() {
     setIsPlaying(!isPlaying)
   }
 
-  // Control play/pause of video elements
+  // Control active video element play/pause
   useEffect(() => {
-    VIDEO_SLIDES.forEach((_, idx) => {
-      const v = videoRefs.current[idx]
-      if (!v) return
-      try {
-        if (idx === activeVideoSlide && isPlaying) {
-          v.play().catch(() => {})
-        } else {
-          v.pause()
-        }
-      } catch (_err) {
-        void _err
+    if (!videoRef.current) return
+    try {
+      if (isPlaying && isInView) {
+        videoRef.current.play().catch(() => {})
+      } else {
+        videoRef.current.pause()
       }
-    })
-  }, [activeVideoSlide, isPlaying])
+    } catch (_err) {
+      void _err
+    }
+  }, [activeVideoSlide, isPlaying, isInView])
 
   return (
     <div className="pro-landing">
@@ -297,6 +323,8 @@ function Landing() {
                   src="/landing/swine-scan-subject.jpg"
                   alt="Swine Subject Getting Scanned - Side View"
                   className="lp-viewport-subject"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="lp-viewport-overlay" />
                 <div className="lp-viewport-grid" />
@@ -358,6 +386,7 @@ function Landing() {
             2. VIDEO SHOWCASE SECTION
             ================================================================ */}
         <section
+          ref={videoSectionRef}
           className="lp-video-hero"
           aria-label="Pigify Swine Disease Scanning Showcase"
         >
@@ -366,20 +395,20 @@ function Landing() {
               {/* High-tech animated laser scanline */}
               <div className="lp-video-scanline" />
 
-              {/* Background Video Elements */}
-              {VIDEO_SLIDES.map((slide, index) => (
+              {/* Active Background Video Element (Loaded on demand when in viewport) */}
+              {isInView && (
                 <video
-                  key={slide.video}
-                  ref={(el) => (videoRefs.current[index] = el)}
-                  className={`lp-video-element ${activeVideoSlide === index ? 'active' : ''}`}
-                  src={slide.video}
+                  ref={videoRef}
+                  key={VIDEO_SLIDES[activeVideoSlide].video}
+                  className="lp-video-element active"
+                  src={VIDEO_SLIDES[activeVideoSlide].video}
                   playsInline
                   muted
                   loop
-                  preload="auto"
-                  aria-hidden={activeVideoSlide === index ? 'false' : 'true'}
+                  preload="metadata"
+                  aria-label={VIDEO_SLIDES[activeVideoSlide].title}
                 />
-              ))}
+              )}
 
               {/* Play button overlay */}
               <button
