@@ -25,16 +25,36 @@ const protect = async (req, res, next) => {
     }
 
     // Fetch profile from Supabase profiles table
-    const { data: profile, error: profileError } = await supabaseAdmin
+    let { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, name, avatar, role, status, status_reason, last_login_at')
       .eq('id', supabaseUser.id)
       .single();
 
     if (profileError || !profile) {
-      return res.status(401).json({
-        message: 'Not authorized, user profile not found. Please log in again.',
-      });
+      const name = supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || 'User';
+      const avatar = supabaseUser.user_metadata?.avatar_url || '';
+      const defaultRole = supabaseUser.email === 'admin@pigify.com' ? 'admin' : 'user';
+
+      const { data: newProfile } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: supabaseUser.id,
+          name,
+          avatar,
+          role: defaultRole,
+          status: 'active'
+        }, { onConflict: 'id' })
+        .select('id, name, avatar, role, status, status_reason, last_login_at')
+        .single();
+
+      if (newProfile) {
+        profile = newProfile;
+      } else {
+        return res.status(401).json({
+          message: 'Not authorized, user profile not found. Please log in again.',
+        });
+      }
     }
 
     req.user = {

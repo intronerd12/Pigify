@@ -25,7 +25,9 @@ const buildUserResponse = (profile, email, supabaseToken) => ({
   avatar: profile.avatar || '',
   role: profile.role,
   status: profile.status,
-  supabaseToken, // frontend uses this for session management
+  status_reason: profile.status_reason || '',
+  supabaseToken,
+  token: supabaseToken,
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

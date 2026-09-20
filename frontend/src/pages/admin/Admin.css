@@ -1,0 +1,656 @@
+/* ==========================================================================
+   PIGIFY ADMIN TELEMETRY DESIGN SYSTEM
+   Professional Veterinary Surveillance & Deep Learning Operations Command UI
+   ========================================================================== */
+
+:root {
+  --admin-bg-base: #070d19;
+  --admin-bg-surface: #0e172a;
+  --admin-bg-elevated: #15223c;
+  --admin-bg-hover: #1e3052;
+  --admin-border-subtle: rgba(255, 255, 255, 0.08);
+  --admin-border-strong: rgba(255, 255, 255, 0.16);
+  --admin-border-accent: rgba(16, 185, 129, 0.35);
+
+  --admin-text-primary: #f8fafc;
+  --admin-text-secondary: #94a3b8;
+  --admin-text-muted: #64748b;
+  --admin-text-dim: #475569;
+
+  --admin-emerald: #10b981;
+  --admin-emerald-glow: rgba(16, 185, 129, 0.18);
+  --admin-cyan: #06b6d4;
+  --admin-cyan-glow: rgba(6, 182, 212, 0.18);
+  --admin-blue: #3b82f6;
+  --admin-purple: #8b5cf6;
+  --admin-amber: #f59e0b;
+  --admin-amber-glow: rgba(245, 158, 11, 0.18);
+  --admin-rose: #f43f5e;
+  --admin-rose-glow: rgba(244, 63, 94, 0.18);
+
+  --admin-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --admin-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --admin-shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.45);
+  --admin-shadow-lg: 0 16px 36px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Base admin container reset */
+.admin-shell-page {
+  color: var(--admin-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  animation: adminFadeIn 0.3s ease-out;
+}
+
+@keyframes adminFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Executive Header / Hero */
+.admin-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #0e172a 0%, #111e38 100%);
+  border: 1px solid var(--admin-border-subtle);
+  box-shadow: var(--admin-shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100%;
+  background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+.admin-hero-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 6px 0;
+}
+
+.admin-hero-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.admin-hero-sub {
+  color: var(--admin-text-secondary);
+  font-size: 0.95rem;
+  margin: 0;
+  max-width: 680px;
+  line-height: 1.5;
+}
+
+.admin-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--admin-text-muted);
+  font-family: var(--admin-font-mono);
+  background: rgba(0, 0, 0, 0.25);
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--admin-border-subtle);
+}
+
+/* Live Telemetry Pulse Dot */
+.telemetry-pulse {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--admin-emerald);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: telemetryPulse 2s infinite;
+}
+
+@keyframes telemetryPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* KPI Card Grid */
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.admin-kpi-card {
+  background: var(--admin-bg-surface);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 14px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: var(--admin-shadow-sm);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-kpi-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--admin-border-strong);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-kpi-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--admin-text-muted);
+  margin-bottom: 6px;
+}
+
+.admin-kpi-value {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  font-family: var(--admin-font-mono);
+  line-height: 1.1;
+}
+
+.admin-kpi-sub {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  color: var(--admin-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-kpi-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Surface Container Card (Optimized for weak PCs & Mobile) */
+.admin-card {
+  background: var(--admin-bg-surface);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: var(--admin-shadow-sm);
+  margin-bottom: 22px;
+  contain: layout style;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Strictly eliminate any shining glare or diagonal light sweeps on hover */
+.admin-card::before,
+.admin-card::after,
+.admin-kpi-card::before,
+.admin-kpi-card::after,
+.admin-table-shell::before,
+.admin-table-shell::after {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  animation: none !important;
+  transform: none !important;
+}
+
+.admin-card:hover::before,
+.admin-card:hover::after,
+.admin-kpi-card:hover::before,
+.admin-kpi-card:hover::after {
+  display: none !important;
+  content: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  transform: none !important;
+}
+
+/* Fast hover state without costly 3D transforms */
+.admin-card:hover,
+.admin-kpi-card:hover {
+  border-color: var(--admin-border-strong);
+  transform: none !important;
+}
+
+.admin-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--admin-border-subtle);
+}
+
+.admin-card-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-card-desc {
+  font-size: 0.85rem;
+  color: var(--admin-text-muted);
+  margin: 4px 0 0 0;
+}
+
+/* Interactive Tabs Switcher (for feature showcase & multi-views) */
+.admin-tabs-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px;
+  background: rgba(7, 13, 25, 0.6);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.admin-tab-btn {
+  padding: 10px 18px;
+  border-radius: 9px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--admin-text-secondary);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-tab-btn.active {
+  background: var(--admin-bg-elevated);
+  border-color: var(--admin-border-accent);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* High-Density Telemetry Table */
+.admin-table-shell {
+  background: var(--admin-bg-surface);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 14px;
+  overflow: auto;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 960px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.88rem;
+}
+
+.admin-table thead th {
+  position: sticky;
+  top: 0;
+  background: #0b1426;
+  color: var(--admin-text-muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--admin-border-strong);
+  text-align: left;
+  z-index: 2;
+}
+
+.admin-table tbody td {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  vertical-align: middle;
+  color: var(--admin-text-secondary);
+}
+
+.admin-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.admin-table tbody tr:hover {
+  background-color: var(--admin-bg-hover);
+}
+
+/* Severity Grade Clinical Badges */
+.admin-badge-grade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  font-family: var(--admin-font-mono);
+  letter-spacing: 0.04em;
+}
+
+.admin-badge-grade-a {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.admin-badge-grade-b {
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+
+.admin-badge-grade-c {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.admin-badge-grade-d {
+  background: rgba(249, 115, 22, 0.15);
+  border: 1px solid rgba(249, 115, 22, 0.4);
+  color: #fb923c;
+}
+
+.admin-badge-grade-e {
+  background: rgba(244, 63, 94, 0.18);
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  color: #fb7185;
+}
+
+.admin-badge-grade-na {
+  background: rgba(100, 116, 139, 0.15);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+  color: #94a3b8;
+}
+
+/* Monospace Pill / Pen ID */
+.admin-pen-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--admin-font-mono);
+  font-size: 0.78rem;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--admin-border-subtle);
+  color: #cbd5e1;
+}
+
+/* Action Buttons */
+.admin-btn-primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.admin-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  filter: brightness(1.06);
+}
+
+.admin-btn-secondary {
+  background: var(--admin-bg-elevated);
+  border: 1px solid var(--admin-border-subtle);
+  color: var(--admin-text-secondary);
+  border-radius: 8px;
+  padding: 9px 15px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.admin-btn-secondary:hover {
+  color: #ffffff;
+  border-color: var(--admin-border-strong);
+  background: var(--admin-bg-hover);
+}
+
+/* Responsive utilities */
+@media (max-width: 1024px) {
+  .admin-hero {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-hero {
+    flex-direction: column;
+  }
+  .admin-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Danger Button (for deletion, suspension) */
+.admin-btn-danger {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  color: #ffffff;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.25);
+}
+
+.admin-btn-danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(225, 29, 72, 0.4);
+  filter: brightness(1.1);
+}
+
+.admin-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Success Button (for undisable / enable login) */
+.admin-btn-success {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.admin-btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+  filter: brightness(1.1);
+}
+
+/* Warning Button */
+.admin-btn-warning {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+}
+
+.admin-btn-warning:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.4);
+  filter: brightness(1.1);
+}
+
+/* Small icon button */
+.admin-icon-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 8px;
+  padding: 7px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--admin-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.admin-icon-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--admin-border-strong);
+}
+
+.admin-icon-btn.danger:hover {
+  color: #fb7185;
+  background: rgba(244, 63, 94, 0.15);
+  border-color: rgba(244, 63, 94, 0.4);
+}
+
+/* Modal Overlay & Card */
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  animation: adminFadeIn 0.2s ease-out;
+}
+
+.admin-modal-container {
+  background: #0e172a;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  animation: adminModalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes adminModalScale {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.admin-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--admin-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-modal-body {
+  padding: 24px;
+}
+
+.admin-modal-footer {
+  padding: 16px 24px;
+  background: rgba(7, 13, 25, 0.5);
+  border-top: 1px solid var(--admin-border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+

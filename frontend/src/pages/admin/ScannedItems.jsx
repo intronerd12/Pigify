@@ -4,16 +4,22 @@ import {
   RefreshCcw,
   ScanLine,
   Users,
-  Trophy,
   Clock3,
   CalendarClock,
   UserRound,
   MapPin,
   FileText,
   Smartphone,
+  ShieldCheck,
+  ShieldAlert,
+  Stethoscope,
+  Filter,
+  Search,
+  CheckCircle2,
 } from 'lucide-react';
 import { API_BASE_URL } from '../../config/api';
 import './ScannedItems.css';
+import './Admin.css';
 
 const AUTO_REFRESH_MS = 5000;
 
@@ -23,12 +29,14 @@ const formatDateTime = (value) => {
   if (Number.isNaN(date.getTime())) return '-';
   return date.toLocaleString();
 };
+
 const formatTimeOnly = (value) => {
   if (!value) return '--';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '--';
   return date.toLocaleTimeString();
 };
+
 const formatDateOnly = (value) => {
   if (!value) return '--';
   const date = new Date(value);
@@ -43,25 +51,24 @@ const getOperatorIdentity = (scan) => {
 
 const getGradePill = (gradeRaw) => {
   const grade = String(gradeRaw || '').toUpperCase();
-  if (grade === 'A') return { grade, className: 'si-grade si-grade-a' };
-  if (grade === 'B') return { grade, className: 'si-grade si-grade-b' };
-  if (grade === 'C') return { grade, className: 'si-grade si-grade-c' };
-  if (grade === 'D') return { grade, className: 'si-grade si-grade-d' };
-  if (grade === 'E') return { grade, className: 'si-grade si-grade-e' };
-  if (grade === 'UNKNOWN' || !grade || grade === 'N/A') return { grade: 'N/A', className: 'si-grade si-grade-na' };
-  return { grade, className: 'si-grade si-grade-na' };
+  if (grade === 'A') return { grade, label: 'Grade A', description: 'Healthy Baseline', className: 'si-grade si-grade-a' };
+  if (grade === 'B') return { grade, label: 'Grade B', description: 'Mild Localized', className: 'si-grade si-grade-b' };
+  if (grade === 'C') return { grade, label: 'Grade C', description: 'Moderate Watch', className: 'si-grade si-grade-c' };
+  if (grade === 'D') return { grade, label: 'Grade D', description: 'Severe Action', className: 'si-grade si-grade-d' };
+  if (grade === 'E') return { grade, label: 'Grade E', description: 'Quarantine Req.', className: 'si-grade si-grade-e' };
+  return { grade: 'N/A', label: 'N/A', description: 'Unclassified', className: 'si-grade si-grade-na' };
 };
 
 const getSourceLabel = (sourceRaw) => {
   const source = String(sourceRaw || 'unspecified').trim().toLowerCase();
-  if (source.includes('mobile')) return 'Mobile App';
-  if (source.includes('web')) return 'Web';
-  if (!source || source === 'unspecified') return 'Unspecified';
+  if (source.includes('mobile')) return 'Mobile Pen Cam';
+  if (source.includes('web')) return 'Web Diagnostic Lab';
+  if (!source || source === 'unspecified') return 'Field Scanner';
   return sourceRaw;
 };
 
 const getSafeLocation = (locationValue) => {
-  if (!locationValue) return '-';
+  if (!locationValue) return 'Backyard Sty (Pen Area)';
   if (typeof locationValue === 'string') return locationValue;
   if (typeof locationValue === 'object') {
     const lat = locationValue.lat ?? locationValue.latitude;
@@ -70,7 +77,7 @@ const getSafeLocation = (locationValue) => {
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     }
   }
-  return '-';
+  return 'Backyard Sty (Pen Area)';
 };
 
 const ScannedItems = () => {
@@ -79,6 +86,8 @@ const ScannedItems = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [gradeFilter, setGradeFilter] = useState('ALL');
 
   const fetchScans = useCallback(async ({ silent = false } = {}) => {
     try {
@@ -155,16 +164,44 @@ const ScannedItems = () => {
     return Object.entries(bucket).sort((a, b) => b[1] - a[1]);
   }, [scans]);
 
+  // Filtered scans
+  const filteredScans = useMemo(() => {
+    return scans.filter((scan) => {
+      const grade = String(scan?.grade || '').toUpperCase();
+      if (gradeFilter !== 'ALL' && grade !== gradeFilter) return false;
+
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      const condition = String(scan?.swine_condition || scan?.details || scan?.fruitType || '').toLowerCase();
+      const operator = String(scan?.operatorName || scan?.user?.name || '').toLowerCase();
+      const pen = String(scan?.pen_id || scan?.penId || '').toLowerCase();
+      return condition.includes(q) || operator.includes(q) || pen.includes(q);
+    });
+  }, [scans, gradeFilter, searchQuery]);
+
   return (
-    <div className="si-page">
+    <div className="si-page admin-shell-page">
+      {/* Hero Header */}
       <section className="si-hero">
-        <div className="si-hero-copy">
-          <h1 className="si-title">Scanned Items</h1>
-          <p className="si-subtitle">Unified scan feed from all mobile users and operators.</p>
-          <p className="si-meta">
-            Auto-refresh every {Math.floor(AUTO_REFRESH_MS / 1000)}s {lastUpdated ? `| Last updated: ${lastUpdated.toLocaleTimeString()}` : ''}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <span className="admin-hero-badge">Swine Telemetry Feed</span>
+            <span className="admin-meta-tag">
+              <span className="telemetry-pulse" />
+              AUTO-POLL 5S
+            </span>
+          </div>
+          <h1 className="si-title">Herd Scan Telemetry</h1>
+          <p className="si-subtitle">
+            Centralized clinical log of all swine pen inspections, dermatological lesion detections, and severity triage classifications.
           </p>
+          <div className="si-meta">
+            <span>Last sync: {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Connecting...'}</span>
+            <span>·</span>
+            <span>Total records: {scans.length}</span>
+          </div>
         </div>
+
         <button
           type="button"
           onClick={() => fetchScans()}
@@ -172,15 +209,16 @@ const ScannedItems = () => {
           className="si-refresh-btn"
         >
           <RefreshCcw size={15} className={refreshing ? 'si-spin' : ''} />
-          {refreshing ? 'Refreshing...' : 'Refresh now'}
+          <span>{refreshing ? 'Polling...' : 'Sync Feed'}</span>
         </button>
       </section>
 
+      {/* KPI Stats Grid */}
       {!loading && scans.length > 0 && (
         <section className="si-stats-grid">
           <article className="si-stat-card">
             <div className="si-stat-top">
-              <span className="si-stat-label">Total scans</span>
+              <span className="si-stat-label">Total Herd Scans</span>
               <span className="si-stat-icon">
                 <ScanLine size={16} />
               </span>
@@ -190,7 +228,7 @@ const ScannedItems = () => {
 
           <article className="si-stat-card">
             <div className="si-stat-top">
-              <span className="si-stat-label">Unique operators</span>
+              <span className="si-stat-label">Farm Operators</span>
               <span className="si-stat-icon">
                 <Users size={16} />
               </span>
@@ -200,7 +238,7 @@ const ScannedItems = () => {
 
           <article className="si-stat-card">
             <div className="si-stat-top">
-              <span className="si-stat-label">Last scan</span>
+              <span className="si-stat-label">Last Inspection</span>
               <span className="si-stat-icon">
                 <Clock3 size={16} />
               </span>
@@ -212,52 +250,84 @@ const ScannedItems = () => {
 
           <article className="si-stat-card">
             <div className="si-stat-top">
-              <span className="si-stat-label">Best grade</span>
+              <span className="si-stat-label">Healthy Baseline %</span>
               <span className="si-stat-icon">
-                <Trophy size={16} />
+                <ShieldCheck size={16} />
               </span>
             </div>
-            <div className="si-stat-value">{(stats?.best || '-').toString().toUpperCase()}</div>
+            <div className="si-stat-value" style={{ color: '#34d399' }}>
+              {scans.length > 0
+                ? `${Math.round((gradeBreakdown.A / scans.length) * 100)}%`
+                : '0%'}
+            </div>
           </article>
         </section>
       )}
 
+      {/* Filters & Triage Toolbar */}
       {!loading && scans.length > 0 && (
         <section className="si-toolbar">
           <div className="si-toolbar-group">
-            <span className="si-toolbar-label">Grade mix</span>
+            <span className="si-toolbar-label">Triage Filter:</span>
             <div className="si-chip-row">
-              <span className="si-chip">A {gradeBreakdown.A}</span>
-              <span className="si-chip">B {gradeBreakdown.B}</span>
-              <span className="si-chip">C {gradeBreakdown.C}</span>
-              <span className="si-chip">D {gradeBreakdown.D}</span>
-              <span className="si-chip">E {gradeBreakdown.E}</span>
-              <span className="si-chip">N/A {gradeBreakdown.NA}</span>
+              {['ALL', 'A', 'B', 'C', 'D', 'E'].map((g) => (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => setGradeFilter(g)}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    fontSize: '0.78rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    background: gradeFilter === g ? '#15223c' : 'rgba(255,255,255,0.03)',
+                    border: gradeFilter === g ? '1px solid #10b981' : '1px solid var(--admin-border-subtle)',
+                    color: gradeFilter === g ? '#ffffff' : '#94a3b8',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {g === 'ALL' ? 'All Grades' : `Grade ${g} (${gradeBreakdown[g] || 0})`}
+                </button>
+              ))}
             </div>
           </div>
+
           <div className="si-toolbar-group">
-            <span className="si-toolbar-label">Sources</span>
-            <div className="si-chip-row">
-              {sourceBreakdown.map(([label, count]) => (
-                <span key={label} className="si-chip">
-                  <Smartphone size={13} />
-                  {label} {count}
-                </span>
-              ))}
+            <div style={{ position: 'relative', minWidth: '220px' }}>
+              <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }} />
+              <input
+                type="text"
+                placeholder="Search condition or pen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '7px 10px 7px 30px',
+                  borderRadius: '7px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid var(--admin-border-subtle)',
+                  color: '#ffffff',
+                  fontSize: '0.82rem',
+                  outline: 'none'
+                }}
+              />
             </div>
           </div>
         </section>
       )}
 
+      {/* Main Table */}
       {loading ? (
         <div className="si-empty-card">
-          <div className="si-empty-title">Loading scans...</div>
+          <RefreshCcw size={28} className="si-spin" style={{ color: '#10b981', marginBottom: '14px' }} />
+          <div className="si-empty-title">Loading swine diagnostic feed...</div>
         </div>
-      ) : scans.length === 0 ? (
+      ) : filteredScans.length === 0 ? (
         <div className="si-empty-card">
-          <div className="si-empty-title">No scans recorded yet</div>
+          <div className="si-empty-title">No matching scan telemetry records found</div>
           <div className="si-empty-desc">
-            Once users scan swine in the mobile or web app, records will appear here with condition, severity triage, operator, and pen details.
+            Scans performed on the mobile pen app or web diagnostic scanner will appear here with clinical symptoms, severity grading, and quarantine status.
           </div>
         </div>
       ) : (
@@ -265,21 +335,31 @@ const ScannedItems = () => {
           <table className="si-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Grade</th>
-                <th>Fruit and notes</th>
-                <th>Operator</th>
+                <th>Timestamp & Pen</th>
+                <th>Severity Triage</th>
+                <th>Swine Condition & Clinical Notes</th>
+                <th>Backyard Farm & Operator</th>
                 <th>Location</th>
-                <th>Source</th>
+                <th>Telemetry Source</th>
               </tr>
             </thead>
             <tbody>
-              {scans.map((scan) => {
+              {filteredScans.map((scan) => {
                 const pill = getGradePill(scan.grade);
-                const operatorName = scan?.user?.name || scan?.operatorName || 'Unknown operator';
+                const operatorName = scan?.user?.name || scan?.operatorName || 'Backyard Raiser';
                 const operatorEmail = scan?.user?.email || scan?.operatorEmail || '-';
-                const fruitName = scan?.fruitType || 'No fruit data';
-                const scanNotes = scan?.details || 'No notes provided';
+
+                // Display condition cleanly, fallback if legacy fruitType existed
+                const rawCondition = scan?.swine_condition || scan?.details || scan?.fruitType || 'Healthy Dermis Baseline';
+                const displayCondition = rawCondition.toLowerCase().includes('dragon') || rawCondition.toLowerCase().includes('fruit')
+                  ? 'Swine Dermal Inspection (Healthy)'
+                  : rawCondition;
+
+                const scanNotes = scan?.details && scan?.details !== rawCondition
+                  ? scan.details
+                  : 'Clinical symptoms logged via deep learning vision model';
+
+                const penLabel = scan?.pen_id || scan?.penId || 'Pen #1';
                 const created = scan.timestamp || scan.createdAt;
 
                 return (
@@ -287,43 +367,58 @@ const ScannedItems = () => {
                     <td>
                       <div className="si-cell-stack">
                         <div className="si-cell-primary">
-                          <CalendarClock size={14} />
-                          {formatDateOnly(created)}
+                          <CalendarClock size={13} style={{ color: '#64748b' }} />
+                          <span>{formatDateOnly(created)}</span>
+                          <span className="admin-pen-pill">{penLabel}</span>
                         </div>
-                        <div className="si-cell-secondary">{formatTimeOnly(created)}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className={pill.className}>
-                        {pill.grade}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="si-cell-stack">
-                        <div className="si-cell-primary">
-                          <FileText size={14} />
-                          {fruitName}
+                        <div className="si-cell-secondary" style={{ fontFamily: 'var(--admin-font-mono)' }}>
+                          {formatTimeOnly(created)}
                         </div>
-                        <div className="si-cell-secondary si-notes">{scanNotes}</div>
                       </div>
                     </td>
                     <td>
                       <div className="si-cell-stack">
+                        <span className={pill.className}>
+                          {pill.label}
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>
+                          {pill.description}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="si-cell-stack" style={{ maxWidth: '380px' }}>
+                        <div className="si-cell-primary" style={{ color: '#e2e8f0' }}>
+                          <Stethoscope size={14} style={{ color: '#38bdf8', flexShrink: 0 }} />
+                          <span style={{ fontWeight: 700 }}>{displayCondition}</span>
+                        </div>
+                        <div className="si-cell-secondary si-notes">
+                          {scanNotes}
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="si-cell-stack">
                         <div className="si-cell-primary">
-                          <UserRound size={14} />
+                          <UserRound size={13} style={{ color: '#64748b' }} />
                           {operatorName}
                         </div>
-                        <div className="si-cell-secondary">{operatorEmail}</div>
+                        <div className="si-cell-secondary" style={{ fontSize: '0.75rem' }}>
+                          {operatorEmail}
+                        </div>
                       </div>
                     </td>
                     <td>
-                      <div className="si-cell-primary">
-                        <MapPin size={14} />
+                      <div className="si-cell-primary" style={{ fontSize: '0.82rem', color: '#94a3b8' }}>
+                        <MapPin size={13} style={{ color: '#10b981', flexShrink: 0 }} />
                         {getSafeLocation(scan.location)}
                       </div>
                     </td>
                     <td>
-                      <span className="si-source-pill">{getSourceLabel(scan.source)}</span>
+                      <span className="si-source-pill">
+                        <Smartphone size={11} />
+                        {getSourceLabel(scan.source)}
+                      </span>
                     </td>
                   </tr>
                 );

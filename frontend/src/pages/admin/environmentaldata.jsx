@@ -163,8 +163,8 @@ const EnvironmentalData = () => {
           }}
         >
           <div style={{ padding: 16, borderBottom: '1px solid var(--gray-200)', display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'var(--dragon-flesh)', display: 'grid', placeItems: 'center' }}>
-              <MapPin size={18} color="var(--dragon-primary)" />
+            <div style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: 'rgba(16, 185, 129, 0.12)', display: 'grid', placeItems: 'center' }}>
+              <MapPin size={18} color="#10b981" />
             </div>
             <div>
               <div style={{ fontWeight: 900, color: 'var(--gray-900)' }}>Regions</div>
@@ -185,8 +185,8 @@ const EnvironmentalData = () => {
                     textAlign: 'left',
                     padding: '12px 12px',
                     borderRadius: 12,
-                    border: active ? '1px solid rgba(230,0,92,0.22)' : '1px solid transparent',
-                    backgroundColor: active ? 'rgba(230,0,92,0.08)' : 'transparent',
+                    border: active ? '1px solid rgba(16, 185, 129, 0.35)' : '1px solid transparent',
+                    backgroundColor: active ? 'rgba(16, 185, 129, 0.08)' : 'transparent',
                     color: active ? 'var(--gray-900)' : 'var(--gray-700)',
                     fontWeight: active ? 900 : 700,
                     display: 'flex',
@@ -197,7 +197,7 @@ const EnvironmentalData = () => {
                 >
                   <span>{prov}</span>
                   {active ? (
-                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--dragon-primary)' }}>Selected</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: '#10b981' }}>Selected</span>
                   ) : null}
                 </button>
               );
@@ -374,10 +374,10 @@ const EnvironmentalData = () => {
                 {mapKey ? 'Google Maps Embed API' : 'Google Maps (no key) / OpenStreetMap fallback'}
               </div>
               <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <a href={googleOpenUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--dragon-primary)', fontWeight: 900, textDecoration: 'none' }}>
+                <a href={googleOpenUrl} target="_blank" rel="noreferrer" style={{ color: '#10b981', fontWeight: 900, textDecoration: 'none' }}>
                   Google link
                 </a>
-                <a href={osmOpenUrl} target="_blank" rel="noreferrer" style={{ color: 'var(--dragon-primary)', fontWeight: 900, textDecoration: 'none' }}>
+                <a href={osmOpenUrl} target="_blank" rel="noreferrer" style={{ color: '#10b981', fontWeight: 900, textDecoration: 'none' }}>
                   OSM link
                 </a>
               </div>
@@ -394,7 +394,7 @@ const EnvironmentalData = () => {
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--gray-900)' }}>Growth Recommendation</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--gray-900)' }}>Swine Pen Microclimate & Heat Stress Recommendation</div>
               <div style={{ color: 'var(--gray-500)', fontWeight: 800, fontSize: '0.9rem' }}>{loading ? 'Updating…' : 'Live analysis'}</div>
             </div>
 

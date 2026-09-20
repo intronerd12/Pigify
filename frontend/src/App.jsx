@@ -30,12 +30,14 @@ const CommunityForum = lazy(() => import('./pages/CommunityForum'))
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout'))
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
 const AdminFeatures = lazy(() => import('./pages/admin/AdminFeatures'))
+const FeatureShowcase = lazy(() => import('./pages/admin/FeatureShowcase'))
 const AdminAiAnalysis = lazy(() => import('./pages/admin/AdminAiAnalysis'))
 const AdminMarketplace = lazy(() => import('./pages/admin/AdminMarketplace'))
 const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
 const Analytics = lazy(() => import('./pages/admin/Analytics'))
 const ScannedItems = lazy(() => import('./pages/admin/ScannedItems'))
 const ApiMonitoring = lazy(() => import('./pages/admin/ApiMonitoring'))
+const EnvironmentalData = lazy(() => import('./pages/admin/environmentaldata'))
 
 function App() {
   const forcedLogoutRef = useRef(false)
@@ -136,11 +138,13 @@ function App() {
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="scans" element={<ScannedItems />} />
                 <Route path="api-health" element={<ApiMonitoring />} />
+                <Route path="features" element={<AdminFeatures />} />
+                <Route path="tabs" element={<FeatureShowcase />} />
+                <Route path="ai-analysis" element={<AdminAiAnalysis />} />
+                <Route path="marketplace" element={<AdminMarketplace />} />
+                <Route path="environment" element={<EnvironmentalData />} />
                 <Route path="*" element={<Navigate to="/admin" replace />} />
               </Route>
-              <Route path="/admin/features" element={<AdminFeatures />} />
-              <Route path="/admin/ai-analysis" element={<AdminAiAnalysis />} />
-              <Route path="/admin/marketplace" element={<AdminMarketplace />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

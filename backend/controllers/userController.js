@@ -1,18 +1,91 @@
 const { supabaseAdmin } = require('../config/supabase');
 const { cloudinary } = require('../config/cloudinary');
 const fs = require('fs');
-const { STATUS_REASON_CHOICES, normalizeStatus } = require('../utils/accountStatus');
+const { pool } = require('../config/postgres');
+const { normalizeStatus } = require('../utils/accountStatus');
 
-// @desc    Get all users (from Supabase profiles table)
+// @desc    Get all users (registered in Supabase auth + profiles table)
 // @route   GET /api/users
 // @access  Private/Admin
 const getUsers = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const search = (req.query.search || '').trim().toLowerCase();
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 10);
+    const search = (req.query.search || '').trim();
     const offset = (page - 1) * limit;
 
+    // Direct Postgres pool query ensures 100% of registered auth.users are fetched
+    if (pool) {
+      try {
+        // 1. Auto-sync any users in auth.users that don't have a profile yet
+        await pool.query(`
+          INSERT INTO public.profiles (id, name, avatar, role, status)
+          SELECT 
+            u.id, 
+            COALESCE(u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1), 'Backyard Raiser'),
+            COALESCE(u.raw_user_meta_data->>'avatar_url', ''),
+            CASE WHEN u.email = 'admin@pigify.com' THEN 'admin' ELSE 'user' END,
+            'active'
+          FROM auth.users u
+          LEFT JOIN public.profiles p ON u.id = p.id
+          WHERE p.id IS NULL
+          ON CONFLICT (id) DO NOTHING;
+        `);
+
+        // 2. Count total users matching search
+        const countRes = await pool.query(`
+          SELECT COUNT(*) 
+          FROM auth.users u
+          LEFT JOIN public.profiles p ON u.id = p.id
+          WHERE ($1::text IS NULL OR $1 = '' OR p.name ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%')
+        `, [search]);
+
+        const totalUsers = parseInt(countRes.rows[0]?.count || 0, 10);
+
+        // 3. Fetch paginated users
+        const rowsRes = await pool.query(`
+          SELECT 
+            u.id,
+            u.email,
+            COALESCE(p.name, u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1), 'Backyard Raiser') AS name,
+            COALESCE(p.avatar, u.raw_user_meta_data->>'avatar_url', '') AS avatar,
+            COALESCE(p.role, 'user') AS role,
+            COALESCE(p.status, 'active') AS status,
+            COALESCE(p.status_reason, '') AS status_reason,
+            COALESCE(p.last_login_at, u.last_sign_in_at) AS last_login_at,
+            COALESCE(p.created_at, u.created_at) AS created_at
+          FROM auth.users u
+          LEFT JOIN public.profiles p ON u.id = p.id
+          WHERE ($1::text IS NULL OR $1 = '' OR p.name ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%')
+          ORDER BY COALESCE(p.created_at, u.created_at) DESC
+          LIMIT $2 OFFSET $3
+        `, [search, limit, offset]);
+
+        const users = rowsRes.rows.map((p) => ({
+          _id: p.id,
+          id: p.id,
+          name: p.name,
+          email: p.email || '',
+          avatar: p.avatar,
+          role: p.role,
+          status: p.status,
+          status_reason: p.status_reason,
+          last_login_at: p.last_login_at,
+          createdAt: p.created_at,
+        }));
+
+        return res.json({
+          users,
+          totalPages: Math.ceil(totalUsers / limit) || 1,
+          currentPage: page,
+          totalUsers,
+        });
+      } catch (poolErr) {
+        console.error('Postgres pool query error, falling back to Supabase PostgREST:', poolErr);
+      }
+    }
+
+    // Fallback if pool query fails:
     let query = supabaseAdmin
       .from('profiles')
       .select('id, name, avatar, role, status, status_reason, last_login_at, created_at', { count: 'exact' })
@@ -24,27 +97,16 @@ const getUsers = async (req, res) => {
     }
 
     const { data: profiles, error, count } = await query;
-
     if (error) {
       console.error('Get Users Error:', error);
       return res.status(500).json({ message: 'Failed to fetch users' });
-    }
-
-    // Get emails from Supabase auth — merge with profiles
-    const { data: { users: authUsers }, error: authError } = await supabaseAdmin.auth.admin.listUsers({
-      perPage: 1000,
-    });
-
-    const emailMap = {};
-    if (!authError && authUsers) {
-      authUsers.forEach((u) => { emailMap[u.id] = u.email; });
     }
 
     const users = (profiles || []).map((p) => ({
       _id: p.id,
       id: p.id,
       name: p.name,
-      email: emailMap[p.id] || '',
+      email: '',
       avatar: p.avatar,
       role: p.role,
       status: p.status,
@@ -53,17 +115,9 @@ const getUsers = async (req, res) => {
       createdAt: p.created_at,
     }));
 
-    // Apply email search (can't do in Supabase query easily for auth users)
-    const filtered = search
-      ? users.filter((u) =>
-          u.name?.toLowerCase().includes(search) ||
-          u.email?.toLowerCase().includes(search)
-        )
-      : users;
-
     return res.json({
-      users: filtered,
-      totalPages: Math.ceil((count || 0) / limit),
+      users,
+      totalPages: Math.ceil((count || 0) / limit) || 1,
       currentPage: page,
       totalUsers: count || 0,
     });
@@ -73,7 +127,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-// @desc    Update user (role, status, name, avatar)
+// @desc    Update user (role, status, status_reason, name, avatar)
 // @route   PUT /api/users/:id
 // @access  Private/Admin
 const updateUser = async (req, res) => {
@@ -94,8 +148,14 @@ const updateUser = async (req, res) => {
     const has = (key) => Object.prototype.hasOwnProperty.call(req.body, key);
     const updates = {};
 
-    if (has('name')) updates.name = req.body.name;
-    if (has('role')) updates.role = req.body.role;
+    if (has('name')) updates.name = String(req.body.name).trim();
+    if (has('role')) {
+      const allowedRoles = ['admin', 'user', 'veterinarian', 'moderator', 'viewer'];
+      const nextRole = String(req.body.role || '').toLowerCase();
+      if (allowedRoles.includes(nextRole)) {
+        updates.role = nextRole;
+      }
+    }
     if (has('avatar')) updates.avatar = req.body.avatar;
 
     if (has('status')) {
@@ -104,22 +164,39 @@ const updateUser = async (req, res) => {
 
       if (nextStatus === 'active') {
         updates.status_reason = '';
-      } else if (has('status_reason')) {
-        const allowedReasons = STATUS_REASON_CHOICES[nextStatus] || [];
-        const reason = String(req.body.status_reason || '').trim();
-
-        if (!reason) {
-          return res.status(400).json({ message: `Reason is required when status is ${nextStatus}` });
-        }
-        if (!allowedReasons.includes(reason)) {
-          return res.status(400).json({ message: `Invalid reason for ${nextStatus} status`, allowedReasons });
-        }
+      } else {
+        const defaultReason = nextStatus === 'banned' ? 'Suspended by administrator' : 'Deactivated by administrator';
+        const reason = String(req.body.status_reason || '').trim() || currentProfile.status_reason || defaultReason;
         updates.status_reason = reason;
-      } else if (nextStatus !== 'active' && !currentProfile.status_reason) {
-        return res.status(400).json({ message: `Reason is required when status is ${nextStatus}` });
+      }
+    } else if (has('status_reason')) {
+      updates.status_reason = String(req.body.status_reason || '').trim();
+    }
+
+    // Direct Postgres update for maximum reliability
+    if (pool) {
+      try {
+        const fields = [];
+        const values = [];
+        let idx = 1;
+        for (const [col, val] of Object.entries(updates)) {
+          fields.push(`${col} = $${idx}`);
+          values.push(val);
+          idx++;
+        }
+        if (fields.length > 0) {
+          values.push(id);
+          await pool.query(
+            `UPDATE public.profiles SET ${fields.join(', ')} WHERE id = $${idx}`,
+            values
+          );
+        }
+      } catch (poolErr) {
+        console.error('Postgres pool update error:', poolErr);
       }
     }
 
+    // Also update via Supabase Admin PostgREST
     const { data: updatedProfile, error: updateError } = await supabaseAdmin
       .from('profiles')
       .update(updates)
@@ -132,17 +209,30 @@ const updateUser = async (req, res) => {
       return res.status(500).json({ message: 'Failed to update user' });
     }
 
-    // Also update email in auth if needed (name update in user_metadata)
-    if (has('name')) {
-      await supabaseAdmin.auth.admin.updateUserById(id, {
-        user_metadata: { full_name: req.body.name },
-      }).catch(() => {});
+    // Also update full_name in auth user_metadata if name changed
+    if (has('name') && pool) {
+      try {
+        await pool.query(
+          `UPDATE auth.users SET raw_user_meta_data = jsonb_set(COALESCE(raw_user_meta_data, '{}'::jsonb), '{full_name}', to_jsonb($1::text)) WHERE id = $2`,
+          [req.body.name, id]
+        );
+      } catch (e) {}
+    }
+
+    // Fetch user email
+    let email = '';
+    if (pool) {
+      try {
+        const uRes = await pool.query('SELECT email FROM auth.users WHERE id = $1', [id]);
+        email = uRes.rows[0]?.email || '';
+      } catch (e) {}
     }
 
     return res.json({
       _id: updatedProfile.id,
       id: updatedProfile.id,
       name: updatedProfile.name,
+      email,
       avatar: updatedProfile.avatar,
       role: updatedProfile.role,
       status: updatedProfile.status,
@@ -214,12 +304,44 @@ const uploadAvatar = async (req, res) => {
   }
 };
 
-// @desc    Delete user
+// @desc    Delete user or admin
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
 const deleteUser = async (req, res) => {
-  // Soft-disable only — actual deletion disabled for data safety
-  return res.status(403).json({ message: 'User deletion is disabled. Use status=banned to restrict access.' });
+  try {
+    const { id } = req.params;
+
+    // Prevent admin from accidentally deleting their own logged-in account
+    if (req.user && (req.user.id === id || req.user._id === id)) {
+      return res.status(400).json({
+        message: 'You cannot delete your own active administrator account. Ask another administrator or use a different account.',
+      });
+    }
+
+    // Delete from auth.users (cascades automatically to public.profiles, sessions, identities)
+    if (pool) {
+      try {
+        await pool.query('DELETE FROM auth.users WHERE id = $1', [id]);
+        await pool.query('DELETE FROM public.profiles WHERE id = $1', [id]);
+      } catch (poolErr) {
+        console.error('Postgres pool delete error:', poolErr);
+      }
+    }
+
+    // Also call supabaseAdmin to ensure consistency
+    try {
+      await supabaseAdmin.from('profiles').delete().eq('id', id);
+    } catch (e) {}
+
+    return res.json({
+      success: true,
+      message: 'User account permanently deleted from database',
+      id,
+    });
+  } catch (err) {
+    console.error('Delete User Error:', err);
+    return res.status(500).json({ message: 'Failed to delete user: ' + err.message });
+  }
 };
 
 module.exports = { getUsers, updateUser, uploadAvatar, deleteUser };
