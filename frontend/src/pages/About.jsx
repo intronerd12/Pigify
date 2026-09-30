@@ -137,6 +137,7 @@ function TeamPhoto({ src, alt, className }) {
       alt={alt}
       className={className}
       loading="lazy"
+      decoding="async"
       onError={() => setHasError(true)}
     />
   )
@@ -339,6 +340,8 @@ function About() {
                     src={DATASET_SAMPLES[activeSample].src}
                     alt={DATASET_SAMPLES[activeSample].title}
                     className="swine-showcase-img"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="swine-showcase-overlay" />
                   <div className="swine-showcase-badge-bar">

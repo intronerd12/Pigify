@@ -10,11 +10,13 @@ import {
   FileText,
   Info,
   Layers,
+  MapPin,
   RefreshCw,
   ScanLine,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Tag,
   UploadCloud,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
@@ -428,6 +430,8 @@ function AiAnalysis() {
                         <img
                           src={previewUrl}
                           alt="Swine Skin Subject"
+                          loading="lazy"
+                          decoding="async"
                           style={{ width: '100%', height: '100%', maxHeight: '340px', objectFit: 'cover', display: 'block' }}
                         />
                         {/* High-tech Viewfinder Laser Simulation */}
@@ -501,32 +505,40 @@ function AiAnalysis() {
                   </label>
 
                   {/* Pen Identifier & Swine ID Inputs */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '6px' }}>
-                        Pen Location
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '8px' }}>
+                        <MapPin size={13} color="var(--accent-rose, #f43f5e)" />
+                        <span>Pen Location</span>
                       </label>
-                      <input
-                        type="text"
-                        value={penId}
-                        onChange={(e) => setPenId(e.target.value)}
-                        placeholder="e.g. Pen B-12"
-                        className="auth-text-field"
-                        style={{ paddingLeft: '14px' }}
-                      />
+                      <div className="pigify-input-box">
+                        <input
+                          type="text"
+                          value={penId}
+                          onChange={(e) => setPenId(e.target.value)}
+                          placeholder="e.g. Pen B-12"
+                          className="auth-text-field"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+                      </div>
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '6px' }}>
-                        Swine Identifier
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '8px' }}>
+                        <Tag size={13} color="var(--accent-emerald, #10b981)" />
+                        <span>Swine Identifier</span>
                       </label>
-                      <input
-                        type="text"
-                        value={swineId}
-                        onChange={(e) => setSwineId(e.target.value)}
-                        placeholder="e.g. Sow #04"
-                        className="auth-text-field"
-                        style={{ paddingLeft: '14px' }}
-                      />
+                      <div className="pigify-input-box">
+                        <input
+                          type="text"
+                          value={swineId}
+                          onChange={(e) => setSwineId(e.target.value)}
+                          placeholder="e.g. Swine #0482"
+                          className="auth-text-field"
+                          autoComplete="off"
+                          spellCheck="false"
+                        />
+                      </div>
                     </div>
                   </div>
 

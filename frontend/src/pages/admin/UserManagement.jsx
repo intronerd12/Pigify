@@ -581,6 +581,8 @@ const UserManagement = () => {
                             <img
                               src={user.avatar}
                               alt=""
+                              loading="lazy"
+                              decoding="async"
                               style={{ width: '100%', height: '100%', borderRadius: '10px', objectFit: 'cover' }}
                             />
                           ) : (

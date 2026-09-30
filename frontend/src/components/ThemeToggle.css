@@ -121,8 +121,12 @@
 
 .pigify-theme-switch.is-dark .pts-icon-moon {
   color: #38bdf8;
-  filter: drop-shadow(0 0 3px #38bdf8);
-  animation: ptsMoonRock 2s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 2px rgba(56, 189, 248, 0.6));
+  transition: transform 0.3s ease;
+}
+
+.pigify-theme-switch:hover .pts-icon-moon {
+  transform: rotate(15deg) scale(1.08);
 }
 
 .pigify-theme-switch.is-dark .pts-bg-moon {
@@ -154,8 +158,12 @@
 
 .pigify-theme-switch.is-light .pts-icon-sun {
   color: #ffffff;
-  filter: drop-shadow(0 0 2px #d97706);
-  animation: ptsSunSpin 6s linear infinite;
+  filter: drop-shadow(0 0 2px rgba(217, 119, 6, 0.5));
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pigify-theme-switch:hover .pts-icon-sun {
+  transform: rotate(90deg) scale(1.08);
 }
 
 .pigify-theme-switch.is-light .pts-bg-sun {
@@ -199,12 +207,3 @@
   box-shadow: 0 0 6px #f59e0b;
 }
 
-@keyframes ptsSunSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ptsMoonRock {
-  0% { transform: rotate(-8deg); }
-  100% { transform: rotate(8deg); }
-}

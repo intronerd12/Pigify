@@ -532,6 +532,10 @@ function Overview() {
                         <img
                           src={scan.imageUrl}
                           alt="Swine Scan"
+                          loading="lazy"
+                          decoding="async"
+                          width="44"
+                          height="44"
                           style={{ width: '44px', height: '44px', borderRadius: '8px', objectFit: 'cover' }}
                         />
                       ) : (

@@ -23,14 +23,25 @@ const PREFETCH_MAP = {
   '/community': () => import('../../pages/CommunityForum'),
 }
 
+const prefetchTimers = {}
 const prefetchRoute = (path) => {
-  const loader = PREFETCH_MAP[path]
-  if (loader) {
-    try {
-      loader().catch(() => {})
-    } catch (_err) {
-      void _err
+  if (prefetchTimers[path]) return
+  prefetchTimers[path] = setTimeout(() => {
+    const loader = PREFETCH_MAP[path]
+    if (loader) {
+      try {
+        loader().catch(() => {})
+      } catch (_err) {
+        void _err
+      }
     }
+  }, 160)
+}
+
+const cancelPrefetch = (path) => {
+  if (prefetchTimers[path]) {
+    clearTimeout(prefetchTimers[path])
+    delete prefetchTimers[path]
   }
 }
 
@@ -43,6 +54,7 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
           className="user-header-brand"
           aria-label={`${BRAND_NAME} dashboard`}
           onMouseEnter={() => prefetchRoute('/home')}
+          onMouseLeave={() => cancelPrefetch('/home')}
           onTouchStart={() => prefetchRoute('/home')}
         >
           <BrandMark size={40} />
@@ -58,6 +70,7 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
               key={item.path}
               to={item.path}
               onMouseEnter={() => prefetchRoute(item.path)}
+              onMouseLeave={() => cancelPrefetch(item.path)}
               onTouchStart={() => prefetchRoute(item.path)}
               className={({ isActive }) => `user-header-link${isActive ? ' active' : ''}`}
             >

@@ -105,6 +105,7 @@ function ParallaxDatasetSection({
                 className="dv-bg-image"
                 loading={index === 0 ? 'eager' : 'lazy'}
                 fetchPriority={index === 0 ? 'high' : 'auto'}
+                decoding="async"
               />
             </div>
           ))}

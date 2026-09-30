@@ -618,6 +618,8 @@ function CommunityForum() {
                               <img
                                 src={scan.imageUrl}
                                 alt="Attached Swine Scan"
+                                loading="lazy"
+                                decoding="async"
                                 style={{ width: '100%', maxHeight: '240px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
                               />
                             )}

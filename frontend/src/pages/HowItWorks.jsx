@@ -300,6 +300,8 @@ function HowItWorks() {
                     src="/landing/swine-scan-subject.jpg"
                     alt="Swine Clinical Subject"
                     className="lp-viewport-subject"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="lp-viewport-overlay" />
                   <div className="lp-viewport-grid" />

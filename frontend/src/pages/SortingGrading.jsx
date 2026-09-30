@@ -6,6 +6,8 @@ import {
   AlertTriangle,
   ArrowRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Filter,
   Layers,
@@ -63,6 +65,8 @@ function SortingGrading() {
   const [selectedScan, setSelectedScan] = useState(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [scanToDelete, setScanToDelete] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 12
 
   const loadData = useCallback(() => {
     setLoading(true)
@@ -99,6 +103,17 @@ function SortingGrading() {
       return matchFilter && matchPen
     })
   }, [scans, filterSeverity, searchPen])
+
+  // Reset to page 1 whenever severity filter or search query changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filterSeverity, searchPen])
+
+  const totalPages = Math.max(1, Math.ceil(filteredScans.length / ITEMS_PER_PAGE))
+  const paginatedScans = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredScans.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  }, [filteredScans, currentPage])
 
   const handleDeleteScan = (id) => {
     try {
@@ -190,15 +205,11 @@ function SortingGrading() {
                   value={searchPen}
                   onChange={(e) => setSearchPen(e.target.value)}
                   placeholder="Filter by Pen ID or Swine #..."
+                  className="auth-text-field"
                   style={{
                     padding: '8px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.12))',
-                    background: 'rgba(255, 255, 255, 0.04)',
-                    color: 'var(--text-main, #ffffff)',
-                    fontSize: '0.85rem',
-                    outline: 'none',
                     minWidth: '220px',
+                    fontSize: '0.85rem',
                   }}
                 />
                 <button
@@ -273,14 +284,17 @@ function SortingGrading() {
                 </a>
               </div>
             ) : (
-              <div
+              <>
+                <div
                 style={{
                   display: 'grid',
                   gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
                   gap: '18px',
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: '240px',
                 }}
               >
-                {filteredScans.map((scan) => {
+                {paginatedScans.map((scan) => {
                   const isHealthy =
                     String(scan.severity || '').toLowerCase().includes('normal') ||
                     String(scan.status || '').toLowerCase() === 'healthy'
@@ -342,6 +356,10 @@ function SortingGrading() {
                           <img
                             src={scan.imageUrl}
                             alt="Swine Subject"
+                            loading="lazy"
+                            decoding="async"
+                            width="74"
+                            height="74"
                             style={{
                               width: '74px',
                               height: '74px',
@@ -427,7 +445,80 @@ function SortingGrading() {
                   )
                 })}
               </div>
-            )}
+
+              {/* High-Tech Pagination Controls */}
+              {totalPages > 1 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px',
+                    marginTop: '24px',
+                    padding: '14px 20px',
+                    borderRadius: '14px',
+                    background: 'var(--surface-card, rgba(13, 19, 32, 0.85))',
+                    border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.1))',
+                    fontSize: '0.84rem',
+                  }}
+                >
+                  <div style={{ color: 'var(--text-muted, #94a3b8)', fontFamily: 'JetBrains Mono', fontSize: '0.8rem' }}>
+                    Showing {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredScans.length)} of {filteredScans.length} Diagnostic Records
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      type="button"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.12))',
+                        background: currentPage === 1 ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.06)',
+                        color: currentPage === 1 ? 'var(--text-faint, #64748b)' : 'var(--text-main, #ffffff)',
+                        cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        transition: 'all 0.18s ease',
+                      }}
+                    >
+                      <ChevronLeft size={14} />
+                      <span>Previous</span>
+                    </button>
+                    <span style={{ padding: '0 8px', fontFamily: 'JetBrains Mono', fontSize: '0.82rem', color: 'var(--text-main, #ffffff)' }}>
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.12))',
+                        background: currentPage === totalPages ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.06)',
+                        color: currentPage === totalPages ? 'var(--text-faint, #64748b)' : 'var(--text-main, #ffffff)',
+                        cursor: currentPage === totalPages ? 'not-allowed' : 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        transition: 'all 0.18s ease',
+                      }}
+                    >
+                      <span>Next</span>
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
           </div>
         </section>
 

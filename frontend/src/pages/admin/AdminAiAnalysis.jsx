@@ -286,6 +286,8 @@ function AdminAiAnalysis() {
                   <img
                     src={previewUrl}
                     alt="Swine Subject"
+                    loading="lazy"
+                    decoding="async"
                     style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '8px' }}
                   />
                   <div style={{
