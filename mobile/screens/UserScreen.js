@@ -5,552 +5,479 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Modal,
+  Dimensions,
   Platform,
   Alert,
 } from 'react-native';
+import { Avatar, Surface, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 
+const { width } = Dimensions.get('window');
+
+// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
 const THEME = {
-  bgDeep: '#060911',
-  bgCard: 'rgba(13, 20, 36, 0.94)',
-  primary: '#f43f5e',
-  emerald: '#10b981',
-  textMain: '#f8fafc',
-  textMuted: '#94a3b8',
-  textFaint: '#64748b',
+  primary: '#C71585',       // Deep Rose
+  primaryDark: '#8B008B',   // Dark Magenta
+  primaryLight: '#FF69B4',  // Hot Pink
+  secondary: '#FFC0CB',    // Soft Pink
+  accent: '#00B894',       // Emerald
+  white: '#FFFFFF',
+  textDark: '#1E293B',
+  textLight: '#64748B',
+  background: '#F6F7FB',
+  surface: '#FFFFFF',
+  error: '#EF4444',
+  border: '#E2E8F0',
 };
 
 export default function UserScreen({ navigation, user, onLogout }) {
   const insets = useSafeAreaInsets();
   const [logoutVisible, setLogoutVisible] = useState(false);
 
-  const operatorName = user?.name || user?.fullName || 'Operator';
+  const operatorName = user?.name || user?.fullName || 'Swine Operator';
   const operatorEmail = user?.email || 'operator@pigify.ai';
-  const operatorRole = (user?.role || 'Operator').toUpperCase();
+  const operatorRole = user?.role || 'Swine Operator';
 
-  const handleLogoutConfirm = async () => {
+  const handleLogoutConfirm = () => {
     setLogoutVisible(false);
     if (onLogout) onLogout();
   };
 
   const MENU_SECTIONS = [
     {
-      title: 'OPERATOR & FACILITY',
+      title: 'Account Settings',
       items: [
         {
           id: 'edit_profile',
           icon: 'person-outline',
-          title: 'Operator Profile',
-          subtitle: 'Update clinical identity and credentials',
+          title: 'Edit Profile',
+          subtitle: 'Update your name and avatar',
           action: () => navigation.navigate('EditProfile'),
-        },
-        {
-          id: 'pen_sensors',
-          icon: 'partly-sunny-outline',
-          title: 'Farm Environment & Pen Telemetry',
-          subtitle: 'Monitor pen ambient temperature & humidity',
-          action: () => navigation.navigate('Weather'),
         },
         {
           id: 'notifications',
           icon: 'notifications-outline',
-          title: 'Biosecurity Notifications',
-          subtitle: 'Alerts on high contagion risk & pen warnings',
+          title: 'Notifications',
+          subtitle: 'Manage swine outbreak & scan alerts',
           action: () => navigation.navigate('Notifications'),
-        },
-      ],
-    },
-    {
-      title: 'CLINICAL GUIDANCE & FORUM',
-      items: [
-        {
-          id: 'guide',
-          icon: 'book-outline',
-          title: 'Swine Disease Clinical Guide',
-          subtitle: 'Diagnostics manual for Erysipelas, Greasy Pig & Mange',
-          action: () => navigation.navigate('Guide'),
         },
         {
           id: 'community',
           icon: 'people-outline',
-          title: 'Backyard Swine Community',
-          subtitle: 'Share lesion photos and peer discussions',
+          title: 'Swine Community',
+          subtitle: 'Connect with peer swine raisers',
           action: () => navigation.navigate('CommunityForum'),
         },
+      ],
+    },
+    {
+      title: 'Farm Telemetry & GIS',
+      items: [
         {
-          id: 'support',
-          icon: 'help-circle-outline',
-          title: 'Technical Veterinary Support',
-          subtitle: 'YOLOv11 engine support & troubleshooting',
-          action: () => Alert.alert('Pigify Support', 'For veterinary inquiries, email support@pigify.ai'),
+          id: 'pen_sensors',
+          icon: 'partly-sunny-outline',
+          title: 'Pen Climate & Heat Stress',
+          subtitle: 'Ambient temperature, humidity & THI',
+          action: () => navigation.navigate('Weather'),
+        },
+        {
+          id: 'gis_mapping',
+          icon: 'map-outline',
+          title: 'Farm GIS & Pen Mapping',
+          subtitle: 'Pen location coordinates & layout',
+          action: () => navigation.navigate('MappingEnvironment'),
+        },
+      ],
+    },
+    {
+      title: 'Clinical Support',
+      items: [
+        {
+          id: 'guide',
+          icon: 'book-outline',
+          title: 'Swine Pathology Guide',
+          subtitle: 'Lesion, rash & symptom references',
+          action: () => navigation.navigate('Guide'),
+        },
+        {
+          id: 'ai_vet',
+          icon: 'chatbubble-ellipses-outline',
+          title: 'AI Swine Vet Assistant',
+          subtitle: 'Interactive clinical consultation',
+          action: () => navigation.navigate('Chatbot'),
         },
       ],
     },
   ];
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Top Header */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + (Platform.OS === 'ios' ? 12 : 16) }]}>
-        <View style={styles.kickerRow}>
-          <View style={styles.kickerDot} />
-          <Text style={styles.kickerText}>OPERATOR PROFILE // CLINICAL CREDENTIALS</Text>
-        </View>
-        <Text style={styles.headerTitle}>System Account</Text>
-      </View>
-
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* ── OPERATOR IDENTITY CARD ── */}
-        <View style={styles.profileCard}>
-          <View style={styles.profileRow}>
-            <View style={styles.avatarWrap}>
-              <LinearGradient
-                colors={['#f43f5e', '#fb7185']}
-                style={styles.avatarGradient}
-              >
-                <Text style={styles.avatarInitial}>
-                  {operatorName.substring(0, 2).toUpperCase()}
-                </Text>
-              </LinearGradient>
-            </View>
+        {/* Header Profile Section */}
+        <View style={styles.headerContainer}>
+          <LinearGradient
+            colors={[THEME.primaryDark, THEME.primary]}
+            style={[styles.headerGradient, { paddingTop: insets.top + 16 }]}
+          >
+            {/* Ambient pattern circles */}
+            <View style={styles.circle1} />
+            <View style={styles.circle2} />
 
-            <View style={styles.metaGroup}>
-              <View style={styles.roleTag}>
-                <Text style={styles.roleTagText}>{operatorRole}</Text>
-              </View>
-              <Text style={styles.operatorName}>{operatorName}</Text>
-              <Text style={styles.operatorEmail}>{operatorEmail}</Text>
-            </View>
-          </View>
-
-          {/* Telemetry row */}
-          <View style={styles.telemetryRow}>
-            <View style={styles.telemetryBadge}>
-              <View style={styles.pulseDot} />
-              <Text style={styles.telemetryBadgeText}>TLS-256 SECURED</Text>
-            </View>
-            <Text style={styles.telemetrySector}>Sector A • Backyard Unit</Text>
-          </View>
-        </View>
-
-        {/* ── CLINICAL STATS COUNTERS ── */}
-        <View style={styles.statsRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNum}>53</Text>
-            <Text style={styles.statLabel}>Herd Size</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statNum}>42</Text>
-            <Text style={styles.statLabel}>Scans Taken</Text>
-          </View>
-          <View style={styles.statBox}>
-            <Text style={[styles.statNum, { color: '#10b981' }]}>98%</Text>
-            <Text style={styles.statLabel}>Biosecurity</Text>
-          </View>
-        </View>
-
-        {/* ── MENU SECTIONS ── */}
-        {MENU_SECTIONS.map((section, sIdx) => (
-          <View key={sIdx} style={styles.sectionContainer}>
-            <Text style={styles.sectionHeading}>{section.title}</Text>
-            <View style={styles.sectionCard}>
-              {section.items.map((item, iIdx) => (
+            <View style={styles.profileHeader}>
+              <View style={styles.avatarWrapper}>
+                {user?.avatar ? (
+                  <Avatar.Image
+                    size={76}
+                    source={{ uri: user.avatar }}
+                    style={{ backgroundColor: THEME.white }}
+                  />
+                ) : (
+                  <Avatar.Text
+                    size={76}
+                    label={operatorName ? operatorName.substring(0, 2).toUpperCase() : 'SW'}
+                    style={{ backgroundColor: THEME.white }}
+                    labelStyle={{ color: THEME.primary, fontWeight: 'bold', fontSize: 26 }}
+                  />
+                )}
                 <TouchableOpacity
-                  key={item.id}
+                  style={styles.editBadge}
+                  onPress={() => navigation.navigate('EditProfile')}
                   activeOpacity={0.8}
-                  onPress={item.action}
-                  style={[
-                    styles.menuRow,
-                    iIdx !== section.items.length - 1 && styles.menuRowBorder,
-                  ]}
                 >
-                  <View style={styles.menuIconWrap}>
-                    <Ionicons name={item.icon} size={18} color="#fb7185" />
-                  </View>
-                  <View style={styles.menuTextGroup}>
-                    <Text style={styles.menuItemTitle}>{item.title}</Text>
-                    <Text style={styles.menuItemSub}>{item.subtitle}</Text>
-                  </View>
-                  <Ionicons name="chevron-forward" size={17} color="#64748b" />
+                  <Ionicons name="pencil" size={13} color={THEME.white} />
                 </TouchableOpacity>
-              ))}
+              </View>
+
+              <Text style={styles.userName}>{operatorName}</Text>
+              <Text style={styles.userEmail}>{operatorEmail}</Text>
+
+              <View style={styles.roleChip}>
+                <Ionicons name="shield-checkmark" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+                <Text style={styles.roleText}>{operatorRole.toUpperCase()}</Text>
+              </View>
             </View>
+          </LinearGradient>
+        </View>
+
+        {/* Floating Farm Summary Stats */}
+        <View style={styles.statsContainer}>
+          <Surface style={styles.statsCard} elevation={3}>
+            <View style={styles.statItem}>
+              <View style={[styles.statIconBox, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="scan-outline" size={18} color="#2196F3" />
+              </View>
+              <Text style={styles.statNumber}>48</Text>
+              <Text style={styles.statLabel}>Scans</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <View style={[styles.statIconBox, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="pulse" size={18} color="#00B894" />
+              </View>
+              <Text style={styles.statNumber}>96.4%</Text>
+              <Text style={styles.statLabel}>Herd Health</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <View style={[styles.statIconBox, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="ribbon-outline" size={18} color="#FF9F43" />
+              </View>
+              <Text style={styles.statNumber}>Grade A</Text>
+              <Text style={styles.statLabel}>Optimal</Text>
+            </View>
+          </Surface>
+        </View>
+
+        {/* Menu Sections */}
+        {MENU_SECTIONS.map((section, sIdx) => (
+          <View key={sIdx} style={styles.menuSection}>
+            <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
+            <Surface style={styles.menuCard} elevation={2}>
+              {section.items.map((item, iIdx) => (
+                <View key={item.id}>
+                  <TouchableOpacity
+                    style={styles.menuItem}
+                    onPress={item.action}
+                    activeOpacity={0.75}
+                  >
+                    <View style={styles.menuIconBox}>
+                      <Ionicons name={item.icon} size={20} color={THEME.primary} />
+                    </View>
+                    <View style={styles.menuContent}>
+                      <Text style={styles.menuTitle}>{item.title}</Text>
+                      {item.subtitle && <Text style={styles.menuSubtitle}>{item.subtitle}</Text>}
+                    </View>
+                    <Ionicons name="chevron-forward" size={18} color="#CBD5E1" />
+                  </TouchableOpacity>
+                  {iIdx < section.items.length - 1 && <View style={styles.menuDivider} />}
+                </View>
+              ))}
+            </Surface>
           </View>
         ))}
 
-        {/* ── SIGN OUT BUTTON ── */}
-        <TouchableOpacity
-          activeOpacity={0.85}
-          onPress={() => setLogoutVisible(true)}
-          style={styles.logoutBtn}
-        >
-          <Ionicons name="log-out-outline" size={18} color="#f43f5e" />
-          <Text style={styles.logoutBtnText}>Sign Out of Operator Terminal</Text>
-        </TouchableOpacity>
-
-        {/* System info footer */}
-        <View style={styles.footerNote}>
-          <Text style={styles.footerNoteText}>PIGIFY CLINICAL AI // VERSION 4.2</Text>
-          <Text style={styles.footerNoteSub}>Supabase TLS Cloud Telemetry Active</Text>
+        {/* Logout Action */}
+        <View style={styles.logoutWrapper}>
+          <TouchableOpacity
+            style={styles.logoutBtn}
+            onPress={() => setLogoutVisible(true)}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="log-out-outline" size={19} color="#EF4444" style={{ marginRight: 8 }} />
+            <Text style={styles.logoutText}>Sign Out of Pigify</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={{ height: 80 }} />
+        <Text style={styles.versionText}>Pigify Mobile Swine Telemetry • Build 1.0.0 (SDK 57)</Text>
       </ScrollView>
 
-      {/* Logout Confirmation Modal */}
-      <Modal
-        visible={logoutVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setLogoutVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <View style={styles.modalAlertIcon}>
-              <Ionicons name="log-out" size={24} color="#f43f5e" />
-            </View>
-            <Text style={styles.modalTitle}>Sign Out?</Text>
-            <Text style={styles.modalText}>
-              Are you sure you want to end your operator session on this device?
-            </Text>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                onPress={() => setLogoutVisible(false)}
-                style={styles.modalCancelBtn}
-              >
-                <Text style={styles.modalCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleLogoutConfirm}
-                style={styles.modalConfirmBtn}
-              >
-                <Text style={styles.modalConfirmText}>Sign Out</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Logout Confirmation Dialog */}
+      <Portal>
+        <Dialog
+          visible={logoutVisible}
+          onDismiss={() => setLogoutVisible(false)}
+          style={{ backgroundColor: THEME.white, borderRadius: 20 }}
+        >
+          <Dialog.Icon icon="alert-circle-outline" color="#EF4444" size={36} />
+          <Dialog.Title style={{ textAlign: 'center', color: THEME.textDark, fontWeight: '700' }}>
+            Sign Out?
+          </Dialog.Title>
+          <Dialog.Content>
+            <Paragraph style={{ textAlign: 'center', color: THEME.textLight }}>
+              Are you sure you want to sign out of this device?
+            </Paragraph>
+          </Dialog.Content>
+          <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 }}>
+            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textLight}>
+              Cancel
+            </Button>
+            <Button onPress={handleLogoutConfirm} mode="contained" buttonColor="#EF4444">
+              Sign Out
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: THEME.bgDeep,
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(11, 18, 32, 0.95)',
-  },
-  kickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  kickerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-  },
-  kickerText: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#34d399',
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: -0.4,
+    backgroundColor: THEME.background,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingBottom: 110,
   },
-
-  // ── Profile Card ──
-  profileCard: {
-    backgroundColor: 'rgba(13, 20, 36, 0.94)',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 16,
-    marginBottom: 14,
-  },
-  profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 14,
-  },
-  avatarWrap: {
-    width: 58,
-    height: 58,
-    borderRadius: 18,
+  headerContainer: {
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     overflow: 'hidden',
   },
-  avatarGradient: {
-    flex: 1,
+  headerGradient: {
+    paddingBottom: 36,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    position: 'relative',
+  },
+  circle1: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  circle2: {
+    position: 'absolute',
+    bottom: -30,
+    left: -30,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  profileHeader: {
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 10,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  editBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: THEME.primaryDark,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarInitial: {
+  userName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#fff',
+    color: '#FFFFFF',
+    letterSpacing: 0.3,
   },
-  metaGroup: {
-    flex: 1,
-  },
-  roleTag: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.35)',
-    borderRadius: 6,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    marginBottom: 4,
-  },
-  roleTagText: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#fb7185',
-    letterSpacing: 0.8,
-  },
-  operatorName: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: -0.3,
-  },
-  operatorEmail: {
-    fontSize: 12,
-    color: THEME.textMuted,
+  userEmail: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 2,
   },
-  telemetryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  telemetryBadge: {
+  roleChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginTop: 8,
   },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-  },
-  telemetryBadgeText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#10b981',
+  roleText: {
+    fontSize: 11,
     fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
   },
-  telemetrySector: {
-    fontSize: 10,
-    color: THEME.textFaint,
+  statsContainer: {
+    paddingHorizontal: 20,
+    marginTop: -22,
+    marginBottom: 16,
+    zIndex: 20,
   },
-
-  // ── Stats Row ──
-  statsRow: {
+  statsCard: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    backgroundColor: THEME.white,
+    borderRadius: 20,
+    paddingVertical: 14,
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
-  statBox: {
+  statItem: {
+    alignItems: 'center',
     flex: 1,
-    backgroundColor: 'rgba(11, 18, 32, 0.85)',
-    borderRadius: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 12,
-    alignItems: 'center',
   },
-  statNum: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#fff',
-  },
-  statLabel: {
-    fontSize: 10,
-    color: THEME.textFaint,
-    marginTop: 2,
-  },
-
-  // ── Menu Sections ──
-  sectionContainer: {
-    marginBottom: 18,
-  },
-  sectionHeading: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: THEME.textFaint,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-    marginBottom: 8,
-    paddingLeft: 4,
-  },
-  sectionCard: {
-    backgroundColor: 'rgba(13, 20, 36, 0.94)',
+  statIconBox: {
+    width: 32,
+    height: 32,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    overflow: 'hidden',
-  },
-  menuRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 14,
-    gap: 12,
-  },
-  menuRowBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  menuIconWrap: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 4,
   },
-  menuTextGroup: {
-    flex: 1,
+  statNumber: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: THEME.textDark,
   },
-  menuItemTitle: {
+  statLabel: {
+    fontSize: 11,
+    color: THEME.textLight,
+    marginTop: 1,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: '#E2E8F0',
+  },
+  menuSection: {
+    paddingHorizontal: 20,
+    marginTop: 12,
+  },
+  sectionHeaderTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: THEME.textLight,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+    marginLeft: 4,
   },
-  menuItemSub: {
+  menuCard: {
+    backgroundColor: THEME.white,
+    borderRadius: 20,
+    overflow: 'hidden',
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  menuIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: 'rgba(199, 21, 133, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
+  },
+  menuContent: {
+    flex: 1,
+  },
+  menuTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: THEME.textDark,
+  },
+  menuSubtitle: {
     fontSize: 11,
-    color: THEME.textMuted,
+    color: THEME.textLight,
     marginTop: 2,
   },
-
-  // ── Logout Button ──
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#F1F5F9',
+    marginLeft: 68,
+  },
+  logoutWrapper: {
+    paddingHorizontal: 20,
+    marginTop: 24,
+  },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-    borderRadius: 12,
+    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
+    borderColor: '#FECACA',
+    borderRadius: 16,
     paddingVertical: 14,
-    marginTop: 8,
   },
-  logoutBtnText: {
-    fontSize: 13,
+  logoutText: {
+    fontSize: 14,
     fontWeight: '700',
-    color: '#fb7185',
+    color: '#EF4444',
   },
-
-  footerNote: {
-    alignItems: 'center',
-    marginTop: 20,
-  },
-  footerNoteText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: THEME.textFaint,
-    letterSpacing: 0.6,
-  },
-  footerNoteSub: {
-    fontSize: 10,
-    color: '#64748b',
-    marginTop: 2,
-  },
-
-  // Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalCard: {
-    backgroundColor: '#0c1424',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    padding: 22,
-    alignItems: 'center',
-  },
-  modalAlertIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  modalText: {
-    fontSize: 13,
-    color: '#94a3b8',
+  versionText: {
+    fontSize: 11,
+    color: '#94A3B8',
     textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 20,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    width: '100%',
-  },
-  modalCancelBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    alignItems: 'center',
-  },
-  modalCancelText: {
-    fontSize: 13,
-    color: '#fff',
-    fontWeight: '600',
-  },
-  modalConfirmBtn: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 10,
-    backgroundColor: '#f43f5e',
-    alignItems: 'center',
-  },
-  modalConfirmText: {
-    fontSize: 13,
-    color: '#fff',
-    fontWeight: '700',
+    marginTop: 16,
   },
 });

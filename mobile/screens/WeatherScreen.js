@@ -21,17 +21,17 @@ import { apiFetch } from '../services/api';
 const { width } = Dimensions.get('window');
 
 const THEME = {
-  bg: '#060911',
-  cardBg: '#0f172a',
-  border: 'rgba(255, 255, 255, 0.08)',
-  primary: '#f43f5e',
-  rose: '#fb7185',
-  emerald: '#10b981',
-  cyan: '#06b6d4',
-  amber: '#f59e0b',
-  text: '#f8fafc',
-  textSub: '#94a3b8',
-  textMuted: '#64748b',
+  bg: '#F6F7FB',
+  cardBg: '#FFFFFF',
+  border: '#E2E8F0',
+  primary: '#C71585',
+  rose: '#FF69B4',
+  emerald: '#00B894',
+  cyan: '#0284C7',
+  amber: '#D97706',
+  text: '#1E293B',
+  textSub: '#64748B',
+  textMuted: '#94A3B8',
 };
 
 const PEN_ZONES = [

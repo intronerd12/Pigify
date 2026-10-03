@@ -1,19 +1,19 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  TextInput,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   Dimensions,
-  Animated,
-  ActivityIndicator,
-  Alert,
   Image,
+  Alert,
+  Modal,
+  Animated,
 } from 'react-native';
+import { TextInput, Button, Surface, ActivityIndicator } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,90 +28,21 @@ import { socialLogin } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
-// ── Web Design Tokens (Exact 1:1 match with AuthPro.css) ─────────────────────
+// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
 const THEME = {
-  bgDeep: '#060911',
-  bgCard: 'rgba(13, 20, 36, 0.94)',
-  bgInput: 'rgba(20, 29, 48, 0.85)',
-  borderCard: 'rgba(255, 255, 255, 0.1)',
-  borderInput: 'rgba(255, 255, 255, 0.12)',
-  borderFocus: '#f43f5e',
-
-  // Brand Accents
-  primary: '#f43f5e',
-  primaryHover: '#fb7185',
-  primaryDark: '#be123c',
-  emerald: '#10b981',
-  emeraldLight: '#34d399',
-  emeraldGlow: 'rgba(16, 185, 129, 0.25)',
-  cyan: '#06b6d4',
-
-  // Typography
-  textMain: '#f8fafc',
-  textMuted: '#94a3b8',
-  textFaint: '#64748b',
-
-  // Status
-  error: '#f43f5e',
-  errorBg: 'rgba(244, 63, 94, 0.12)',
-  errorBorder: 'rgba(244, 63, 94, 0.3)',
+  primary: '#C71585',       // Deep Rose / Dragon Pink
+  primaryDark: '#8B008B',   // Dark Magenta
+  primaryLight: '#FF69B4',  // Hot Pink
+  secondary: '#FFC0CB',    // Soft Pink
+  accent: '#00B894',       // Emerald
+  white: '#FFFFFF',
+  textDark: '#1E293B',
+  textLight: '#64748B',
+  background: '#F8F9FA',
+  surface: '#FFFFFF',
+  error: '#EF4444',
+  border: '#E2E8F0',
 };
-
-// ── The 4 Veterinary AI Showcase Slides (Exact match with Web AUTH_VIDEO_SLIDES) ──
-const AUTH_SHOWCASE_SLIDES = [
-  {
-    title: 'AI Swine Symptom Scan',
-    desc: 'Real-time lesion, rash & dermatitis segmentation',
-    tag: 'MODEL: YOLOv11-VET',
-    confidence: '98.8%',
-    icon: 'scan-outline',
-    color: '#fb7185',
-  },
-  {
-    title: 'Backyard Swine Analytics',
-    desc: 'Deep learning herd health reports & risk forecasting',
-    tag: 'ANALYTICS: HERD-AI',
-    confidence: '99.1%',
-    icon: 'pulse-outline',
-    color: '#34d399',
-  },
-  {
-    title: 'Swine Disease Prevention',
-    desc: 'Early detection & biosecurity outbreak deterrence',
-    tag: 'DETECTION: CONTAGION',
-    confidence: '97.9%',
-    icon: 'shield-half-outline',
-    color: '#f59e0b',
-  },
-  {
-    title: 'Swine Health Workspace',
-    desc: 'Veterinary clinical telemetry & audit tracking',
-    tag: 'SECURE: SUPABASE-TLS',
-    confidence: '99.5%',
-    icon: 'shield-checkmark-outline',
-    color: '#38bdf8',
-  },
-];
-
-/**
- * Pigify Brand Mark - Official Swine AI Squircle Logo matching Web BrandMark.jsx
- */
-const PigifyBrandLogo = React.memo(({ size = 48, style }) => {
-  const radius = Math.round(size * 0.28);
-  return (
-    <View style={[styles.brandMarkContainer, { width: size, height: size, borderRadius: radius }, style]}>
-      <Image
-        source={require('./assets/pigify-logo.png')}
-        style={{
-          width: size,
-          height: size,
-          borderRadius: radius,
-        }}
-        resizeMode="cover"
-      />
-    </View>
-  );
-});
 
 export default function AuthScreen({ onLogin }) {
   const [isLogin, setIsLogin] = useState(true);
@@ -119,99 +50,53 @@ export default function AuthScreen({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [secureConfirmTextEntry, setSecureConfirmTextEntry] = useState(true);
 
-  // Active showcase slide
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  // Email verification state (when Supabase sends email confirmation)
+  // Email verification modal state
   const [needsVerification, setNeedsVerification] = useState(false);
   const [verifyEmail, setVerifyEmail] = useState('');
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationSuccess, setVerificationSuccess] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
 
-  // Native Driver Animations
-  const scanLineAnim = useRef(new Animated.Value(0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  // Native Entry Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(16)).current;
+  const slideAnim = useRef(new Animated.Value(24)).current;
 
-  // Mount animation - butter-smooth 60fps
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 320,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 320,
+        duration: 400,
         useNativeDriver: true,
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
 
-  // Viewfinder laser scanline animation (repeats seamlessly)
-  useEffect(() => {
-    const laserLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scanLineAnim, {
-          toValue: 1,
-          duration: 2400,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scanLineAnim, {
-          toValue: 0,
-          duration: 2400,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    laserLoop.start();
-    return () => laserLoop.stop();
-  }, [scanLineAnim]);
-
-  // Live HUD pulse animation
-  useEffect(() => {
-    const pulseLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
-          toValue: 1.35,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(pulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    pulseLoop.start();
-    return () => pulseLoop.stop();
-  }, [pulseAnim]);
-
-  // Auto-advance showcase video slides every 6.5s (exact web behavior)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % AUTH_SHOWCASE_SLIDES.length);
-    }, 6500);
-    return () => clearInterval(timer);
-  }, []);
-
-  // Real-time password strength calculation (Exact match with Web AuthPro)
+  // Password Strength
   const pwdStrength = useMemo(() => {
     if (!password) return 0;
-    let score = 0;
-    if (password.length >= 6) score += 1;
-    if (password.length >= 9) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password) || /[A-Z]/.test(password)) score += 1;
-    return Math.min(score, 4);
+    let s = 0;
+    if (password.length >= 6) s += 1;
+    if (password.length >= 8) s += 1;
+    if (/[0-9]/.test(password)) s += 1;
+    if (/[A-Z]/.test(password) || /[^A-Za-z0-9]/.test(password)) s += 1;
+    return s;
   }, [password]);
+
+  const strengthColor = useMemo(() => {
+    if (pwdStrength <= 1) return '#EF4444';
+    if (pwdStrength === 2) return '#F59E0B';
+    if (pwdStrength === 3) return '#3B82F6';
+    return '#10B981';
+  }, [pwdStrength]);
 
   const strengthLabel = useMemo(() => {
     if (!password) return '';
@@ -221,18 +106,11 @@ export default function AuthScreen({ onLogin }) {
     return 'Strong';
   }, [password, pwdStrength]);
 
-  const strengthColor = useMemo(() => {
-    if (pwdStrength <= 1) return '#ef4444';
-    if (pwdStrength === 2) return '#f59e0b';
-    if (pwdStrength === 3) return '#3b82f6';
-    return '#10b981';
-  }, [pwdStrength]);
-
   const toggleMode = (loginMode) => {
     setIsLogin(loginMode);
     setError('');
     setNeedsVerification(false);
-    setVerificationSuccess('');
+    setResendSuccess('');
   };
 
   const validateForm = () => {
@@ -257,7 +135,7 @@ export default function AuthScreen({ onLogin }) {
       setError('Password must be at least 6 characters');
       return false;
     }
-    if (!isLogin && confirmPassword && password !== confirmPassword) {
+    if (!isLogin && password !== confirmPassword) {
       setError('Passwords do not match');
       return false;
     }
@@ -271,14 +149,11 @@ export default function AuthScreen({ onLogin }) {
     setLoading(true);
     try {
       if (isLogin) {
-        // Sign in via Supabase Auth + Backend Profile Sync
         const user = await signInWithSupabase(email, password);
         await AsyncStorage.setItem('user', JSON.stringify(user));
         if (onLogin) onLogin(user);
       } else {
-        // Register via Supabase Auth
         const result = await signUpWithSupabase(name, email, password);
-
         if (result.needsVerification) {
           setNeedsVerification(true);
           setVerifyEmail(result.email || email);
@@ -305,18 +180,18 @@ export default function AuthScreen({ onLogin }) {
     }
   };
 
-  const handleResendVerification = async () => {
+  const handleResend = async () => {
     if (!verifyEmail) return;
-    setIsVerifying(true);
-    setVerificationSuccess('');
+    setIsResending(true);
+    setResendSuccess('');
     setError('');
     try {
       await resendVerificationEmail(verifyEmail);
-      setVerificationSuccess('Confirmation link resent! Check your inbox.');
+      setResendSuccess('Confirmation link resent! Check your inbox.');
     } catch (err) {
       setError(err?.message || 'Failed to resend confirmation email.');
     } finally {
-      setIsVerifying(false);
+      setIsResending(false);
     }
   };
 
@@ -325,7 +200,7 @@ export default function AuthScreen({ onLogin }) {
     setError('');
     try {
       const fallbackPayload = {
-        name: 'Google Operator',
+        name: 'Google Swine Operator',
         email: email ? email.trim() : 'operator@pigify.ai',
         avatar: '',
       };
@@ -334,7 +209,7 @@ export default function AuthScreen({ onLogin }) {
         await AsyncStorage.setItem('user', JSON.stringify(res));
         if (onLogin) onLogin(res);
       } else {
-        throw new Error('Google authentication service unavailable.');
+        throw new Error('Google sign-in service unavailable.');
       }
     } catch (err) {
       setError(err?.message || 'Google sign-in unavailable on this build.');
@@ -343,1535 +218,637 @@ export default function AuthScreen({ onLogin }) {
     }
   };
 
-  const currentSlide = AUTH_SHOWCASE_SLIDES[activeSlide];
-
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Cyber Grid & Ambient Lighting Mesh (Exact Web Match) */}
-      <View style={styles.ambientTopGlow} pointerEvents="none">
+      {/* Decorative Curved Header Background */}
+      <View style={styles.headerBackground}>
         <LinearGradient
-          colors={['rgba(244, 63, 94, 0.16)', 'transparent']}
-          style={styles.ambientGlowGrad}
-        />
-      </View>
-      <View style={styles.ambientBottomGlow} pointerEvents="none">
-        <LinearGradient
-          colors={['transparent', 'rgba(16, 185, 129, 0.1)']}
-          style={styles.ambientGlowGrad}
-        />
-      </View>
-
-      {/* Background Telemetry Markers (Exact Web Match) */}
-      <View style={styles.topHudBar}>
-        <View style={styles.hudLeft}>
-          <Animated.View
-            style={[styles.hudPulseDot, { transform: [{ scale: pulseAnim }] }]}
-          />
-          <Text style={styles.hudTextMono}>VET-CORE // PIGIFY-AI-SYS-v4.2</Text>
-        </View>
-        <View style={styles.hudRight}>
-          <Text style={styles.hudRightLabel}>SWINE TELEMETRY</Text>
-          <Text style={styles.hudRightOnline}>ONLINE [99.8%]</Text>
-        </View>
+          colors={[THEME.primaryDark, THEME.primary, THEME.primaryLight]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientHeader}
+        >
+          <View style={styles.patternCircle1} />
+          <View style={styles.patternCircle2} />
+          <View style={styles.patternCircle3} />
+        </LinearGradient>
       </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardContainer}
+        style={styles.keyboardView}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Animated.View
-            style={{
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            }}
-          >
-            {/* ── BRAND ROW & HEADER (EXACT WEB REPLICATION) ── */}
-            <View style={styles.brandRow}>
-              <View style={styles.brandIdentity}>
-                <PigifyBrandLogo size={46} />
-                <View style={styles.brandTextGroup}>
-                  <View style={styles.brandNameRow}>
-                    <Text style={styles.brandName}>Pigify</Text>
-                    <View style={styles.brandNameTag}>
-                      <Text style={styles.brandNameTagText}>CLINICAL</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.brandSub}>
-                    Deep Learning Swine Disease & Symptom Monitoring
-                  </Text>
-                </View>
+          {/* Header Brand Section */}
+          <View style={styles.headerContent}>
+            <View style={styles.logoBadge}>
+              <Image
+                source={require('./assets/pigify-logo.png')}
+                style={styles.logoImage}
+                resizeMode="cover"
+              />
+            </View>
+            <Text style={styles.appTitle}>Pigify</Text>
+            <Text style={styles.appTagline}>Smart Swine Telemetry & Health AI</Text>
+          </View>
+
+          {/* Elevated Floating Auth Card */}
+          <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+            <Surface style={styles.authCard} elevation={4}>
+              {/* Segmented Mode Tabs */}
+              <View style={styles.tabContainer}>
+                <TouchableOpacity
+                  style={[styles.tabButton, isLogin && styles.tabButtonActive]}
+                  onPress={() => toggleMode(true)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.tabText, isLogin && styles.tabTextActive]}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.tabButton, !isLogin && styles.tabButtonActive]}
+                  onPress={() => toggleMode(false)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.tabText, !isLogin && styles.tabTextActive]}>Create Account</Text>
+                </TouchableOpacity>
               </View>
 
-              <View style={styles.liveBadge}>
-                <Animated.View
-                  style={[styles.liveDot, { transform: [{ scale: pulseAnim }] }]}
-                />
-                <Text style={styles.liveBadgeText}>AI LIVE</Text>
-              </View>
-            </View>
-
-            {/* ── HERO TITLE (EXACT WEB COPY & GRADIENT) ── */}
-            <View style={styles.heroSection}>
-              <Text style={styles.heroTitle}>
-                <Text style={styles.heroTitlePink}>Swine Health</Text> & AI Diagnostics
-              </Text>
-              <Text style={styles.heroSubtitle}>
-                Deep learning-based lesion scanning, real-time symptom classification, and automated biosecurity analytics built specifically for backyard pig farms.
-              </Text>
-            </View>
-
-            {/* ── AI SCANNER VIEWFINDER SHOWCASE CARD ── */}
-            <View style={styles.scannerCard}>
-              {/* Media Viewfinder Screen */}
-              <View style={styles.scannerMedia}>
-                {/* HUD Top Bar */}
-                <View style={styles.scannerHudTop}>
-                  <View style={styles.targetBadge}>
-                    <Ionicons name="scan-outline" size={12} color="#fff" />
-                    <Text style={styles.targetBadgeText}>{currentSlide.tag}</Text>
+              <View style={styles.formContent}>
+                {/* Full Name (Sign Up only) */}
+                {!isLogin && (
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      label="Full Name"
+                      value={name}
+                      onChangeText={setName}
+                      mode="outlined"
+                      outlineColor="#E2E8F0"
+                      activeOutlineColor={THEME.primary}
+                      textColor={THEME.textDark}
+                      left={<TextInput.Icon icon="account-outline" color={THEME.primary} />}
+                      style={styles.input}
+                      theme={{ roundness: 14 }}
+                      autoCapitalize="words"
+                    />
                   </View>
-                  <View style={styles.modelTag}>
-                    <Text style={styles.modelTagText}>
-                      CONFIDENCE: {currentSlide.confidence}
-                    </Text>
-                  </View>
-                </View>
+                )}
 
-                {/* Viewfinder Reticle & Corner Brackets */}
-                <View style={styles.viewfinderCenter}>
-                  <View style={styles.viewfinderReticle}>
-                    <View style={[styles.cornerBracket, styles.bracketTL]} />
-                    <View style={[styles.cornerBracket, styles.bracketTR]} />
-                    <View style={[styles.cornerBracket, styles.bracketBL]} />
-                    <View style={[styles.cornerBracket, styles.bracketBR]} />
-                    <View style={styles.crosshairCenter} />
-                  </View>
-
-                  {/* High-Tech Animated Laser Sweep */}
-                  <Animated.View
-                    style={[
-                      styles.scanlineLaser,
-                      {
-                        transform: [
-                          {
-                            translateY: scanLineAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [0, 95],
-                            }),
-                          },
-                        ],
-                      },
-                    ]}
+                {/* Email Address */}
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    label="Email Address"
+                    value={email}
+                    onChangeText={setEmail}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor={THEME.primary}
+                    textColor={THEME.textDark}
+                    left={<TextInput.Icon icon="email-outline" color={THEME.primary} />}
+                    style={styles.input}
+                    theme={{ roundness: 14 }}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
                   />
                 </View>
 
-                {/* HUD Bottom Telemetry */}
-                <View style={styles.scannerHudBottom}>
-                  <Text style={styles.telemetryActiveText}>
-                    ● REAL-TIME STREAM ACTIVE
-                  </Text>
-                  <Text style={styles.telemetryFpsText}>
-                    FPS: 60 // RES: 1080p
-                  </Text>
-                </View>
-              </View>
-
-              {/* Caption & Carousel Dots Bar */}
-              <View style={styles.scannerCaptionBar}>
-                <View style={styles.scannerInfo}>
-                  <View style={styles.captionTitleRow}>
-                    <Ionicons name="sparkles" size={13} color="#fb7185" />
-                    <Text style={styles.captionTitle}>{currentSlide.title}</Text>
-                  </View>
-                  <Text style={styles.captionDesc}>{currentSlide.desc}</Text>
-                </View>
-
-                {/* Slide Dots */}
-                <View style={styles.scannerDots}>
-                  {AUTH_SHOWCASE_SLIDES.map((_, i) => (
-                    <TouchableOpacity
-                      key={i}
-                      activeOpacity={0.8}
-                      onPress={() => setActiveSlide(i)}
-                      style={[
-                        styles.scannerDot,
-                        activeSlide === i && styles.scannerDotActive,
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            {/* ── 3 HIGH-TECH FEATURE CARDS (EXACT WEB REPLICATION) ── */}
-            <View style={styles.featureGrid}>
-              <View style={styles.featureCard}>
-                <View style={[styles.featureIcon, styles.featureIconRose]}>
-                  <Ionicons name="scan-outline" size={17} color="#fb7185" />
-                </View>
-                <View style={styles.featureText}>
-                  <Text style={styles.featureStrong}>Skin Disease Segmentation</Text>
-                  <Text style={styles.featureSpan}>
-                    Detects erysipelas, greasy pig, mange, and rash severity instantly.
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.featureCard}>
-                <View style={[styles.featureIcon, styles.featureIconEmerald]}>
-                  <Ionicons name="activity-outline" size={17} color="#34d399" />
-                </View>
-                <View style={styles.featureText}>
-                  <Text style={styles.featureStrong}>Herd Telemetry & Biosecurity</Text>
-                  <Text style={styles.featureSpan}>
-                    Continuous health monitoring dashboard preventing outbreak contagions.
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.featureCard}>
-                <View style={[styles.featureIcon, styles.featureIconCyan]}>
-                  <Ionicons name="shield-checkmark-outline" size={17} color="#38bdf8" />
-                </View>
-                <View style={styles.featureText}>
-                  <Text style={styles.featureStrong}>Supabase Cloud Security</Text>
-                  <Text style={styles.featureSpan}>
-                    End-to-end encrypted veterinary clinical records & strict role segregation.
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            {/* ── OPERATOR ACCESS TERMINAL (RIGHT PANEL) ── */}
-            <View style={styles.terminalPanel}>
-              {/* Corner Instrument Tech Brackets */}
-              <View style={[styles.frameBracket, styles.frameBracketTL]} />
-              <View style={[styles.frameBracket, styles.frameBracketBR]} />
-
-              {/* Terminal Nav Row */}
-              <View style={styles.terminalNav}>
-                <View style={styles.backBtn}>
-                  <Ionicons name="arrow-back" size={13} color={THEME.textMuted} />
-                  <Text style={styles.backBtnText}>Operator Terminal</Text>
-                </View>
-                <View style={styles.securityTag}>
-                  <Ionicons name="shield-checkmark" size={13} color={THEME.emerald} />
-                  <Text style={styles.securityTagText}>TLS-256 SECURED</Text>
-                </View>
-              </View>
-
-              {/* Segmented Mode Switcher Tabs */}
-              <View style={styles.modeTabs}>
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => toggleMode(true)}
-                  style={[styles.tabBtn, isLogin && styles.tabBtnActive]}
-                >
-                  <Text
-                    style={[
-                      styles.tabBtnText,
-                      isLogin && styles.tabBtnTextActive,
-                    ]}
-                  >
-                    Sign In
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => toggleMode(false)}
-                  style={[styles.tabBtn, !isLogin && styles.tabBtnActive]}
-                >
-                  <Text
-                    style={[
-                      styles.tabBtnText,
-                      !isLogin && styles.tabBtnTextActive,
-                    ]}
-                  >
-                    Create Account
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {/* Form Heading with Pigify Logo */}
-              <View style={styles.formHeader}>
-                <View style={styles.formHeaderRow}>
-                  <View style={styles.formHeaderLogoBadge}>
-                    <Image
-                      source={require('./assets/pigify-logo.png')}
-                      style={styles.formHeaderLogoImg}
-                      resizeMode="cover"
-                    />
-                  </View>
-                  <View style={styles.formHeaderTextGroup}>
-                    <Text style={styles.formHeaderTitle}>
-                      {isLogin ? 'Operator Sign In' : 'Register Operator'}
-                    </Text>
-                    <Text style={styles.formHeaderDesc}>
-                      {isLogin
-                        ? 'Enter your verified credentials to access herd diagnostics.'
-                        : 'Set up an operator account to begin scanning swine health.'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* ── VERIFICATION NOTICE VIEW (EXACT WEB REPLICATION) ── */}
-              {needsVerification ? (
-                <View style={styles.verificationBox}>
-                  <View style={styles.verificationIcon}>
-                    <Ionicons name="mail-outline" size={26} color="#fff" />
-                  </View>
-                  <Text style={styles.verificationHeading}>Verify Your Email Address</Text>
-                  <Text style={styles.verificationParagraph}>
-                    A confirmation link has been dispatched to:
-                  </Text>
-                  <View style={styles.verificationEmailPill}>
-                    <Text style={styles.verificationEmailText}>{verifyEmail}</Text>
-                  </View>
-                  <Text style={styles.verificationNote}>
-                    Please click the link inside your email, then return here to sign in.
-                  </Text>
-
-                  {verificationSuccess ? (
-                    <View style={styles.successBox}>
-                      <Ionicons name="checkmark-circle" size={16} color={THEME.emerald} />
-                      <Text style={styles.successBoxText}>{verificationSuccess}</Text>
-                    </View>
-                  ) : null}
-
-                  {error ? (
-                    <View style={styles.errorBox}>
-                      <Ionicons name="alert-circle" size={16} color={THEME.error} />
-                      <Text style={styles.errorBoxText}>{error}</Text>
-                    </View>
-                  ) : null}
-
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    disabled={isVerifying}
-                    onPress={handleResendVerification}
-                    style={styles.ctaSubmit}
-                  >
-                    {isVerifying ? (
-                      <View style={styles.btnRowCenter}>
-                        <ActivityIndicator size="small" color="#fff" />
-                        <Text style={styles.ctaSubmitText}>Sending Link…</Text>
-                      </View>
-                    ) : (
-                      <View style={styles.btnRowCenter}>
-                        <Ionicons name="mail-outline" size={16} color="#fff" />
-                        <Text style={styles.ctaSubmitText}>
-                          Resend Verification Link
-                        </Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-
-                  <View style={styles.modeSwitchPrompt}>
-                    <Text style={styles.promptLabel}>Already confirmed? </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => toggleMode(true)}
-                    >
-                      <Text style={styles.promptAction}>Sign in now</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                /* ── MAIN OPERATOR FORM (EXACT WEB REPLICATION) ── */
-                <View style={styles.authForm}>
-                  {/* Full Name (Registration only) */}
-                  {!isLogin && (
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>Full Name</Text>
-                      <View style={styles.inputWrapper}>
-                        <Ionicons
-                          name="person-outline"
-                          size={16}
-                          color={THEME.textFaint}
-                          style={styles.inputIcon}
-                        />
-                        <TextInput
-                          value={name}
-                          onChangeText={setName}
-                          placeholder="e.g. Dr. Alex Vance"
-                          placeholderTextColor="rgba(148, 163, 184, 0.5)"
-                          style={styles.textInput}
-                          autoCapitalize="words"
-                          autoCorrect={false}
-                        />
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Email Address */}
-                  <View style={styles.inputGroup}>
-                    <Text style={styles.inputLabel}>Email Address</Text>
-                    <View style={styles.inputWrapper}>
-                      <Ionicons
-                        name="mail-outline"
-                        size={16}
-                        color={THEME.textFaint}
-                        style={styles.inputIcon}
+                {/* Password */}
+                <View style={styles.inputWrapper}>
+                  <TextInput
+                    label="Password"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={secureTextEntry}
+                    mode="outlined"
+                    outlineColor="#E2E8F0"
+                    activeOutlineColor={THEME.primary}
+                    textColor={THEME.textDark}
+                    left={<TextInput.Icon icon="lock-outline" color={THEME.primary} />}
+                    right={
+                      <TextInput.Icon
+                        icon={secureTextEntry ? 'eye-outline' : 'eye-off-outline'}
+                        color={THEME.textLight}
+                        onPress={() => setSecureTextEntry(!secureTextEntry)}
                       />
-                      <TextInput
-                        value={email}
-                        onChangeText={setEmail}
-                        placeholder="operator@farm.com"
-                        placeholderTextColor="rgba(148, 163, 184, 0.5)"
-                        style={styles.textInput}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                        spellCheck={false}
-                      />
-                    </View>
-                  </View>
+                    }
+                    style={styles.input}
+                    theme={{ roundness: 14 }}
+                  />
+                </View>
 
-                  {/* Password Input */}
-                  <View style={styles.inputGroup}>
-                    <View style={styles.labelRow}>
-                      <Text style={styles.inputLabel}>Password</Text>
-                      {isLogin && (
-                        <Text style={styles.labelSubText}>Min 6 characters</Text>
-                      )}
-                    </View>
-                    <View style={styles.inputWrapper}>
-                      <Ionicons
-                        name="lock-closed-outline"
-                        size={16}
-                        color={THEME.textFaint}
-                        style={styles.inputIcon}
-                      />
-                      <TextInput
-                        value={password}
-                        onChangeText={setPassword}
-                        placeholder="••••••••••••"
-                        placeholderTextColor="rgba(148, 163, 184, 0.5)"
-                        secureTextEntry={!showPassword}
-                        style={[styles.textInput, { paddingRight: 40 }]}
-                        autoCapitalize="none"
-                        autoCorrect={false}
-                      />
-                      <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => setShowPassword(!showPassword)}
-                        style={styles.toggleVisibilityBtn}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <Ionicons
-                          name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                          size={16}
-                          color={THEME.textFaint}
-                        />
-                      </TouchableOpacity>
-                    </View>
-
-                    {/* Password Strength Indicator (Register only) */}
-                    {!isLogin && password.length > 0 && (
-                      <View style={styles.pwdStrength}>
-                        <View style={styles.pwdBars}>
-                          <View
-                            style={[
-                              styles.pwdBarSeg,
-                              pwdStrength >= 1 && { backgroundColor: strengthColor },
-                            ]}
-                          />
-                          <View
-                            style={[
-                              styles.pwdBarSeg,
-                              pwdStrength >= 2 && { backgroundColor: strengthColor },
-                            ]}
-                          />
-                          <View
-                            style={[
-                              styles.pwdBarSeg,
-                              pwdStrength >= 3 && { backgroundColor: strengthColor },
-                            ]}
-                          />
-                          <View
-                            style={[
-                              styles.pwdBarSeg,
-                              pwdStrength >= 4 && { backgroundColor: strengthColor },
-                            ]}
-                          />
-                        </View>
-                        <View style={styles.pwdLabelRow}>
-                          <Text style={styles.pwdLabelText}>Password Strength</Text>
-                          <Text
-                            style={[styles.pwdLabelGrade, { color: strengthColor }]}
-                          >
-                            {strengthLabel}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                  </View>
-
-                  {/* Confirm Password (Register only) */}
-                  {!isLogin && (
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.inputLabel}>Confirm Password</Text>
-                      <View style={styles.inputWrapper}>
-                        <Ionicons
-                          name="shield-checkmark-outline"
-                          size={16}
-                          color={THEME.textFaint}
-                          style={styles.inputIcon}
-                        />
-                        <TextInput
-                          value={confirmPassword}
-                          onChangeText={setConfirmPassword}
-                          placeholder="••••••••••••"
-                          placeholderTextColor="rgba(148, 163, 184, 0.5)"
-                          secureTextEntry={!showPassword}
-                          style={[styles.textInput, { paddingRight: 40 }]}
-                          autoCapitalize="none"
-                          autoCorrect={false}
-                        />
-                      </View>
-                    </View>
-                  )}
-
-                  {/* Error Notification Banner */}
-                  {error ? (
-                    <View style={styles.errorBox}>
-                      <Ionicons name="alert-circle" size={16} color={THEME.error} />
-                      <Text style={styles.errorBoxText}>{error}</Text>
-                    </View>
-                  ) : null}
-
-                  {/* Main CTA Submit Button */}
-                  <TouchableOpacity
-                    activeOpacity={0.88}
-                    disabled={loading}
-                    onPress={handleSubmit}
-                    style={styles.ctaSubmitWrap}
-                  >
-                    <LinearGradient
-                      colors={['#f43f5e', '#fb7185', '#e11d48']}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                      style={styles.ctaSubmit}
-                    >
-                      {loading ? (
-                        <View style={styles.btnRowCenter}>
-                          <ActivityIndicator size="small" color="#fff" />
-                          <Text style={styles.ctaSubmitText}>Authenticating…</Text>
-                        </View>
-                      ) : (
-                        <View style={styles.btnRowCenter}>
-                          <Text style={styles.ctaSubmitText}>
-                            {isLogin
-                              ? 'Sign In to Workspace'
-                              : 'Create Operator Account'}
-                          </Text>
-                          <Ionicons
-                            name="arrow-forward-outline"
-                            size={16}
-                            color="#fff"
-                          />
-                        </View>
-                      )}
-                    </LinearGradient>
-                  </TouchableOpacity>
-
-                  {/* Divider */}
-                  <View style={styles.authDivider}>
-                    <View style={styles.dividerLine} />
-                    <Text style={styles.dividerLabel}>OR AUTHORIZE WITH</Text>
-                    <View style={styles.dividerLine} />
-                  </View>
-
-                  {/* Google OAuth Button */}
-                  <TouchableOpacity
-                    activeOpacity={0.85}
-                    disabled={loading}
-                    onPress={handleGoogleSignIn}
-                    style={styles.btnGoogle}
-                  >
-                    <Ionicons name="logo-google" size={17} color="#EA4335" />
-                    <Text style={styles.btnGoogleText}>Continue with Google</Text>
-                  </TouchableOpacity>
-
-                  {/* Mode Switch Prompt */}
-                  <View style={styles.modeSwitchPrompt}>
-                    <Text style={styles.promptLabel}>
-                      {isLogin
-                        ? "Don't have an operator account? "
-                        : 'Already have an account? '}
-                    </Text>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => toggleMode(!isLogin)}
-                    >
-                      <Text style={styles.promptAction}>
-                        {isLogin ? 'Create Account' : 'Sign In'}
+                {/* Password Strength Meter (Sign Up only) */}
+                {!isLogin && password.length > 0 && (
+                  <View style={styles.strengthBox}>
+                    <View style={styles.strengthHeader}>
+                      <Text style={styles.strengthLabelText}>Password Strength:</Text>
+                      <Text style={[styles.strengthValueText, { color: strengthColor }]}>
+                        {strengthLabel}
                       </Text>
-                    </TouchableOpacity>
+                    </View>
+                    <View style={styles.strengthTrack}>
+                      <View
+                        style={[
+                          styles.strengthBar,
+                          { width: `${(pwdStrength / 4) * 100}%`, backgroundColor: strengthColor },
+                        ]}
+                      />
+                    </View>
                   </View>
-                </View>
-              )}
-            </View>
+                )}
 
-            {/* ── FOOTER TELEMETRY HUD (EXACT WEB REPLICATION) ── */}
-            <View style={styles.footerHud}>
-              <View style={styles.engineStatus}>
-                <Ionicons
-                  name="hardware-chip-outline"
-                  size={12}
-                  color={THEME.emerald}
-                />
-                <Text style={styles.engineText}>
-                  YOLOv11-VET ENGINE // REV 4.2
-                </Text>
+                {/* Confirm Password (Sign Up only) */}
+                {!isLogin && (
+                  <View style={styles.inputWrapper}>
+                    <TextInput
+                      label="Confirm Password"
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={secureConfirmTextEntry}
+                      mode="outlined"
+                      outlineColor="#E2E8F0"
+                      activeOutlineColor={THEME.primary}
+                      textColor={THEME.textDark}
+                      left={<TextInput.Icon icon="lock-check-outline" color={THEME.primary} />}
+                      right={
+                        <TextInput.Icon
+                          icon={secureConfirmTextEntry ? 'eye-outline' : 'eye-off-outline'}
+                          color={THEME.textLight}
+                          onPress={() => setSecureConfirmTextEntry(!secureConfirmTextEntry)}
+                        />
+                      }
+                      style={styles.input}
+                      theme={{ roundness: 14 }}
+                    />
+                  </View>
+                )}
+
+                {/* Error Banner */}
+                {error ? (
+                  <View style={styles.errorBox}>
+                    <Ionicons name="alert-circle" size={18} color={THEME.error} />
+                    <Text style={styles.errorText}>{error}</Text>
+                  </View>
+                ) : null}
+
+                {/* Forgot Password link (Sign In only) */}
+                {isLogin && (
+                  <TouchableOpacity
+                    style={styles.forgotBtn}
+                    onPress={() => Alert.alert('Reset Password', 'Please visit the Pigify web portal or check your email for password recovery.')}
+                  >
+                    <Text style={styles.forgotText}>Forgot password?</Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Main Submit Action Button */}
+                <TouchableOpacity
+                  activeOpacity={0.88}
+                  onPress={handleSubmit}
+                  disabled={loading}
+                  style={styles.submitBtnWrapper}
+                >
+                  <LinearGradient
+                    colors={[THEME.primary, THEME.primaryDark]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.submitGradient}
+                  >
+                    {loading ? (
+                      <ActivityIndicator size="small" color="#FFFFFF" />
+                    ) : (
+                      <View style={styles.submitBtnRow}>
+                        <Text style={styles.submitBtnText}>
+                          {isLogin ? 'Sign In' : 'Create Swine Account'}
+                        </Text>
+                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
+                      </View>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {/* Divider */}
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>or continue with</Text>
+                  <View style={styles.dividerLine} />
+                </View>
+
+                {/* Google Sign In */}
+                <TouchableOpacity
+                  style={styles.googleBtn}
+                  onPress={handleGoogleSignIn}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="logo-google" size={18} color="#DB4437" style={{ marginRight: 10 }} />
+                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                </TouchableOpacity>
               </View>
-              <Text style={styles.copyrightText}>
-                © {new Date().getFullYear()} Pigify System
-              </Text>
-            </View>
+            </Surface>
           </Animated.View>
+
+          {/* Footer Info */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              By continuing, you agree to Pigify's Veterinary Telemetry Terms and Clinical Biosecurity Protocol.
+            </Text>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Verification Modal */}
+      <Modal visible={needsVerification} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <Surface style={styles.modalCard} elevation={6}>
+            <View style={styles.modalIconCircle}>
+              <Ionicons name="mail-unread-outline" size={36} color={THEME.primary} />
+            </View>
+            <Text style={styles.modalTitle}>Check Your Email</Text>
+            <Text style={styles.modalDesc}>
+              A confirmation link was dispatched to:
+            </Text>
+            <Text style={styles.modalEmail}>{verifyEmail}</Text>
+            <Text style={styles.modalInstruction}>
+              Please tap the link in that email to activate your Pigify Swine account, then sign in.
+            </Text>
+
+            {resendSuccess ? (
+              <View style={styles.successBanner}>
+                <Ionicons name="checkmark-circle" size={16} color="#059669" />
+                <Text style={styles.successBannerText}>{resendSuccess}</Text>
+              </View>
+            ) : null}
+
+            {error ? (
+              <View style={styles.errorBox}>
+                <Ionicons name="alert-circle" size={16} color={THEME.error} />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.resendBtn}
+              onPress={handleResend}
+              disabled={isResending}
+            >
+              {isResending ? (
+                <ActivityIndicator size="small" color={THEME.primary} />
+              ) : (
+                <Text style={styles.resendBtnText}>Resend Confirmation Email</Text>
+              )}
+            </TouchableOpacity>
+
+            <Button
+              mode="contained"
+              buttonColor={THEME.primary}
+              style={{ marginTop: 12, borderRadius: 12 }}
+              onPress={() => {
+                setNeedsVerification(false);
+                setIsLogin(true);
+              }}
+            >
+              Back to Sign In
+            </Button>
+          </Surface>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: THEME.bgDeep,
+    backgroundColor: THEME.background,
   },
-  ambientTopGlow: {
+  headerBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: 320,
+    height: 290,
   },
-  ambientBottomGlow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 280,
-  },
-  ambientGlowGrad: {
+  gradientHeader: {
     flex: 1,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+    overflow: 'hidden',
   },
-  keyboardContainer: {
+  patternCircle1: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    top: -60,
+    right: -50,
+  },
+  patternCircle2: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    bottom: 20,
+    left: -40,
+  },
+  patternCircle3: {
+    position: 'absolute',
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    top: 40,
+    left: 40,
+  },
+  keyboardView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 16,
-    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 52 : 36,
     paddingBottom: 40,
   },
-
-  // ── Top Telemetry HUD ──
-  topHudBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  headerContent: {
     alignItems: 'center',
-    paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'ios' ? 12 : 8,
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    marginBottom: 20,
   },
-  hudLeft: {
-    flexDirection: 'row',
+  logoBadge: {
+    width: 72,
+    height: 72,
+    borderRadius: 22,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 12,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
-  hudPulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME.emerald,
+  logoImage: {
+    width: 58,
+    height: 58,
+    borderRadius: 16,
   },
-  hudRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  hudRightLabel: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: 'rgba(255, 255, 255, 0.4)',
-    letterSpacing: 0.8,
-  },
-  hudRightOnline: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: THEME.emerald,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  hudTextMono: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: 'rgba(255, 255, 255, 0.45)',
-    letterSpacing: 0.8,
-  },
-
-  // ── Brand Row (Exact Web Match) ──
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 14,
-    marginBottom: 16,
-  },
-  brandIdentity: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    gap: 12,
-  },
-  brandTextGroup: {
-    flex: 1,
-  },
-  brandNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  brandName: {
-    fontSize: 23,
+  appTitle: {
+    fontSize: 28,
     fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: -0.4,
-  },
-  brandNameTag: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 6,
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
-  },
-  brandNameTagText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#fb7185',
-    letterSpacing: 0.8,
-  },
-  brandSub: {
-    fontSize: 11,
-    color: THEME.textMuted,
-    fontWeight: '500',
-    marginTop: 2,
-    lineHeight: 14,
-  },
-  liveBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 999,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.25)',
-  },
-  liveDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME.emerald,
-  },
-  liveBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#34d399',
+    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
-
-  // ── Brand Mark Visual ──
-  brandMarkContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#f43f5e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  brandMarkGradient: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.2,
-    borderColor: 'rgba(255, 255, 255, 0.35)',
-    position: 'relative',
-  },
-  pigEarLeft: {
-    position: 'absolute',
-    top: 6,
-    left: 8,
-    width: 9,
-    height: 12,
-    backgroundColor: '#fecdd3',
-    borderRadius: 4,
-    transform: [{ rotate: '-25deg' }],
-  },
-  pigEarRight: {
-    position: 'absolute',
-    top: 6,
-    right: 8,
-    width: 9,
-    height: 12,
-    backgroundColor: '#fecdd3',
-    borderRadius: 4,
-    transform: [{ rotate: '25deg' }],
-  },
-  pigFace: {
-    width: 29,
-    height: 25,
-    borderRadius: 13,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 6,
-    position: 'relative',
-  },
-  pigEyesRow: {
-    flexDirection: 'row',
-    gap: 9,
-    marginTop: -2,
-  },
-  pigEye: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#0f172a',
-    position: 'relative',
-  },
-  pigEyeHighlight: {
-    width: 1.5,
-    height: 1.5,
-    borderRadius: 1,
-    backgroundColor: '#ffffff',
-    position: 'absolute',
-    top: 0.5,
-    left: 0.5,
-  },
-  pigCheekLeft: {
-    position: 'absolute',
-    left: 4,
-    bottom: 6,
-    width: 5,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: '#fecdd3',
-    opacity: 0.8,
-  },
-  pigCheekRight: {
-    position: 'absolute',
-    right: 4,
-    bottom: 6,
-    width: 5,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: '#fecdd3',
-    opacity: 0.8,
-  },
-  pigSnout: {
-    width: 14,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: '#fecdd3',
-    borderWidth: 1,
-    borderColor: '#f43f5e',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-    marginTop: 3,
-  },
-  pigNostril: {
-    width: 2,
-    height: 3,
-    borderRadius: 1,
-    backgroundColor: '#be123c',
-  },
-  diagnosticOptic: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: 'rgba(16, 185, 129, 0.4)',
-    borderWidth: 1,
-    borderColor: '#34d399',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  opticInnerDot: {
-    width: 3.5,
-    height: 3.5,
-    borderRadius: 2,
-    backgroundColor: '#ffffff',
-  },
-
-  // ── Hero Section (Exact Web Copy) ──
-  heroSection: {
-    marginBottom: 16,
-  },
-  heroTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#ffffff',
-    lineHeight: 30,
-    letterSpacing: -0.6,
-    marginBottom: 8,
-  },
-  heroTitlePink: {
-    color: '#fb7185',
-  },
-  heroSubtitle: {
+  appTagline: {
     fontSize: 13,
-    lineHeight: 18,
-    color: THEME.textMuted,
+    color: 'rgba(255, 255, 255, 0.9)',
+    marginTop: 4,
+    fontWeight: '500',
   },
-
-  // ── AI Scanner Viewfinder Card ──
-  scannerCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    marginBottom: 16,
+  authCard: {
+    backgroundColor: THEME.surface,
+    borderRadius: 24,
+    padding: 22,
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
   },
-  scannerMedia: {
-    height: 160,
-    backgroundColor: '#070d18',
-    padding: 12,
-    justifyContent: 'space-between',
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  scannerHudTop: {
+  tabContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    zIndex: 10,
-  },
-  targetBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    backgroundColor: 'rgba(244, 63, 94, 0.35)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.5)',
-  },
-  targetBadgeText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  modelTag: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
-  },
-  modelTagText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: 'rgba(255, 255, 255, 0.75)',
-  },
-  viewfinderCenter: {
-    position: 'absolute',
-    top: 26,
-    left: 0,
-    right: 0,
-    bottom: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  viewfinderReticle: {
-    width: 90,
-    height: 90,
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.45)',
-    borderRadius: 8,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  cornerBracket: {
-    position: 'absolute',
-    width: 8,
-    height: 8,
-    borderColor: '#fb7185',
-  },
-  bracketTL: {
-    top: -2,
-    left: -2,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-  },
-  bracketTR: {
-    top: -2,
-    right: -2,
-    borderTopWidth: 2,
-    borderRightWidth: 2,
-  },
-  bracketBL: {
-    bottom: -2,
-    left: -2,
-    borderBottomWidth: 2,
-    borderLeftWidth: 2,
-  },
-  bracketBR: {
-    bottom: -2,
-    right: -2,
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
-  },
-  crosshairCenter: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.5)',
-  },
-  scanlineLaser: {
-    position: 'absolute',
-    top: 0,
-    left: 20,
-    right: 20,
-    height: 2,
-    backgroundColor: '#f43f5e',
-    shadowColor: '#fb7185',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  scannerHudBottom: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  telemetryActiveText: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#34d399',
-    fontWeight: '600',
-  },
-  telemetryFpsText: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: 'rgba(255, 255, 255, 0.6)',
-  },
-  scannerCaptionBar: {
-    padding: 12,
-    backgroundColor: 'rgba(14, 21, 35, 0.95)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  scannerInfo: {
-    flex: 1,
-  },
-  captionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 2,
-  },
-  captionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff',
-  },
-  captionDesc: {
-    fontSize: 11,
-    color: THEME.textMuted,
-  },
-  scannerDots: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  scannerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-  },
-  scannerDotActive: {
-    width: 18,
-    backgroundColor: '#f43f5e',
-  },
-
-  // ── 3 High-Tech Feature Cards (Exact Web Match) ──
-  featureGrid: {
-    gap: 9,
-    marginBottom: 18,
-  },
-  featureCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  featureIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  featureIconRose: {
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.25)',
-  },
-  featureIconEmerald: {
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.25)',
-  },
-  featureIconCyan: {
-    backgroundColor: 'rgba(6, 182, 212, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.25)',
-  },
-  featureText: {
-    flex: 1,
-  },
-  featureStrong: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#f1f5f9',
-    marginBottom: 2,
-  },
-  featureSpan: {
-    fontSize: 11,
-    color: THEME.textMuted,
-    lineHeight: 15,
-  },
-
-  // ── Operator Terminal Panel (Exact Web Match) ──
-  terminalPanel: {
-    backgroundColor: 'rgba(9, 14, 25, 0.85)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 18,
-    position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 16 },
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  frameBracket: {
-    position: 'absolute',
-    width: 12,
-    height: 12,
-    borderColor: 'rgba(244, 63, 94, 0.6)',
-  },
-  frameBracketTL: {
-    top: 8,
-    left: 8,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-  },
-  frameBracketBR: {
-    bottom: 8,
-    right: 8,
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
-    borderColor: 'rgba(16, 185, 129, 0.6)',
-  },
-  terminalNav: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  backBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  backBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: THEME.textMuted,
-  },
-  securityTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  securityTagText: {
-    fontSize: 10,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: '#94a3b8',
-  },
-  modeTabs: {
-    flexDirection: 'row',
-    padding: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 16,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 9,
-  },
-  tabBtnActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.22)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.45)',
-  },
-  tabBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: THEME.textMuted,
-  },
-  tabBtnTextActive: {
-    color: '#ffffff',
-  },
-  formHeader: {
-    marginBottom: 18,
-  },
-  formHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  formHeaderLogoBadge: {
-    width: 48,
-    height: 48,
+    backgroundColor: '#F1F5F9',
     borderRadius: 14,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-    shadowColor: '#f43f5e',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    elevation: 4,
+    padding: 4,
+    marginBottom: 20,
   },
-  formHeaderLogoImg: {
-    width: 48,
-    height: 48,
-  },
-  formHeaderTextGroup: {
+  tabButton: {
     flex: 1,
-  },
-  formHeaderTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: -0.4,
-    marginBottom: 4,
-  },
-  formHeaderDesc: {
-    fontSize: 12,
-    color: THEME.textMuted,
-    lineHeight: 16,
-  },
-  authForm: {
-    gap: 13,
-  },
-  inputGroup: {
-    gap: 5,
-  },
-  labelRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderRadius: 11,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  inputLabel: {
-    fontSize: 11,
+  tabButtonActive: {
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: THEME.textLight,
+  },
+  tabTextActive: {
+    color: THEME.primary,
     fontWeight: '700',
-    color: '#cbd5e1',
-    letterSpacing: 0.3,
   },
-  labelSubText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    fontStyle: 'italic',
+  formContent: {
+    width: '100%',
   },
   inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(20, 29, 48, 0.7)',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    paddingHorizontal: 12,
-    height: 48,
+    marginBottom: 14,
   },
-  inputIcon: {
-    marginRight: 10,
-  },
-  textInput: {
-    flex: 1,
-    color: '#ffffff',
+  input: {
+    backgroundColor: '#FFFFFF',
     fontSize: 14,
-    paddingVertical: 0,
   },
-  toggleVisibilityBtn: {
-    position: 'absolute',
-    right: 12,
-    padding: 4,
+  strengthBox: {
+    marginBottom: 14,
+    paddingHorizontal: 4,
   },
-
-  // ── Password Strength Bar (Exact Web Match) ──
-  pwdStrength: {
-    marginTop: 4,
-    gap: 4,
-  },
-  pwdBars: {
-    flexDirection: 'row',
-    gap: 4,
-    height: 3,
-  },
-  pwdBarSeg: {
-    flex: 1,
-    borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  pwdLabelRow: {
+  strengthHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 4,
   },
-  pwdLabelText: {
-    fontSize: 10,
-    color: THEME.textFaint,
+  strengthLabelText: {
+    fontSize: 11,
+    color: THEME.textLight,
   },
-  pwdLabelGrade: {
-    fontSize: 10,
+  strengthValueText: {
+    fontSize: 11,
     fontWeight: '700',
   },
-
-  // ── Notification Banners ──
+  strengthTrack: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#E2E8F0',
+    overflow: 'hidden',
+  },
+  strengthBar: {
+    height: '100%',
+    borderRadius: 2,
+  },
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
-    borderRadius: 10,
+    backgroundColor: '#FEF2F2',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
-    padding: 10,
-  },
-  errorBoxText: {
-    fontSize: 12,
-    color: '#fb7185',
-    flex: 1,
-    lineHeight: 16,
-  },
-  successBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.14)',
+    borderColor: '#FECACA',
     borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.35)',
-    padding: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14,
   },
-  successBoxText: {
+  errorText: {
     fontSize: 12,
-    color: '#34d399',
+    color: THEME.error,
+    marginLeft: 8,
     flex: 1,
   },
-
-  // ── Submit Button (Exact Web Gradient & Glow) ──
-  ctaSubmitWrap: {
-    borderRadius: 11,
+  forgotBtn: {
+    alignSelf: 'flex-end',
+    marginBottom: 16,
+    marginTop: -4,
+  },
+  forgotText: {
+    fontSize: 12,
+    color: THEME.primary,
+    fontWeight: '600',
+  },
+  submitBtnWrapper: {
+    borderRadius: 14,
     overflow: 'hidden',
     marginTop: 4,
-    shadowColor: '#f43f5e',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
     elevation: 6,
+    shadowColor: THEME.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
   },
-  ctaSubmit: {
+  submitGradient: {
     paddingVertical: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  btnRowCenter: {
+  submitBtnRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
-  ctaSubmitText: {
-    fontSize: 14,
+  submitBtnText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: '700',
-    color: '#ffffff',
-    letterSpacing: 0.2,
+    letterSpacing: 0.3,
   },
-
-  // ── Divider (Exact Web Match) ──
-  authDivider: {
+  dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 4,
+    marginVertical: 18,
   },
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: '#E2E8F0',
   },
-  dividerLabel: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: THEME.textFaint,
-    marginHorizontal: 10,
-    letterSpacing: 0.8,
+  dividerText: {
+    fontSize: 12,
+    color: THEME.textLight,
+    marginHorizontal: 12,
   },
-
-  // ── Google Button (Exact Web Match) ──
-  btnGoogle: {
+  googleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    borderRadius: 11,
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
     paddingVertical: 12,
   },
-  btnGoogleText: {
-    fontSize: 13,
+  googleBtnText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#f8fafc',
+    color: THEME.textDark,
   },
-
-  // ── Switch Prompt ──
-  modeSwitchPrompt: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  promptLabel: {
-    fontSize: 12,
-    color: THEME.textMuted,
-  },
-  promptAction: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#fb7185',
-  },
-
-  // ── Verification Box ──
-  verificationBox: {
-    alignItems: 'center',
-    gap: 12,
-  },
-  verificationIcon: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  verificationHeading: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#ffffff',
-  },
-  verificationParagraph: {
-    fontSize: 12,
-    color: THEME.textMuted,
-    textAlign: 'center',
-  },
-  verificationEmailPill: {
-    backgroundColor: 'rgba(20, 29, 48, 0.85)',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  verificationEmailText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#fb7185',
-  },
-  verificationNote: {
-    fontSize: 11,
-    color: THEME.textFaint,
-    textAlign: 'center',
-    lineHeight: 15,
-  },
-
-  // ── Footer HUD ──
-  footerHud: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  footer: {
     marginTop: 22,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.07)',
+    paddingHorizontal: 10,
+    alignItems: 'center',
   },
-  engineStatus: {
+  footerText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+  },
+  modalIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(199, 21, 133, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: THEME.textDark,
+    marginBottom: 6,
+  },
+  modalDesc: {
+    fontSize: 13,
+    color: THEME.textLight,
+    textAlign: 'center',
+  },
+  modalEmail: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: THEME.primary,
+    marginVertical: 4,
+  },
+  modalInstruction: {
+    fontSize: 12,
+    color: THEME.textLight,
+    textAlign: 'center',
+    marginTop: 6,
+    marginBottom: 16,
+    lineHeight: 17,
+  },
+  resendBtn: {
+    paddingVertical: 8,
+    marginBottom: 6,
+  },
+  resendBtnText: {
+    fontSize: 13,
+    color: THEME.primary,
+    fontWeight: '600',
+  },
+  successBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
   },
-  engineText: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    color: THEME.textFaint,
-  },
-  copyrightText: {
-    fontSize: 9,
-    color: THEME.textFaint,
+  successBannerText: {
+    fontSize: 12,
+    color: '#059669',
+    marginLeft: 6,
   },
 });

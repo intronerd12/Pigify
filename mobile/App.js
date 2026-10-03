@@ -59,11 +59,11 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const NAV_THEME = {
-  active: '#fb7185',
-  inactive: '#64748b',
-  barBg: 'rgba(11, 18, 32, 0.96)',
-  centerBtn: '#f43f5e',
-  centerBtnShadow: 'rgba(244, 63, 94, 0.45)',
+  active: '#C71585',
+  inactive: '#8EA19A',
+  barBg: '#FFFFFF',
+  centerBtn: '#C71585',
+  centerBtnShadow: 'rgba(199, 21, 133, 0.38)',
 };
 
 function CenterScanButton({ onPress, accessibilityState }) {
@@ -77,7 +77,7 @@ function CenterScanButton({ onPress, accessibilityState }) {
       style={styles.scanBtnWrap}
     >
       <View style={[styles.scanBtn, focused && styles.scanBtnFocused]}>
-        <Ionicons name={focused ? 'scan' : 'scan-outline'} size={28} color="#FFFFFF" />
+        <Ionicons name={focused ? 'scan' : 'scan-outline'} size={30} color="#FFFFFF" />
       </View>
     </TouchableOpacity>
   );
@@ -91,7 +91,7 @@ function MainTabs({ user, handleLogout }) {
           let iconName;
 
           if (route.name === 'Home') {
-            iconName = focused ? 'grid' : 'grid-outline';
+            iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Scan') {
             iconName = focused ? 'scan' : 'scan-outline';
           } else if (route.name === 'Sorting') {
@@ -102,7 +102,7 @@ function MainTabs({ user, handleLogout }) {
             iconName = focused ? 'person' : 'person-outline';
           }
 
-          return <Ionicons name={iconName} size={21} color={color} />;
+          return <Ionicons name={iconName} size={22} color={color} />;
         },
         tabBarActiveTintColor: NAV_THEME.active,
         tabBarInactiveTintColor: NAV_THEME.inactive,
@@ -112,11 +112,11 @@ function MainTabs({ user, handleLogout }) {
         tabBarStyle: styles.tabBar,
         tabBarItemStyle: styles.tabBarItem,
         headerShown: false,
-        lazy: true, // Only render tabs when first navigated to, avoiding background lag
-        unmountOnBlur: false, // Keep tab memory intact after loading so switching is instantaneous
+        lazy: true,
+        unmountOnBlur: false,
       })}
     >
-      <Tab.Screen name="Home" options={{ tabBarLabel: 'Command' }}>
+      <Tab.Screen name="Home" options={{ tabBarLabel: 'Home' }}>
         {props => <HomeScreen {...props} user={user} onLogout={handleLogout} />}
       </Tab.Screen>
       <Tab.Screen name="Sorting" options={{ tabBarLabel: 'Triage' }}>
@@ -125,7 +125,7 @@ function MainTabs({ user, handleLogout }) {
       <Tab.Screen
         name="Scan"
         options={{
-          tabBarLabel: 'Scanner',
+          tabBarLabel: 'Scan',
           tabBarButton: (props) => <CenterScanButton {...props} />,
           tabBarIcon: () => null,
         }}
@@ -246,7 +246,7 @@ export default function App() {
             key={`user:${userKey}`}
             screenOptions={{
               headerShown: false,
-              cardStyle: { backgroundColor: '#060911' },
+              cardStyle: { backgroundColor: '#F8F9FA' },
               detachInactiveScreens: true,
             }}
           >
@@ -277,7 +277,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#060911',
+    backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#060911',
+    backgroundColor: '#F8F9FA',
   },
   screenLoaderContainer: {
     flex: 1,
-    backgroundColor: '#060911',
+    backgroundColor: '#F8F9FA',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -298,9 +298,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    backgroundColor: 'rgba(199, 21, 133, 0.08)',
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.25)',
+    borderColor: 'rgba(199, 21, 133, 0.25)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -308,34 +308,33 @@ const styles = StyleSheet.create({
   screenLoaderLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: '#1E293B',
     marginBottom: 4,
     letterSpacing: 0.3,
   },
   screenLoaderSub: {
-    fontSize: 11,
-    color: '#64748b',
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 12,
+    color: '#64748B',
   },
   tabBar: {
     position: 'absolute',
-    left: 16,
-    right: 16,
+    left: 20,
+    right: 20,
     bottom: 14,
-    height: 68,
+    height: 72,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 34,
+    borderColor: 'rgba(0, 0, 0, 0.06)',
+    borderRadius: 38,
     overflow: 'visible',
     backgroundColor: NAV_THEME.barBg,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingTop: 6,
     paddingBottom: 6,
-    elevation: 20,
-    shadowColor: '#000000',
-    shadowOpacity: 0.65,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
+    elevation: 16,
+    shadowColor: '#172B24',
+    shadowOpacity: 0.14,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
   },
   tabBarItem: {
     paddingTop: 4,
@@ -348,27 +347,27 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   scanBtnWrap: {
-    top: -18,
+    top: -22,
     justifyContent: 'center',
     alignItems: 'center',
   },
   scanBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     backgroundColor: NAV_THEME.centerBtn,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 12,
+    elevation: 10,
     shadowColor: NAV_THEME.centerBtnShadow,
-    shadowOpacity: 0.7,
-    shadowRadius: 14,
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
-    borderWidth: 3.5,
-    borderColor: '#0b1220',
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
   },
   scanBtnFocused: {
-    backgroundColor: '#be123c',
+    backgroundColor: '#8B008B',
     transform: [{ scale: 1.05 }],
   },
 });

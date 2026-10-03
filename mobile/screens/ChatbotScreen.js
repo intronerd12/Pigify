@@ -11,7 +11,8 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, Surface } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
@@ -21,18 +22,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChatbotService } from '../services/ChatbotService';
 import { getUserNamespace, sanitizeForKey } from '../services/storageScope';
 
+// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
 const THEME = {
-  bgDeep: '#060911',
-  bgCard: 'rgba(13, 20, 36, 0.94)',
-  primary: '#f43f5e',
-  emerald: '#10b981',
-  userBubble: 'rgba(244, 63, 94, 0.22)',
-  userBubbleBorder: 'rgba(244, 63, 94, 0.45)',
-  botBubble: 'rgba(17, 26, 46, 0.88)',
-  botBubbleBorder: 'rgba(255, 255, 255, 0.08)',
-  textMain: '#f8fafc',
-  textMuted: '#94a3b8',
-  textFaint: '#64748b',
+  primary: '#C71585',       // Deep Rose
+  primaryDark: '#8B008B',   // Dark Magenta
+  primaryLight: '#FF69B4',  // Hot Pink
+  secondary: '#FFC0CB',    // Soft Pink
+  accent: '#00B894',       // Emerald
+  white: '#FFFFFF',
+  textDark: '#1E293B',
+  textLight: '#64748B',
+  background: '#F6F7FB',
+  surface: '#FFFFFF',
+  userBubble: '#C71585',
+  botBubble: '#FFFFFF',
+  border: '#E2E8F0',
 };
 
 const STORAGE_KEY_BASE = 'chat_history_swine_v1';
@@ -48,8 +52,18 @@ const TypingIndicator = () => {
       Animated.loop(
         Animated.sequence([
           Animated.delay(delay),
-          Animated.timing(v, { toValue: 1, duration: 350, useNativeDriver: true, easing: Easing.inOut(Easing.quad) }),
-          Animated.timing(v, { toValue: 0.2, duration: 350, useNativeDriver: true, easing: Easing.inOut(Easing.quad) }),
+          Animated.timing(v, {
+            toValue: 1,
+            duration: 350,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.quad),
+          }),
+          Animated.timing(v, {
+            toValue: 0.2,
+            duration: 350,
+            useNativeDriver: true,
+            easing: Easing.inOut(Easing.quad),
+          }),
         ])
       );
 
@@ -67,7 +81,7 @@ const TypingIndicator = () => {
   }, [d1, d2, d3]);
 
   return (
-    <View style={styles.typingRow}>
+    <View style={styles.typingContainer}>
       <Animated.View style={[styles.typingDot, { opacity: d1 }]} />
       <Animated.View style={[styles.typingDot, { opacity: d2 }]} />
       <Animated.View style={[styles.typingDot, { opacity: d3 }]} />
@@ -75,229 +89,244 @@ const TypingIndicator = () => {
   );
 };
 
-export default function ChatbotScreen({ navigation, user }) {
+const QUICK_PROMPTS = [
+  'Swine skin rash treatment?',
+  'Pen heat stress ventilation?',
+  'Diamond skin disease (Erysipelas)?',
+  'Piglet diarrhea clinical protocol?',
+];
+
+export default function ChatbotScreen({ user }) {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
-  const inputBottomOffset = Math.max(tabBarHeight - insets.bottom + 8, 14);
+  const flatListRef = useRef(null);
 
-  const storageKey = useMemo(() => {
-    const ns = sanitizeForKey(getUserNamespace(user));
-    return ns ? `${STORAGE_KEY_BASE}:${ns}` : `${STORAGE_KEY_BASE}:anon`;
-  }, [user]);
-
-  const quickPrompts = useMemo(
-    () => [
-      { label: 'Erysipelas symptoms', text: 'How do I detect Erysipelas (Diamond Skin)?' },
-      { label: 'Greasy pig treatment', text: 'What is the treatment for Greasy Pig Disease?' },
-      { label: 'Pen biosecurity', text: 'What are the essential pen biosecurity protocols?' },
-      { label: 'Lesion scan tips', text: 'Scan tips for lesion photos' },
-      { label: 'Herd scan stats', text: 'Show my herd scan stats' },
-    ],
-    []
-  );
-
-  const listRef = useRef(null);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [sending, setSending] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const userKey = sanitizeForKey(getUserNamespace(user)) || 'anon';
+  const storageKey = useMemo(() => `${STORAGE_KEY_BASE}:${userKey}`, [userKey]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const raw = await AsyncStorage.getItem(storageKey);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length) {
-            setMessages(parsed);
-            return;
-          }
-        }
-      } catch {
-        // Fallback
-      }
+    loadChatHistory();
+  }, [storageKey]);
 
-      setMessages([
-        {
+  const loadChatHistory = async () => {
+    try {
+      const saved = await AsyncStorage.getItem(storageKey);
+      if (saved) {
+        setMessages(JSON.parse(saved));
+      } else {
+        const welcomeMessage = {
           id: makeId(),
           sender: 'bot',
-          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Operator'}! I am the Pigify Clinical AI Vet Assistant.\n\nI can answer questions regarding swine skin diseases (Erysipelas, Greasy Pig, Sarcoptic Mange), lesion photography, and biosecurity quarantine measures. How can I help your herd today?`,
+          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Operator'}! I am your Pigify Swine AI Vet Assistant. You can ask me about pig skin lesions, biosecurity protocols, fever signs, or pen climate management. How can I help your herd today?`,
           timestamp: new Date().toISOString(),
-        },
-      ]);
-    })();
-  }, [storageKey, user?.name]);
-
-  const saveMessages = async (msgs) => {
-    try {
-      await AsyncStorage.setItem(storageKey, JSON.stringify(msgs.slice(-50)));
+        };
+        setMessages([welcomeMessage]);
+        await AsyncStorage.setItem(storageKey, JSON.stringify([welcomeMessage]));
+      }
     } catch {
-      // Ignored
+      // Keep default
     }
   };
 
-  const handleSend = async (customText) => {
-    const textToSend = String(customText || input || '').trim();
-    if (!textToSend || sending) return;
+  const saveChatHistory = async (newMessages) => {
+    try {
+      await AsyncStorage.setItem(storageKey, JSON.stringify(newMessages));
+    } catch {
+      // Ignore
+    }
+  };
 
-    setInput('');
-    const userMsg = {
+  const handleSend = async (textToSend) => {
+    const text = (textToSend || inputText).trim();
+    if (!text || isTyping) return;
+
+    const userMessage = {
       id: makeId(),
       sender: 'user',
-      text: textToSend,
+      text,
       timestamp: new Date().toISOString(),
     };
 
-    const next = [...messages, userMsg];
-    setMessages(next);
-    setSending(true);
+    const updated = [...messages, userMessage];
+    setMessages(updated);
+    setInputText('');
+    Keyboard.dismiss();
+    setIsTyping(true);
 
     try {
-      const reply = await ChatbotService.reply({ message: textToSend, user });
-      const botMsg = {
+      const response = await ChatbotService.sendMessage(text, { user });
+      const botMessage = {
         id: makeId(),
         sender: 'bot',
-        text: reply.text || 'I processed your swine health query.',
+        text: response.reply || 'I have reviewed your query regarding swine biosecurity. Maintain clean pen ventilation and isolate any pigs displaying progressive lesions.',
         timestamp: new Date().toISOString(),
       };
-
-      const finalMsgs = [...next, botMsg];
-      setMessages(finalMsgs);
-      saveMessages(finalMsgs);
-
-      if (reply?.action?.type === 'navigate' && reply.action.screen) {
-        navigation.navigate(reply.action.screen);
-      }
+      const finalMessages = [...updated, botMessage];
+      setMessages(finalMessages);
+      await saveChatHistory(finalMessages);
     } catch {
-      const errorMsg = {
+      const fallback = {
         id: makeId(),
         sender: 'bot',
-        text: 'Unable to reach veterinary AI server. Please check connection.',
+        text: 'I could not reach the clinical veterinary server. For acute skin lesions or fever, isolate the animal immediately and inspect feed and water supply.',
         timestamp: new Date().toISOString(),
       };
-      setMessages([...next, errorMsg]);
+      const finalMessages = [...updated, fallback];
+      setMessages(finalMessages);
+      await saveChatHistory(finalMessages);
     } finally {
-      setSending(false);
+      setIsTyping(false);
     }
   };
 
-  const clearChat = () => {
-    Alert.alert('Reset Chat', 'Clear all messages in this conversation?', [
-      { text: 'Cancel', style: 'cancel' },
+  const handleClearHistory = async () => {
+    const resetMsg = [
       {
-        text: 'Clear',
-        style: 'destructive',
-        onPress: async () => {
-          const fresh = [
-            {
-              id: makeId(),
-              sender: 'bot',
-              text: 'Conversation cleared. How can I assist with your herd diagnostics?',
-              timestamp: new Date().toISOString(),
-            },
-          ];
-          setMessages(fresh);
-          await AsyncStorage.removeItem(storageKey);
-        },
+        id: makeId(),
+        sender: 'bot',
+        text: 'Chat history cleared. How can I assist with your swine herd telemetry today?',
+        timestamp: new Date().toISOString(),
       },
-    ]);
+    ];
+    setMessages(resetMsg);
+    await saveChatHistory(resetMsg);
+  };
+
+  const renderMessage = ({ item }) => {
+    const isUser = item.sender === 'user';
+
+    return (
+      <View style={[styles.msgRow, isUser ? styles.msgRowUser : styles.msgRowBot]}>
+        {!isUser && (
+          <View style={styles.botAvatar}>
+            <Ionicons name="medkit" size={16} color="#FFFFFF" />
+          </View>
+        )}
+
+        {isUser ? (
+          <LinearGradient
+            colors={[THEME.primary, THEME.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.userBubble}
+          >
+            <Text style={styles.userMsgText}>{item.text}</Text>
+          </LinearGradient>
+        ) : (
+          <Surface style={styles.botBubble} elevation={1}>
+            <Text style={styles.botMsgText}>{item.text}</Text>
+          </Surface>
+        )}
+      </View>
+    );
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Top Header */}
-      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'ios' ? 10 : 14) }]}>
-        <View style={styles.headerInfo}>
-          <View style={styles.botAvatar}>
-            <Ionicons name="chatbubbles" size={17} color="#fb7185" />
-          </View>
-          <View>
-            <View style={styles.titleRow}>
-              <Text style={styles.titleText}>Pigify AI Vet</Text>
-              <View style={styles.botBadge}>
-                <Text style={styles.botBadgeText}>CLINICAL BOT</Text>
+      {/* Curved Header */}
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
+        <LinearGradient
+          colors={[THEME.primaryDark, THEME.primary]}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.circle1} />
+
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerAvatar}>
+              <Ionicons name="medkit" size={20} color={THEME.primary} />
+            </View>
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.headerTitle}>Swine AI Vet Assistant</Text>
+              <View style={styles.statusRow}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.statusText}>Clinical Consultation Active</Text>
               </View>
             </View>
-            <Text style={styles.subText}>24/7 Swine Disease Diagnostic Intelligence</Text>
           </View>
-        </View>
 
-        <TouchableOpacity onPress={clearChat} style={styles.resetBtn}>
-          <Ionicons name="trash-outline" size={18} color="#94a3b8" />
-        </TouchableOpacity>
+          <TouchableOpacity onPress={handleClearHistory} style={styles.clearBtn}>
+            <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAvoidingView
+        style={styles.chatArea}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardContainer}
       >
-        {/* Messages List */}
         <FlatList
-          ref={listRef}
+          ref={flatListRef}
           data={messages}
+          renderItem={renderMessage}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.messagesList}
-          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-          renderItem={({ item }) => {
-            const isUser = item.sender === 'user';
-            return (
-              <View style={[styles.messageRow, isUser ? styles.userRow : styles.botRow]}>
-                {!isUser && (
-                  <View style={styles.botSmallIcon}>
-                    <Ionicons name="hardware-chip" size={14} color="#34d399" />
-                  </View>
-                )}
-                <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble]}>
-                  <Text style={[styles.bubbleText, isUser ? styles.userText : styles.botText]}>
-                    {item.text}
-                  </Text>
-                  <Text style={styles.bubbleTime}>
-                    {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                </View>
-              </View>
-            );
-          }}
-          ListFooterComponent={sending ? <TypingIndicator /> : null}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
         />
 
-        {/* Quick Prompts */}
-        <View style={styles.promptsBar}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsScroll}>
-            {quickPrompts.map((p, idx) => (
+        {isTyping && (
+          <View style={styles.typingRow}>
+            <View style={styles.botAvatar}>
+              <Ionicons name="medkit" size={14} color="#FFFFFF" />
+            </View>
+            <TypingIndicator />
+          </View>
+        )}
+
+        {/* Quick Suggestion Pills */}
+        <View style={styles.quickPromptsWrapper}>
+          <FlatList
+            horizontal
+            data={QUICK_PROMPTS}
+            keyExtractor={(item) => item}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.quickPromptsList}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={idx}
+                style={styles.quickPromptChip}
+                onPress={() => handleSend(item)}
                 activeOpacity={0.8}
-                onPress={() => handleSend(p.text)}
-                style={styles.promptPill}
               >
-                <Text style={styles.promptPillText}>{p.label}</Text>
+                <Text style={styles.quickPromptText}>{item}</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            )}
+          />
         </View>
 
         {/* Input Bar */}
-        <View style={[styles.inputBar, { paddingBottom: inputBottomOffset }]}>
-          <TextInput
-            value={input}
-            onChangeText={setInput}
-            placeholder="Ask about swine symptoms, dosage, biosecurity..."
-            placeholderTextColor="#64748b"
-            style={styles.inputField}
-            multiline={false}
-            returnKeyType="send"
-            onSubmitEditing={() => handleSend()}
-          />
-          <TouchableOpacity
-            activeOpacity={0.85}
-            disabled={!input.trim() || sending}
-            onPress={() => handleSend()}
-            style={[styles.sendBtn, !input.trim() && styles.sendBtnDisabled]}
-          >
-            <Ionicons name="arrow-up" size={18} color="#fff" />
-          </TouchableOpacity>
+        <View style={[styles.inputBar, { paddingBottom: tabBarHeight + 10 }]}>
+          <Surface style={styles.inputCard} elevation={3}>
+            <TextInput
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder="Ask about swine symptoms, dosage, or pen climate..."
+              placeholderTextColor="#94A3B8"
+              style={styles.textInput}
+              multiline
+              maxLength={400}
+            />
+
+            <TouchableOpacity
+              style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
+              onPress={() => handleSend()}
+              disabled={!inputText.trim() || isTyping}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={inputText.trim() ? [THEME.primary, THEME.primaryDark] : ['#CBD5E1', '#94A3B8']}
+                style={styles.sendGradient}
+              >
+                <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+              </LinearGradient>
+            </TouchableOpacity>
+          </Surface>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -305,192 +334,217 @@ export default function ChatbotScreen({ navigation, user }) {
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
-    backgroundColor: THEME.bgDeep,
+    backgroundColor: THEME.background,
   },
-  header: {
+  headerContainer: {
+    paddingBottom: 18,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 26,
+    borderBottomRightRadius: 26,
+    overflow: 'hidden',
+    position: 'relative',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  circle1: {
+    position: 'absolute',
+    top: -40,
+    right: -40,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    backgroundColor: 'rgba(11, 18, 32, 0.95)',
+    zIndex: 10,
   },
-  headerInfo: {
+  headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    flex: 1,
   },
-  botAvatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.35)',
-    alignItems: 'center',
+  headerAvatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
-  },
-  titleRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    elevation: 2,
   },
-  titleText: {
+  headerTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#ffffff',
+    color: '#FFFFFF',
   },
-  botBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 5,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
   },
-  botBadgeText: {
-    fontSize: 9,
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontWeight: '700',
-    color: '#34d399',
+  onlineDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: THEME.accent,
+    marginRight: 6,
   },
-  subText: {
+  statusText: {
     fontSize: 11,
-    color: THEME.textMuted,
-    marginTop: 1,
+    color: 'rgba(255, 255, 255, 0.9)',
+    fontWeight: '500',
   },
-  resetBtn: {
+  clearBtn: {
     padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
   },
-  keyboardContainer: {
+  chatArea: {
     flex: 1,
   },
-  messagesList: {
-    padding: 16,
-    gap: 12,
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
-  messageRow: {
+  msgRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    gap: 8,
+    marginBottom: 12,
   },
-  userRow: {
+  msgRowUser: {
     justifyContent: 'flex-end',
   },
-  botRow: {
+  msgRowBot: {
     justifyContent: 'flex-start',
   },
-  botSmallIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
-    backgroundColor: 'rgba(16, 185, 129, 0.15)',
-    alignItems: 'center',
+  botAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: THEME.primary,
     justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
     marginBottom: 4,
   },
-  bubble: {
-    maxWidth: '82%',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderWidth: 1,
-  },
   userBubble: {
-    backgroundColor: THEME.userBubble,
-    borderColor: THEME.userBubbleBorder,
+    maxWidth: '80%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 18,
     borderBottomRightRadius: 4,
+    shadowColor: THEME.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  userMsgText: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    lineHeight: 19,
   },
   botBubble: {
-    backgroundColor: THEME.botBubble,
-    borderColor: THEME.botBubbleBorder,
+    maxWidth: '82%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 18,
     borderBottomLeftRadius: 4,
+    backgroundColor: '#FFFFFF',
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
   },
-  bubbleText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  userText: {
-    color: '#ffffff',
-  },
-  botText: {
-    color: '#e2e8f0',
-  },
-  bubbleTime: {
-    fontSize: 9,
-    color: THEME.textFaint,
-    alignSelf: 'flex-end',
-    marginTop: 4,
+  botMsgText: {
+    fontSize: 14,
+    color: THEME.textDark,
+    lineHeight: 20,
   },
   typingRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  typingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
     gap: 5,
-    paddingLeft: 34,
-    paddingVertical: 8,
   },
   typingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#34d399',
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: THEME.primary,
   },
-  promptsBar: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+  quickPromptsWrapper: {
+    paddingVertical: 6,
   },
-  promptsScroll: {
+  quickPromptsList: {
+    paddingHorizontal: 16,
     gap: 8,
   },
-  promptPill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+  quickPromptChip: {
+    backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 16,
   },
-  promptPillText: {
-    fontSize: 11,
-    color: '#fb7185',
+  quickPromptText: {
+    fontSize: 12,
+    color: THEME.textDark,
     fontWeight: '600',
   },
   inputBar: {
+    paddingHorizontal: 16,
+    paddingTop: 6,
+  },
+  inputCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
     paddingHorizontal: 14,
-    paddingTop: 8,
-    backgroundColor: 'rgba(11, 18, 32, 0.98)',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-    gap: 10,
+    paddingVertical: 6,
+    shadowColor: '#1E293B',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
-  inputField: {
+  textInput: {
     flex: 1,
-    backgroundColor: 'rgba(20, 29, 48, 0.85)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
-    paddingHorizontal: 14,
-    height: 42,
-    color: '#ffffff',
-    fontSize: 13,
+    fontSize: 14,
+    color: THEME.textDark,
+    maxHeight: 80,
+    paddingVertical: 6,
   },
   sendBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#f43f5e',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    overflow: 'hidden',
+    marginLeft: 8,
   },
   sendBtnDisabled: {
-    opacity: 0.4,
+    opacity: 0.5,
+  },
+  sendGradient: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
