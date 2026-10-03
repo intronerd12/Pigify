@@ -18,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import GridBackground from '../components/GridBackground';
 
 import {
   signInWithSupabase,
@@ -253,10 +254,8 @@ export default function AuthScreen({ onLogin }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Atmospheric Multi-radial Glow Overlays matching Web AuthPro.css */}
-      <View style={styles.glowTopLeft} />
-      <View style={styles.glowTopRight} />
-      <View style={styles.glowBottomCenter} />
+      {/* Cyber Grid Mesh + Ambient Radial Glows (1:1 match with web .pigify-grid-mesh) */}
+      <GridBackground />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -275,13 +274,11 @@ export default function AuthScreen({ onLogin }) {
               <Text style={styles.kickerText}>YOLOv11-VET // CLINICAL BIOSECURITY</Text>
             </View>
 
-            <View style={styles.logoBadge}>
-              <Image
-                source={require('./assets/pigify-logo.png')}
-                style={styles.logoImage}
-                resizeMode="cover"
-              />
-            </View>
+            <Image
+              source={require('./assets/pigify-logo.png')}
+              style={styles.logoBadge}
+              resizeMode="contain"
+            />
             <Text style={styles.appTitle}>Pigify</Text>
             <Text style={styles.appTagline}>Smart Swine Telemetry & Health AI</Text>
           </View>
@@ -568,33 +565,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: THEME.bgDeep,
   },
-  glowTopLeft: {
-    position: 'absolute',
-    top: -50,
-    left: -50,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(244, 63, 94, 0.16)',
-  },
-  glowTopRight: {
-    position: 'absolute',
-    top: 40,
-    right: -60,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(16, 185, 129, 0.12)',
-  },
-  glowBottomCenter: {
-    position: 'absolute',
-    bottom: -60,
-    alignSelf: 'center',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(6, 182, 212, 0.08)',
-  },
   keyboardView: {
     flex: 1,
   },
@@ -633,25 +603,14 @@ const styles = StyleSheet.create({
     letterSpacing: 1.1,
   },
   logoBadge: {
-    width: 72,
-    height: 72,
-    borderRadius: 22,
-    backgroundColor: '#0D1424',
-    borderWidth: 1.5,
-    borderColor: 'rgba(244, 63, 94, 0.35)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 80,
+    height: 80,
     marginBottom: 12,
-    elevation: 8,
+    elevation: 10,
     shadowColor: THEME.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  logoImage: {
-    width: 58,
-    height: 58,
-    borderRadius: 16,
+    shadowOpacity: 0.35,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 5 },
   },
   appTitle: {
     fontSize: 28,
