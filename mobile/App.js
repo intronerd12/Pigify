@@ -59,11 +59,11 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
 const NAV_THEME = {
-  active: '#C71585',
-  inactive: '#8EA19A',
-  barBg: '#FFFFFF',
-  centerBtn: '#C71585',
-  centerBtnShadow: 'rgba(199, 21, 133, 0.38)',
+  active: '#fb7185',
+  inactive: '#64748b',
+  barBg: 'rgba(11, 18, 32, 0.96)',
+  centerBtn: '#f43f5e',
+  centerBtnShadow: 'rgba(244, 63, 94, 0.45)',
 };
 
 function CenterScanButton({ onPress, accessibilityState }) {
@@ -77,7 +77,7 @@ function CenterScanButton({ onPress, accessibilityState }) {
       style={styles.scanBtnWrap}
     >
       <View style={[styles.scanBtn, focused && styles.scanBtnFocused]}>
-        <Ionicons name={focused ? 'scan' : 'scan-outline'} size={30} color="#FFFFFF" />
+        <Ionicons name={focused ? 'scan' : 'scan-outline'} size={28} color="#FFFFFF" />
       </View>
     </TouchableOpacity>
   );
@@ -91,7 +91,7 @@ function MainTabs({ user, handleLogout }) {
           let iconName;
 
           if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
+            iconName = focused ? 'grid' : 'grid-outline';
           } else if (route.name === 'Scan') {
             iconName = focused ? 'scan' : 'scan-outline';
           } else if (route.name === 'Sorting') {
@@ -102,7 +102,7 @@ function MainTabs({ user, handleLogout }) {
             iconName = focused ? 'person' : 'person-outline';
           }
 
-          return <Ionicons name={iconName} size={22} color={color} />;
+          return <Ionicons name={iconName} size={21} color={color} />;
         },
         tabBarActiveTintColor: NAV_THEME.active,
         tabBarInactiveTintColor: NAV_THEME.inactive,
@@ -116,7 +116,7 @@ function MainTabs({ user, handleLogout }) {
         unmountOnBlur: false,
       })}
     >
-      <Tab.Screen name="Home" options={{ tabBarLabel: 'Home' }}>
+      <Tab.Screen name="Home" options={{ tabBarLabel: 'Command' }}>
         {props => <HomeScreen {...props} user={user} onLogout={handleLogout} />}
       </Tab.Screen>
       <Tab.Screen name="Sorting" options={{ tabBarLabel: 'Triage' }}>
@@ -125,7 +125,7 @@ function MainTabs({ user, handleLogout }) {
       <Tab.Screen
         name="Scan"
         options={{
-          tabBarLabel: 'Scan',
+          tabBarLabel: 'Scanner',
           tabBarButton: (props) => <CenterScanButton {...props} />,
           tabBarIcon: () => null,
         }}
@@ -246,7 +246,7 @@ export default function App() {
             key={`user:${userKey}`}
             screenOptions={{
               headerShown: false,
-              cardStyle: { backgroundColor: '#F8F9FA' },
+              cardStyle: { backgroundColor: '#070A13' },
               detachInactiveScreens: true,
             }}
           >
@@ -277,7 +277,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#070A13',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -285,11 +285,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#070A13',
   },
   screenLoaderContainer: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#070A13',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -298,9 +298,9 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(199, 21, 133, 0.08)',
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
     borderWidth: 1,
-    borderColor: 'rgba(199, 21, 133, 0.25)',
+    borderColor: 'rgba(244, 63, 94, 0.3)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   screenLoaderLabel: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#F8FAFC',
     marginBottom: 4,
     letterSpacing: 0.3,
   },
@@ -318,23 +318,23 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     position: 'absolute',
-    left: 20,
-    right: 20,
+    left: 16,
+    right: 16,
     bottom: 14,
-    height: 72,
+    height: 68,
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.06)',
-    borderRadius: 38,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 34,
     overflow: 'visible',
     backgroundColor: NAV_THEME.barBg,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingTop: 6,
     paddingBottom: 6,
-    elevation: 16,
-    shadowColor: '#172B24',
-    shadowOpacity: 0.14,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 6 },
+    elevation: 20,
+    shadowColor: '#000000',
+    shadowOpacity: 0.65,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 8 },
   },
   tabBarItem: {
     paddingTop: 4,
@@ -347,27 +347,27 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   scanBtnWrap: {
-    top: -22,
+    top: -18,
     justifyContent: 'center',
     alignItems: 'center',
   },
   scanBtn: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: NAV_THEME.centerBtn,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 10,
+    elevation: 12,
     shadowColor: NAV_THEME.centerBtnShadow,
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
+    shadowOpacity: 0.7,
+    shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },
-    borderWidth: 4,
-    borderColor: '#FFFFFF',
+    borderWidth: 3.5,
+    borderColor: '#0b1220',
   },
   scanBtnFocused: {
-    backgroundColor: '#8B008B',
+    backgroundColor: '#be123c',
     transform: [{ scale: 1.05 }],
   },
 });

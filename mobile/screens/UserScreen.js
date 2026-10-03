@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { Avatar, Surface, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
+import { Avatar, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,20 +17,23 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
-// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
+// ── Web Design Tokens (Exact match with Home.css & AuthPro.css) ───────────────
 const THEME = {
-  primary: '#C71585',       // Deep Rose
-  primaryDark: '#8B008B',   // Dark Magenta
-  primaryLight: '#FF69B4',  // Hot Pink
-  secondary: '#FFC0CB',    // Soft Pink
-  accent: '#00B894',       // Emerald
-  white: '#FFFFFF',
-  textDark: '#1E293B',
-  textLight: '#64748B',
-  background: '#F6F7FB',
-  surface: '#FFFFFF',
-  error: '#EF4444',
-  border: '#E2E8F0',
+  bgDeep: '#070A13',
+  bgCard: 'rgba(13, 20, 36, 0.92)',
+  borderCard: 'rgba(255, 255, 255, 0.10)',
+  borderCardHover: 'rgba(244, 63, 94, 0.35)',
+
+  primary: '#F43F5E',
+  primaryHover: '#FB7185',
+  primaryDark: '#BE123C',
+  emerald: '#10B981',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+
+  textMain: '#F8FAFC',
+  textMuted: '#94A3B8',
+  textFaint: '#64748B',
 };
 
 export default function UserScreen({ navigation, user, onLogout }) {
@@ -48,65 +51,65 @@ export default function UserScreen({ navigation, user, onLogout }) {
 
   const MENU_SECTIONS = [
     {
-      title: 'Account Settings',
+      title: 'OPERATOR CREDENTIALS',
       items: [
         {
           id: 'edit_profile',
           icon: 'person-outline',
-          title: 'Edit Profile',
-          subtitle: 'Update your name and avatar',
+          title: 'Operator Profile',
+          subtitle: 'Update clinical identity and credentials',
           action: () => navigation.navigate('EditProfile'),
         },
         {
           id: 'notifications',
           icon: 'notifications-outline',
-          title: 'Notifications',
-          subtitle: 'Manage swine outbreak & scan alerts',
+          title: 'Outbreak Alerts',
+          subtitle: 'Manage swine disease outbreak push alerts',
           action: () => navigation.navigate('Notifications'),
         },
         {
           id: 'community',
           icon: 'people-outline',
           title: 'Swine Community',
-          subtitle: 'Connect with peer swine raisers',
+          subtitle: 'Peer discussions with backyard pig raisers',
           action: () => navigation.navigate('CommunityForum'),
         },
       ],
     },
     {
-      title: 'Farm Telemetry & GIS',
+      title: 'FARM TELEMETRY & GIS',
       items: [
         {
           id: 'pen_sensors',
           icon: 'partly-sunny-outline',
           title: 'Pen Climate & Heat Stress',
-          subtitle: 'Ambient temperature, humidity & THI',
+          subtitle: 'Ambient temperature, humidity & THI index',
           action: () => navigation.navigate('Weather'),
         },
         {
           id: 'gis_mapping',
           icon: 'map-outline',
           title: 'Farm GIS & Pen Mapping',
-          subtitle: 'Pen location coordinates & layout',
+          subtitle: 'Spatial telemetry and quarantine sectors',
           action: () => navigation.navigate('MappingEnvironment'),
         },
       ],
     },
     {
-      title: 'Clinical Support',
+      title: 'CLINICAL PROTOCOLS',
       items: [
         {
           id: 'guide',
           icon: 'book-outline',
-          title: 'Swine Pathology Guide',
-          subtitle: 'Lesion, rash & symptom references',
+          title: 'Swine Pathology Manual',
+          subtitle: 'Erysipelas, Greasy Pig & PDNS lesion guides',
           action: () => navigation.navigate('Guide'),
         },
         {
           id: 'ai_vet',
           icon: 'chatbubble-ellipses-outline',
           title: 'AI Swine Vet Assistant',
-          subtitle: 'Interactive clinical consultation',
+          subtitle: 'Interactive diagnostic consultations',
           action: () => navigation.navigate('Chatbot'),
         },
       ],
@@ -117,87 +120,85 @@ export default function UserScreen({ navigation, user, onLogout }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Header Profile Section */}
-        <View style={styles.headerContainer}>
-          <LinearGradient
-            colors={[THEME.primaryDark, THEME.primary]}
-            style={[styles.headerGradient, { paddingTop: insets.top + 16 }]}
-          >
-            {/* Ambient pattern circles */}
-            <View style={styles.circle1} />
-            <View style={styles.circle2} />
+      {/* Atmospheric Multi-radial Glow Overlays */}
+      <View style={styles.glowTopLeft} />
+      <View style={styles.glowTopRight} />
 
-            <View style={styles.profileHeader}>
-              <View style={styles.avatarWrapper}>
-                {user?.avatar ? (
-                  <Avatar.Image
-                    size={76}
-                    source={{ uri: user.avatar }}
-                    style={{ backgroundColor: THEME.white }}
-                  />
-                ) : (
-                  <Avatar.Text
-                    size={76}
-                    label={operatorName ? operatorName.substring(0, 2).toUpperCase() : 'SW'}
-                    style={{ backgroundColor: THEME.white }}
-                    labelStyle={{ color: THEME.primary, fontWeight: 'bold', fontSize: 26 }}
-                  />
-                )}
-                <TouchableOpacity
-                  style={styles.editBadge}
-                  onPress={() => navigation.navigate('EditProfile')}
-                  activeOpacity={0.8}
-                >
-                  <Ionicons name="pencil" size={13} color={THEME.white} />
-                </TouchableOpacity>
-              </View>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 16 }]} showsVerticalScrollIndicator={false}>
+        {/* Operator Profile Card with Corner Reticles */}
+        <View style={styles.profileCard}>
+          <View style={styles.cornerTL} />
+          <View style={styles.cornerTR} />
+          <View style={styles.cornerBL} />
+          <View style={styles.cornerBR} />
 
-              <Text style={styles.userName}>{operatorName}</Text>
-              <Text style={styles.userEmail}>{operatorEmail}</Text>
-
-              <View style={styles.roleChip}>
-                <Ionicons name="shield-checkmark" size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
-                <Text style={styles.roleText}>{operatorRole.toUpperCase()}</Text>
-              </View>
+          <View style={styles.profileHeader}>
+            <View style={styles.avatarWrapper}>
+              {user?.avatar ? (
+                <Avatar.Image
+                  size={76}
+                  source={{ uri: user.avatar }}
+                  style={{ backgroundColor: '#0D1424' }}
+                />
+              ) : (
+                <Avatar.Text
+                  size={76}
+                  label={operatorName ? operatorName.substring(0, 2).toUpperCase() : 'SW'}
+                  style={{ backgroundColor: '#0D1424', borderWidth: 1.5, borderColor: THEME.primary }}
+                  labelStyle={{ color: THEME.primaryHover, fontWeight: 'bold', fontSize: 26 }}
+                />
+              )}
+              <TouchableOpacity
+                style={styles.editBadge}
+                onPress={() => navigation.navigate('EditProfile')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="pencil" size={13} color="#FFFFFF" />
+              </TouchableOpacity>
             </View>
-          </LinearGradient>
+
+            <Text style={styles.userName}>{operatorName}</Text>
+            <Text style={styles.userEmail}>{operatorEmail}</Text>
+
+            <View style={styles.roleChip}>
+              <Ionicons name="shield-checkmark" size={12} color="#34D399" style={{ marginRight: 4 }} />
+              <Text style={styles.roleText}>{operatorRole.toUpperCase()}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Floating Farm Summary Stats */}
-        <View style={styles.statsContainer}>
-          <Surface style={styles.statsCard} elevation={3}>
-            <View style={styles.statItem}>
-              <View style={[styles.statIconBox, { backgroundColor: '#E3F2FD' }]}>
-                <Ionicons name="scan-outline" size={18} color="#2196F3" />
-              </View>
-              <Text style={styles.statNumber}>48</Text>
-              <Text style={styles.statLabel}>Scans</Text>
+        {/* Telemetry Stats Card */}
+        <View style={styles.statsCard}>
+          <View style={styles.statItem}>
+            <View style={[styles.statIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
+              <Ionicons name="scan-outline" size={18} color="#38BDF8" />
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <View style={[styles.statIconBox, { backgroundColor: '#E8F5E9' }]}>
-                <Ionicons name="pulse" size={18} color="#00B894" />
-              </View>
-              <Text style={styles.statNumber}>96.4%</Text>
-              <Text style={styles.statLabel}>Herd Health</Text>
+            <Text style={styles.statNumber}>48</Text>
+            <Text style={styles.statLabel}>Scans</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <View style={[styles.statIconBox, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}>
+              <Ionicons name="pulse" size={18} color="#10B981" />
             </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <View style={[styles.statIconBox, { backgroundColor: '#FFF3E0' }]}>
-                <Ionicons name="ribbon-outline" size={18} color="#FF9F43" />
-              </View>
-              <Text style={styles.statNumber}>Grade A</Text>
-              <Text style={styles.statLabel}>Optimal</Text>
+            <Text style={styles.statNumber}>96.4%</Text>
+            <Text style={styles.statLabel}>Herd Health</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <View style={[styles.statIconBox, { backgroundColor: 'rgba(244, 63, 94, 0.12)' }]}>
+              <Ionicons name="ribbon-outline" size={18} color="#FB7185" />
             </View>
-          </Surface>
+            <Text style={styles.statNumber}>Grade A</Text>
+            <Text style={styles.statLabel}>Optimal</Text>
+          </View>
         </View>
 
         {/* Menu Sections */}
         {MENU_SECTIONS.map((section, sIdx) => (
           <View key={sIdx} style={styles.menuSection}>
             <Text style={styles.sectionHeaderTitle}>{section.title}</Text>
-            <Surface style={styles.menuCard} elevation={2}>
+            <View style={styles.menuCard}>
               {section.items.map((item, iIdx) => (
                 <View key={item.id}>
                   <TouchableOpacity
@@ -206,18 +207,18 @@ export default function UserScreen({ navigation, user, onLogout }) {
                     activeOpacity={0.75}
                   >
                     <View style={styles.menuIconBox}>
-                      <Ionicons name={item.icon} size={20} color={THEME.primary} />
+                      <Ionicons name={item.icon} size={20} color={THEME.primaryHover} />
                     </View>
                     <View style={styles.menuContent}>
                       <Text style={styles.menuTitle}>{item.title}</Text>
                       {item.subtitle && <Text style={styles.menuSubtitle}>{item.subtitle}</Text>}
                     </View>
-                    <Ionicons name="chevron-forward" size={18} color="#CBD5E1" />
+                    <Ionicons name="chevron-forward" size={16} color={THEME.textFaint} />
                   </TouchableOpacity>
                   {iIdx < section.items.length - 1 && <View style={styles.menuDivider} />}
                 </View>
               ))}
-            </Surface>
+            </View>
           </View>
         ))}
 
@@ -233,7 +234,7 @@ export default function UserScreen({ navigation, user, onLogout }) {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.versionText}>Pigify Mobile Swine Telemetry • Build 1.0.0 (SDK 57)</Text>
+        <Text style={styles.versionText}>Pigify Swine Telemetry • Web-Aligned Theme • SDK 57</Text>
       </ScrollView>
 
       {/* Logout Confirmation Dialog */}
@@ -241,19 +242,19 @@ export default function UserScreen({ navigation, user, onLogout }) {
         <Dialog
           visible={logoutVisible}
           onDismiss={() => setLogoutVisible(false)}
-          style={{ backgroundColor: THEME.white, borderRadius: 20 }}
+          style={{ backgroundColor: '#0D1424', borderRadius: 20, borderWidth: 1, borderColor: THEME.borderCard }}
         >
           <Dialog.Icon icon="alert-circle-outline" color="#EF4444" size={36} />
-          <Dialog.Title style={{ textAlign: 'center', color: THEME.textDark, fontWeight: '700' }}>
+          <Dialog.Title style={{ textAlign: 'center', color: THEME.textMain, fontWeight: '700' }}>
             Sign Out?
           </Dialog.Title>
           <Dialog.Content>
-            <Paragraph style={{ textAlign: 'center', color: THEME.textLight }}>
-              Are you sure you want to sign out of this device?
+            <Paragraph style={{ textAlign: 'center', color: THEME.textMuted }}>
+              Are you sure you want to sign out of this session?
             </Paragraph>
           </Dialog.Content>
           <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 }}>
-            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textLight}>
+            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textFaint}>
               Cancel
             </Button>
             <Button onPress={handleLogoutConfirm} mode="contained" buttonColor="#EF4444">
@@ -269,39 +270,83 @@ export default function UserScreen({ navigation, user, onLogout }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: THEME.bgDeep,
   },
-  scrollContent: {
-    paddingBottom: 110,
-  },
-  headerContainer: {
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    overflow: 'hidden',
-  },
-  headerGradient: {
-    paddingBottom: 36,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    position: 'relative',
-  },
-  circle1: {
+  glowTopLeft: {
     position: 'absolute',
     top: -40,
-    right: -40,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    left: -40,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
   },
-  circle2: {
+  glowTopRight: {
     position: 'absolute',
-    bottom: -30,
-    left: -30,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    top: 60,
+    right: -50,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 110,
+  },
+  profileCard: {
+    backgroundColor: THEME.bgCard,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
+    padding: 24,
+    alignItems: 'center',
+    position: 'relative',
+    marginBottom: 16,
+    shadowColor: '#000000',
+    shadowOpacity: 0.45,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+  },
+  cornerTL: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 12,
+    height: 12,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerTR: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerBL: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    width: 12,
+    height: 12,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerBR: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderColor: THEME.primary,
   },
   profileHeader: {
     alignItems: 'center',
@@ -309,12 +354,7 @@ const styles = StyleSheet.create({
   },
   avatarWrapper: {
     position: 'relative',
-    marginBottom: 10,
-    elevation: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    marginBottom: 12,
   },
   editBadge: {
     position: 'absolute',
@@ -325,53 +365,48 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     backgroundColor: THEME.primaryDark,
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#0D1424',
     alignItems: 'center',
     justifyContent: 'center',
   },
   userName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: THEME.textMain,
     letterSpacing: 0.3,
   },
   userEmail: {
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: THEME.textMuted,
     marginTop: 2,
   },
   roleChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.28)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    marginTop: 8,
+    marginTop: 10,
   },
   roleText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-  statsContainer: {
-    paddingHorizontal: 20,
-    marginTop: -22,
-    marginBottom: 16,
-    zIndex: 20,
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#34D399',
+    letterSpacing: 0.8,
   },
   statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: THEME.white,
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     paddingVertical: 14,
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    marginBottom: 16,
   },
   statItem: {
     alignItems: 'center',
@@ -388,39 +423,35 @@ const styles = StyleSheet.create({
   statNumber: {
     fontSize: 15,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: THEME.textMain,
   },
   statLabel: {
-    fontSize: 11,
-    color: THEME.textLight,
+    fontSize: 10.5,
+    color: THEME.textMuted,
     marginTop: 1,
   },
   statDivider: {
     width: 1,
-    height: 30,
-    backgroundColor: '#E2E8F0',
+    height: 28,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   menuSection: {
-    paddingHorizontal: 20,
-    marginTop: 12,
+    marginTop: 10,
   },
   sectionHeaderTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: THEME.textLight,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontSize: 11,
+    fontWeight: '800',
+    color: THEME.textFaint,
+    letterSpacing: 0.8,
     marginBottom: 8,
     marginLeft: 4,
   },
   menuCard: {
-    backgroundColor: THEME.white,
+    backgroundColor: THEME.bgCard,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     overflow: 'hidden',
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
   },
   menuItem: {
     flexDirection: 'row',
@@ -432,7 +463,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 12,
-    backgroundColor: 'rgba(199, 21, 133, 0.08)',
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
@@ -443,29 +474,28 @@ const styles = StyleSheet.create({
   menuTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: THEME.textDark,
+    color: THEME.textMain,
   },
   menuSubtitle: {
-    fontSize: 11,
-    color: THEME.textLight,
+    fontSize: 11.5,
+    color: THEME.textMuted,
     marginTop: 2,
   },
   menuDivider: {
     height: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
     marginLeft: 68,
   },
   logoutWrapper: {
-    paddingHorizontal: 20,
-    marginTop: 24,
+    marginTop: 20,
   },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: 'rgba(239, 68, 68, 0.3)',
     borderRadius: 16,
     paddingVertical: 14,
   },
@@ -476,8 +506,8 @@ const styles = StyleSheet.create({
   },
   versionText: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: THEME.textFaint,
     textAlign: 'center',
-    marginTop: 16,
+    marginTop: 18,
   },
 });

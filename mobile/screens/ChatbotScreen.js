@@ -11,7 +11,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { Text, Surface } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -22,21 +22,24 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ChatbotService } from '../services/ChatbotService';
 import { getUserNamespace, sanitizeForKey } from '../services/storageScope';
 
-// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
+// ── Web Design Tokens (Exact match with Home.css & AuthPro.css) ───────────────
 const THEME = {
-  primary: '#C71585',       // Deep Rose
-  primaryDark: '#8B008B',   // Dark Magenta
-  primaryLight: '#FF69B4',  // Hot Pink
-  secondary: '#FFC0CB',    // Soft Pink
-  accent: '#00B894',       // Emerald
-  white: '#FFFFFF',
-  textDark: '#1E293B',
-  textLight: '#64748B',
-  background: '#F6F7FB',
-  surface: '#FFFFFF',
-  userBubble: '#C71585',
-  botBubble: '#FFFFFF',
-  border: '#E2E8F0',
+  bgDeep: '#070A13',
+  bgCard: 'rgba(13, 20, 36, 0.92)',
+  bgInput: 'rgba(20, 29, 48, 0.85)',
+  borderCard: 'rgba(255, 255, 255, 0.10)',
+  borderInput: 'rgba(255, 255, 255, 0.12)',
+
+  primary: '#F43F5E',
+  primaryHover: '#FB7185',
+  primaryDark: '#BE123C',
+  emerald: '#10B981',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+
+  textMain: '#F8FAFC',
+  textMuted: '#94A3B8',
+  textFaint: '#64748B',
 };
 
 const STORAGE_KEY_BASE = 'chat_history_swine_v1';
@@ -203,7 +206,7 @@ export default function ChatbotScreen({ user }) {
       <View style={[styles.msgRow, isUser ? styles.msgRowUser : styles.msgRowBot]}>
         {!isUser && (
           <View style={styles.botAvatar}>
-            <Ionicons name="medkit" size={16} color="#FFFFFF" />
+            <Ionicons name="medkit" size={15} color="#FFFFFF" />
           </View>
         )}
 
@@ -217,9 +220,9 @@ export default function ChatbotScreen({ user }) {
             <Text style={styles.userMsgText}>{item.text}</Text>
           </LinearGradient>
         ) : (
-          <Surface style={styles.botBubble} elevation={1}>
+          <View style={styles.botBubble}>
             <Text style={styles.botMsgText}>{item.text}</Text>
-          </Surface>
+          </View>
         )}
       </View>
     );
@@ -229,32 +232,27 @@ export default function ChatbotScreen({ user }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Curved Header */}
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
-        <LinearGradient
-          colors={[THEME.primaryDark, THEME.primary]}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.circle1} />
+      {/* Atmospheric Overlays */}
+      <View style={styles.glowTopLeft} />
 
-        <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.headerAvatar}>
-              <Ionicons name="medkit" size={20} color={THEME.primary} />
-            </View>
-            <View style={{ marginLeft: 12 }}>
-              <Text style={styles.headerTitle}>Swine AI Vet Assistant</Text>
-              <View style={styles.statusRow}>
-                <View style={styles.onlineDot} />
-                <Text style={styles.statusText}>Clinical Consultation Active</Text>
-              </View>
+      {/* Header Bar matching Web AI Vet */}
+      <View style={[styles.headerContainer, { paddingTop: insets.top + 12 }]}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerAvatar}>
+            <Ionicons name="medkit" size={20} color={THEME.primaryHover} />
+          </View>
+          <View style={{ marginLeft: 12 }}>
+            <Text style={styles.headerTitle}>Swine AI Vet Assistant</Text>
+            <View style={styles.statusRow}>
+              <View style={styles.onlineDot} />
+              <Text style={styles.statusText}>Clinical Consultation Active</Text>
             </View>
           </View>
-
-          <TouchableOpacity onPress={handleClearHistory} style={styles.clearBtn}>
-            <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
-          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity onPress={handleClearHistory} style={styles.clearBtn}>
+          <Ionicons name="trash-outline" size={17} color={THEME.textFaint} />
+        </TouchableOpacity>
       </View>
 
       <KeyboardAvoidingView
@@ -302,12 +300,12 @@ export default function ChatbotScreen({ user }) {
 
         {/* Input Bar */}
         <View style={[styles.inputBar, { paddingBottom: tabBarHeight + 10 }]}>
-          <Surface style={styles.inputCard} elevation={3}>
+          <View style={styles.inputCard}>
             <TextInput
               value={inputText}
               onChangeText={setInputText}
               placeholder="Ask about swine symptoms, dosage, or pen climate..."
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor={THEME.textFaint}
               style={styles.textInput}
               multiline
               maxLength={400}
@@ -320,13 +318,13 @@ export default function ChatbotScreen({ user }) {
               activeOpacity={0.85}
             >
               <LinearGradient
-                colors={inputText.trim() ? [THEME.primary, THEME.primaryDark] : ['#CBD5E1', '#94A3B8']}
+                colors={inputText.trim() ? [THEME.primary, THEME.primaryDark] : ['#334155', '#1E293B']}
                 style={styles.sendGradient}
               >
-                <Ionicons name="arrow-up" size={20} color="#FFFFFF" />
+                <Ionicons name="arrow-up" size={19} color="#FFFFFF" />
               </LinearGradient>
             </TouchableOpacity>
-          </Surface>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -336,35 +334,26 @@ export default function ChatbotScreen({ user }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: THEME.bgDeep,
   },
-  headerContainer: {
-    paddingBottom: 18,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 26,
-    overflow: 'hidden',
-    position: 'relative',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-  },
-  circle1: {
+  glowTopLeft: {
     position: 'absolute',
     top: -40,
-    right: -40,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    left: -40,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
   },
-  headerContent: {
+  headerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    zIndex: 10,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.borderCard,
+    backgroundColor: 'rgba(7, 10, 19, 0.95)',
   },
   headerLeft: {
     flexDirection: 'row',
@@ -374,15 +363,16 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: THEME.textMain,
   },
   statusRow: {
     flexDirection: 'row',
@@ -390,21 +380,23 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   onlineDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: THEME.accent,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: THEME.emerald,
     marginRight: 6,
   },
   statusText: {
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#34D399',
     fontWeight: '500',
   },
   clearBtn: {
     padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: THEME.bgCard,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
   },
   chatArea: {
     flex: 1,
@@ -429,7 +421,9 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: THEME.primary,
+    backgroundColor: 'rgba(244, 63, 94, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
@@ -442,8 +436,8 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderBottomRightRadius: 4,
     shadowColor: THEME.primary,
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
   },
   userMsgText: {
@@ -457,15 +451,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 18,
     borderBottomLeftRadius: 4,
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
   },
   botMsgText: {
     fontSize: 14,
-    color: THEME.textDark,
+    color: THEME.textMain,
     lineHeight: 20,
   },
   typingRow: {
@@ -477,7 +469,9 @@ const styles = StyleSheet.create({
   typingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 16,
@@ -487,7 +481,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: THEME.primary,
+    backgroundColor: THEME.primaryHover,
   },
   quickPromptsWrapper: {
     paddingVertical: 6,
@@ -497,16 +491,16 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   quickPromptChip: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: THEME.borderCard,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 16,
   },
   quickPromptText: {
     fontSize: 12,
-    color: THEME.textDark,
+    color: THEME.textMuted,
     fontWeight: '600',
   },
   inputBar: {
@@ -516,19 +510,17 @@ const styles = StyleSheet.create({
   inputCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     borderRadius: 24,
     paddingHorizontal: 14,
     paddingVertical: 6,
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
   },
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: THEME.textDark,
+    color: THEME.textMain,
     maxHeight: 80,
     paddingVertical: 6,
   },

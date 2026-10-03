@@ -17,21 +17,21 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 const { width } = Dimensions.get('window');
 
 const THEME = {
-  bg: '#F6F7FB',
-  cardBg: '#FFFFFF',
-  cardBgAlt: '#FFFFFF',
-  border: '#E2E8F0',
-  borderActive: '#C71585',
-  primary: '#C71585',
-  primaryRose: '#FF69B4',
-  primaryDark: '#8B008B',
-  emerald: '#00B894',
-  cyan: '#0284C7',
-  amber: '#D97706',
-  purple: '#7C3AED',
-  text: '#1E293B',
-  textSub: '#64748B',
-  textMuted: '#94A3B8',
+  bg: '#070A13',
+  cardBg: 'rgba(13, 20, 36, 0.92)',
+  cardBgAlt: 'rgba(20, 29, 48, 0.85)',
+  border: 'rgba(255, 255, 255, 0.10)',
+  borderActive: '#F43F5E',
+  primary: '#F43F5E',
+  primaryRose: '#FB7185',
+  primaryDark: '#BE123C',
+  emerald: '#10B981',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+  purple: '#A855F7',
+  text: '#F8FAFC',
+  textSub: '#94A3B8',
+  textMuted: '#64748B',
 };
 
 const CLINICAL_GUIDES = {

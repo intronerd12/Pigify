@@ -11,7 +11,7 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { Surface, Button, ActivityIndicator } from 'react-native-paper';
+import { Button, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -24,28 +24,30 @@ import { ScanService } from '../services/ScanService';
 
 const { width, height } = Dimensions.get('window');
 
-// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
+// ── Web Design Tokens (Exact match with Home.css & AuthPro.css) ───────────────
 const THEME = {
-  primary: '#C71585',       // Deep Rose / Dragon Pink
-  primaryDark: '#8B008B',   // Dark Magenta
-  primaryLight: '#FF69B4',  // Hot Pink
-  secondary: '#FFC0CB',    // Soft Pink
-  accent: '#00B894',       // Emerald
-  white: '#FFFFFF',
-  textDark: '#1E293B',
-  textLight: '#64748B',
-  background: '#F6F7FB',
-  surface: '#FFFFFF',
-  error: '#EF4444',
-  border: '#E2E8F0',
+  bgDeep: '#070A13',
+  bgCard: 'rgba(13, 20, 36, 0.92)',
+  borderCard: 'rgba(255, 255, 255, 0.10)',
+
+  primary: '#F43F5E',
+  primaryHover: '#FB7185',
+  primaryDark: '#BE123C',
+  emerald: '#10B981',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+
+  textMain: '#F8FAFC',
+  textMuted: '#94A3B8',
+  textFaint: '#64748B',
 };
 
 const getGradeColor = (grade) => {
   const g = String(grade || 'A').toUpperCase();
-  if (g === 'A') return '#00B894';
-  if (g === 'B') return '#3B82F6';
-  if (g === 'C') return '#FF9800';
-  if (g === 'D') return '#EF4444';
+  if (g === 'A') return '#10B981';
+  if (g === 'B') return '#38BDF8';
+  if (g === 'C') return '#F59E0B';
+  if (g === 'D') return '#F43F5E';
   return '#94A3B8';
 };
 
@@ -102,7 +104,6 @@ export default function ScanScreen({ user }) {
         display_confidence_score: conf,
       });
     } catch (err) {
-      // Fallback result for offline or simulated swine symptom scan
       const fallback = {
         condition: 'Healthy Swine Dermis',
         severity: 'Normal',
@@ -163,9 +164,9 @@ export default function ScanScreen({ user }) {
         <StatusBar style="light" />
         <View style={styles.permissionCard}>
           <Ionicons name="camera-outline" size={54} color={THEME.primary} />
-          <Text style={styles.permissionTitle}>Camera Permission</Text>
+          <Text style={styles.permissionTitle}>Camera Permission Required</Text>
           <Text style={styles.permissionDesc}>
-            Pigify needs access to your camera to scan swine lesions, symptoms, and ear tags.
+            Pigify needs access to your camera to scan swine lesions, symptoms, and biosecurity indicators.
           </Text>
           <Button
             mode="contained"
@@ -177,7 +178,7 @@ export default function ScanScreen({ user }) {
           </Button>
           <Button
             mode="outlined"
-            textColor={THEME.primary}
+            textColor={THEME.primaryHover}
             style={{ width: '100%', borderRadius: 14, marginTop: 10, borderColor: THEME.primary }}
             onPress={handlePickGallery}
           >
@@ -188,7 +189,7 @@ export default function ScanScreen({ user }) {
     );
   }
 
-  // ── Result View ─────────────────────────────────────────────────────────────
+  // ── Result View (Web Dark HUD Aligned) ──────────────────────────────────────
   if (scanResult) {
     const grade = scanResult.grade || 'A';
     const gradeColor = getGradeColor(grade);
@@ -196,33 +197,45 @@ export default function ScanScreen({ user }) {
     return (
       <View style={styles.container}>
         <StatusBar style="light" />
+        <View style={styles.glowTopLeft} />
+
         <ScrollView contentContainerStyle={[styles.resultScroll, { paddingTop: insets.top + 16 }]}>
           {/* Header Bar */}
           <View style={styles.resultHeader}>
-            <TouchableOpacity onPress={() => setScanResult(null)} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={24} color={THEME.textDark} />
+            <TouchableOpacity onPress={() => setScanResult(null)} style={styles.darkActionBtn}>
+              <Ionicons name="arrow-back" size={22} color={THEME.textMain} />
             </TouchableOpacity>
-            <Text style={styles.resultHeaderTitle}>Scan Analysis</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Sorting')} style={styles.backBtn}>
-              <Ionicons name="list" size={22} color={THEME.primary} />
+            <Text style={styles.resultHeaderTitle}>Clinical Scan Analysis</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Sorting')} style={styles.darkActionBtn}>
+              <Ionicons name="list" size={20} color={THEME.primaryHover} />
             </TouchableOpacity>
           </View>
 
           {/* Captured Image Preview */}
-          <Surface style={styles.imageCard} elevation={4}>
+          <View style={styles.imageCard}>
+            <View style={styles.cornerTL} />
+            <View style={styles.cornerTR} />
+            <View style={styles.cornerBL} />
+            <View style={styles.cornerBR} />
+
             <Image source={{ uri: scanResult.imageUri }} style={styles.previewImage} resizeMode="cover" />
-            <View style={[styles.gradeTag, { backgroundColor: gradeColor }]}>
-              <Text style={styles.gradeTagText}>GRADE {grade}</Text>
+            <View style={[styles.gradeTag, { backgroundColor: `${gradeColor}25`, borderColor: gradeColor }]}>
+              <Text style={[styles.gradeTagText, { color: gradeColor }]}>GRADE {grade}</Text>
             </View>
-          </Surface>
+          </View>
 
           {/* Diagnosis Card */}
-          <Surface style={styles.resultCard} elevation={3}>
+          <View style={styles.resultCard}>
+            <View style={styles.cornerTL} />
+            <View style={styles.cornerTR} />
+            <View style={styles.cornerBL} />
+            <View style={styles.cornerBR} />
+
             <View style={styles.resultCardHeader}>
               <View style={[styles.statusIconCircle, { backgroundColor: `${gradeColor}18` }]}>
-                <Ionicons name="shield-checkmark" size={26} color={gradeColor} />
+                <Ionicons name="shield-checkmark" size={24} color={gradeColor} />
               </View>
-              <View style={{ flex: 1, marginLeft: 14 }}>
+              <View style={{ flex: 1, marginLeft: 12 }}>
                 <Text style={styles.conditionText}>
                   {scanResult.condition || scanResult.disease_detected || 'Swine Health Scan'}
                 </Text>
@@ -234,7 +247,7 @@ export default function ScanScreen({ user }) {
 
             <View style={styles.divider} />
 
-            <Text style={styles.detailLabel}>Clinical Triage Recommendation:</Text>
+            <Text style={styles.detailLabel}>CLINICAL TRIAGE RECOMMENDATION:</Text>
             <Text style={styles.detailText}>
               {scanResult.triage_recommendation ||
                 scanResult.recommendation ||
@@ -254,17 +267,17 @@ export default function ScanScreen({ user }) {
               <View style={styles.metricDivider} />
               <View style={styles.metricItem}>
                 <Text style={styles.metricLabel}>Biosecurity</Text>
-                <Text style={styles.metricValue}>Level 1 Pass</Text>
+                <Text style={[styles.metricValue, { color: '#10B981' }]}>Level 1 Pass</Text>
               </View>
               <View style={styles.metricDivider} />
               <View style={styles.metricItem}>
-                <Text style={styles.metricLabel}>Triage Status</Text>
+                <Text style={styles.metricLabel}>Action Status</Text>
                 <Text style={[styles.metricValue, { color: gradeColor }]}>
                   {grade === 'A' ? 'Cleared' : grade === 'B' ? 'Monitor' : 'Isolate'}
                 </Text>
               </View>
             </View>
-          </Surface>
+          </View>
 
           {/* Action Buttons */}
           <View style={styles.actionRow}>
@@ -273,7 +286,7 @@ export default function ScanScreen({ user }) {
               onPress={() => setScanResult(null)}
               activeOpacity={0.85}
             >
-              <Ionicons name="scan-outline" size={20} color={THEME.primary} style={{ marginRight: 6 }} />
+              <Ionicons name="scan-outline" size={18} color={THEME.primaryHover} style={{ marginRight: 6 }} />
               <Text style={styles.retakeBtnText}>New Scan</Text>
             </TouchableOpacity>
 
@@ -288,7 +301,7 @@ export default function ScanScreen({ user }) {
                 end={{ x: 1, y: 0 }}
                 style={styles.chatVetGradient}
               >
-                <Ionicons name="chatbubbles" size={20} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Ionicons name="chatbubbles" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                 <Text style={styles.chatVetBtnText}>Ask AI Vet</Text>
               </LinearGradient>
             </TouchableOpacity>
@@ -298,7 +311,7 @@ export default function ScanScreen({ user }) {
     );
   }
 
-  // ── Camera Viewfinder ───────────────────────────────────────────────────────
+  // ── Camera Viewfinder (Dark Cyber HUD) ──────────────────────────────────────
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
@@ -316,7 +329,7 @@ export default function ScanScreen({ user }) {
           </TouchableOpacity>
 
           <View style={styles.topTitleBox}>
-            <Text style={styles.topBarTitle}>YOLOv11-VET Scanner</Text>
+            <Text style={styles.topBarTitle}>YOLOv11-VET SCANNER</Text>
           </View>
 
           <View style={styles.topActions}>
@@ -402,35 +415,40 @@ export default function ScanScreen({ user }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000000',
+    backgroundColor: THEME.bgDeep,
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
-    backgroundColor: THEME.background,
+  },
+  glowTopLeft: {
+    position: 'absolute',
+    top: -50,
+    left: -50,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
   },
   permissionCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     padding: 28,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
   },
   permissionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: THEME.textMain,
     marginTop: 12,
     marginBottom: 6,
   },
   permissionDesc: {
     fontSize: 13,
-    color: THEME.textLight,
+    color: THEME.textMuted,
     textAlign: 'center',
     lineHeight: 18,
   },
@@ -438,16 +456,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     zIndex: 10,
   },
   glassBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(7, 10, 19, 0.75)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -456,18 +474,18 @@ const styles = StyleSheet.create({
     borderColor: THEME.primary,
   },
   topTitleBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(7, 10, 19, 0.75)',
     paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
+    paddingVertical: 7,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
   },
   topBarTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
     color: '#FFFFFF',
-    letterSpacing: 0.4,
+    letterSpacing: 0.8,
   },
   topActions: {
     flexDirection: 'row',
@@ -487,35 +505,35 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 28,
     height: 28,
-    borderColor: THEME.primaryLight,
+    borderColor: THEME.primaryHover,
   },
   cornerTL: {
     top: 0,
     left: 0,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-    borderTopLeftRadius: 14,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 10,
   },
   cornerTR: {
     top: 0,
     right: 0,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-    borderTopRightRadius: 14,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: 10,
   },
   cornerBL: {
     bottom: 0,
     left: 0,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-    borderBottomLeftRadius: 14,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: 10,
   },
   cornerBR: {
     bottom: 0,
     right: 0,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-    borderBottomRightRadius: 14,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: 10,
   },
   laserLine: {
     position: 'absolute',
@@ -529,13 +547,15 @@ const styles = StyleSheet.create({
   },
   viewfinderHint: {
     fontSize: 12,
-    color: '#FFFFFF',
+    color: THEME.textMain,
     marginTop: 20,
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(7, 10, 19, 0.8)',
     paddingHorizontal: 16,
     paddingVertical: 6,
     borderRadius: 14,
     fontWeight: '500',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   bottomBar: {
     flexDirection: 'row',
@@ -556,32 +576,31 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   captureBtnOuter: {
-    width: 78,
-    height: 78,
-    borderRadius: 39,
+    width: 76,
+    height: 76,
+    borderRadius: 38,
     padding: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     elevation: 8,
     shadowColor: THEME.primary,
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.45,
     shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
   },
   captureBtnGradient: {
     flex: 1,
-    borderRadius: 35,
+    borderRadius: 34,
     justifyContent: 'center',
     alignItems: 'center',
   },
   captureBtnInner: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 2.5,
     borderColor: '#FFFFFF',
   },
   resultScroll: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 40,
   },
   resultHeader: {
@@ -590,24 +609,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 16,
   },
-  backBtn: {
+  darkActionBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
   },
   resultHeaderTitle: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: THEME.textMain,
   },
   imageCard: {
     borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     marginBottom: 16,
     position: 'relative',
   },
@@ -619,59 +641,61 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 14,
     right: 14,
+    borderWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
   },
   gradeTagText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   resultCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgCard,
     borderRadius: 22,
-    padding: 20,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
+    padding: 18,
     marginBottom: 20,
+    position: 'relative',
   },
   resultCardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   statusIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
   conditionText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: THEME.textMain,
   },
   confidenceText: {
     fontSize: 12,
-    color: THEME.textLight,
+    color: THEME.textMuted,
     marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
     marginVertical: 14,
   },
   detailLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: THEME.textLight,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: THEME.textFaint,
+    letterSpacing: 0.8,
     marginBottom: 4,
   },
   detailText: {
     fontSize: 13,
-    color: THEME.textDark,
+    color: THEME.textMain,
     lineHeight: 18,
   },
   metricsRow: {
@@ -684,49 +708,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   metricLabel: {
-    fontSize: 11,
-    color: THEME.textLight,
+    fontSize: 10.5,
+    color: THEME.textFaint,
   },
   metricValue: {
     fontSize: 13,
     fontWeight: '700',
-    color: THEME.textDark,
+    color: THEME.textMain,
     marginTop: 2,
   },
   metricDivider: {
     width: 1,
     height: 24,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
   },
   actionRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 10,
   },
   retakeBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: THEME.primary,
+    backgroundColor: 'rgba(20, 29, 48, 0.85)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     borderRadius: 16,
     paddingVertical: 14,
   },
   retakeBtnText: {
     fontSize: 14,
     fontWeight: '700',
-    color: THEME.primary,
+    color: THEME.textMain,
   },
   chatVetBtn: {
     flex: 1,
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 4,
-    shadowColor: THEME.primary,
-    shadowOpacity: 0.35,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
   },
   chatVetGradient: {
     flexDirection: 'row',

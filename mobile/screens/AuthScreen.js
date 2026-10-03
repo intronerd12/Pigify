@@ -28,20 +28,30 @@ import { socialLogin } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
-// ── Vibrant Signature Mobile Palette ──────────────────────────────────────────
+// ── Web Design Tokens (Exact 1:1 match with AuthPro.css & Home.css) ───────────
 const THEME = {
-  primary: '#C71585',       // Deep Rose / Dragon Pink
-  primaryDark: '#8B008B',   // Dark Magenta
-  primaryLight: '#FF69B4',  // Hot Pink
-  secondary: '#FFC0CB',    // Soft Pink
-  accent: '#00B894',       // Emerald
-  white: '#FFFFFF',
-  textDark: '#1E293B',
-  textLight: '#64748B',
-  background: '#F8F9FA',
-  surface: '#FFFFFF',
-  error: '#EF4444',
-  border: '#E2E8F0',
+  bgDeep: '#070A13',
+  bgCard: 'rgba(13, 20, 36, 0.92)',
+  bgInput: 'rgba(20, 29, 48, 0.85)',
+  borderCard: 'rgba(255, 255, 255, 0.10)',
+  borderInput: 'rgba(255, 255, 255, 0.14)',
+  borderFocus: '#F43F5E',
+
+  primary: '#F43F5E',
+  primaryHover: '#FB7185',
+  primaryDark: '#BE123C',
+  emerald: '#10B981',
+  emeraldGlow: 'rgba(16, 185, 129, 0.25)',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+
+  textMain: '#F8FAFC',
+  textMuted: '#94A3B8',
+  textFaint: '#64748B',
+
+  error: '#F43F5E',
+  errorBg: 'rgba(244, 63, 94, 0.12)',
+  errorBorder: 'rgba(244, 63, 94, 0.3)',
 };
 
 export default function AuthScreen({ onLogin }) {
@@ -63,22 +73,43 @@ export default function AuthScreen({ onLogin }) {
 
   // Native Entry Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(24)).current;
+  const slideAnim = useRef(new Animated.Value(20)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 400,
+        duration: 380,
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
-        duration: 400,
+        duration: 380,
         useNativeDriver: true,
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
+
+  // Live HUD dot pulse
+  useEffect(() => {
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.35,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseLoop.start();
+    return () => pulseLoop.stop();
+  }, [pulseAnim]);
 
   // Password Strength
   const pwdStrength = useMemo(() => {
@@ -222,19 +253,10 @@ export default function AuthScreen({ onLogin }) {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* Decorative Curved Header Background */}
-      <View style={styles.headerBackground}>
-        <LinearGradient
-          colors={[THEME.primaryDark, THEME.primary, THEME.primaryLight]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.gradientHeader}
-        >
-          <View style={styles.patternCircle1} />
-          <View style={styles.patternCircle2} />
-          <View style={styles.patternCircle3} />
-        </LinearGradient>
-      </View>
+      {/* Atmospheric Multi-radial Glow Overlays matching Web AuthPro.css */}
+      <View style={styles.glowTopLeft} />
+      <View style={styles.glowTopRight} />
+      <View style={styles.glowBottomCenter} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -247,6 +269,12 @@ export default function AuthScreen({ onLogin }) {
         >
           {/* Header Brand Section */}
           <View style={styles.headerContent}>
+            {/* Live Telemetry Kicker */}
+            <View style={styles.kickerBadge}>
+              <Animated.View style={[styles.kickerDot, { transform: [{ scale: pulseAnim }] }]} />
+              <Text style={styles.kickerText}>YOLOv11-VET // CLINICAL BIOSECURITY</Text>
+            </View>
+
             <View style={styles.logoBadge}>
               <Image
                 source={require('./assets/pigify-logo.png')}
@@ -258,9 +286,15 @@ export default function AuthScreen({ onLogin }) {
             <Text style={styles.appTagline}>Smart Swine Telemetry & Health AI</Text>
           </View>
 
-          {/* Elevated Floating Auth Card */}
+          {/* Elevated Cyber Glassmorphic Auth Card */}
           <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
-            <Surface style={styles.authCard} elevation={4}>
+            <View style={styles.authCard}>
+              {/* High-tech Corner Reticles */}
+              <View style={styles.cornerTL} />
+              <View style={styles.cornerTR} />
+              <View style={styles.cornerBL} />
+              <View style={styles.cornerBR} />
+
               {/* Segmented Mode Tabs */}
               <View style={styles.tabContainer}>
                 <TouchableOpacity
@@ -283,14 +317,16 @@ export default function AuthScreen({ onLogin }) {
                 {/* Full Name (Sign Up only) */}
                 {!isLogin && (
                   <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>FULL NAME</Text>
                     <TextInput
-                      label="Full Name"
                       value={name}
                       onChangeText={setName}
+                      placeholder="e.g. Dr. Maria Santos"
+                      placeholderTextColor={THEME.textFaint}
                       mode="outlined"
-                      outlineColor="#E2E8F0"
-                      activeOutlineColor={THEME.primary}
-                      textColor={THEME.textDark}
+                      outlineColor={THEME.borderInput}
+                      activeOutlineColor={THEME.borderFocus}
+                      textColor={THEME.textMain}
                       left={<TextInput.Icon icon="account-outline" color={THEME.primary} />}
                       style={styles.input}
                       theme={{ roundness: 14 }}
@@ -301,14 +337,16 @@ export default function AuthScreen({ onLogin }) {
 
                 {/* Email Address */}
                 <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>EMAIL ADDRESS</Text>
                   <TextInput
-                    label="Email Address"
                     value={email}
                     onChangeText={setEmail}
+                    placeholder="operator@swinefarm.com"
+                    placeholderTextColor={THEME.textFaint}
                     mode="outlined"
-                    outlineColor="#E2E8F0"
-                    activeOutlineColor={THEME.primary}
-                    textColor={THEME.textDark}
+                    outlineColor={THEME.borderInput}
+                    activeOutlineColor={THEME.borderFocus}
+                    textColor={THEME.textMain}
                     left={<TextInput.Icon icon="email-outline" color={THEME.primary} />}
                     style={styles.input}
                     theme={{ roundness: 14 }}
@@ -319,20 +357,22 @@ export default function AuthScreen({ onLogin }) {
 
                 {/* Password */}
                 <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>PASSWORD</Text>
                   <TextInput
-                    label="Password"
                     value={password}
                     onChangeText={setPassword}
+                    placeholder="••••••••••••"
+                    placeholderTextColor={THEME.textFaint}
                     secureTextEntry={secureTextEntry}
                     mode="outlined"
-                    outlineColor="#E2E8F0"
-                    activeOutlineColor={THEME.primary}
-                    textColor={THEME.textDark}
+                    outlineColor={THEME.borderInput}
+                    activeOutlineColor={THEME.borderFocus}
+                    textColor={THEME.textMain}
                     left={<TextInput.Icon icon="lock-outline" color={THEME.primary} />}
                     right={
                       <TextInput.Icon
                         icon={secureTextEntry ? 'eye-outline' : 'eye-off-outline'}
-                        color={THEME.textLight}
+                        color={THEME.textMuted}
                         onPress={() => setSecureTextEntry(!secureTextEntry)}
                       />
                     }
@@ -364,20 +404,22 @@ export default function AuthScreen({ onLogin }) {
                 {/* Confirm Password (Sign Up only) */}
                 {!isLogin && (
                   <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>CONFIRM PASSWORD</Text>
                     <TextInput
-                      label="Confirm Password"
                       value={confirmPassword}
                       onChangeText={setConfirmPassword}
+                      placeholder="••••••••••••"
+                      placeholderTextColor={THEME.textFaint}
                       secureTextEntry={secureConfirmTextEntry}
                       mode="outlined"
-                      outlineColor="#E2E8F0"
-                      activeOutlineColor={THEME.primary}
-                      textColor={THEME.textDark}
+                      outlineColor={THEME.borderInput}
+                      activeOutlineColor={THEME.borderFocus}
+                      textColor={THEME.textMain}
                       left={<TextInput.Icon icon="lock-check-outline" color={THEME.primary} />}
                       right={
                         <TextInput.Icon
                           icon={secureConfirmTextEntry ? 'eye-outline' : 'eye-off-outline'}
-                          color={THEME.textLight}
+                          color={THEME.textMuted}
                           onPress={() => setSecureConfirmTextEntry(!secureConfirmTextEntry)}
                         />
                       }
@@ -399,7 +441,7 @@ export default function AuthScreen({ onLogin }) {
                 {isLogin && (
                   <TouchableOpacity
                     style={styles.forgotBtn}
-                    onPress={() => Alert.alert('Reset Password', 'Please visit the Pigify web portal or check your email for password recovery.')}
+                    onPress={() => Alert.alert('Password Recovery', 'Please check your email or visit the Pigify web command portal to reset your password.')}
                   >
                     <Text style={styles.forgotText}>Forgot password?</Text>
                   </TouchableOpacity>
@@ -423,7 +465,7 @@ export default function AuthScreen({ onLogin }) {
                     ) : (
                       <View style={styles.submitBtnRow}>
                         <Text style={styles.submitBtnText}>
-                          {isLogin ? 'Sign In' : 'Create Swine Account'}
+                          {isLogin ? 'Sign In to Portal' : 'Create Swine Account'}
                         </Text>
                         <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
                       </View>
@@ -449,13 +491,13 @@ export default function AuthScreen({ onLogin }) {
                   <Text style={styles.googleBtnText}>Continue with Google</Text>
                 </TouchableOpacity>
               </View>
-            </Surface>
+            </View>
           </Animated.View>
 
           {/* Footer Info */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              By continuing, you agree to Pigify's Veterinary Telemetry Terms and Clinical Biosecurity Protocol.
+              Pigify Swine Telemetry & Clinical AI • Connected to Supabase TLS
             </Text>
           </View>
         </ScrollView>
@@ -464,7 +506,7 @@ export default function AuthScreen({ onLogin }) {
       {/* Verification Modal */}
       <Modal visible={needsVerification} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <Surface style={styles.modalCard} elevation={6}>
+          <View style={styles.modalCard}>
             <View style={styles.modalIconCircle}>
               <Ionicons name="mail-unread-outline" size={36} color={THEME.primary} />
             </View>
@@ -474,12 +516,12 @@ export default function AuthScreen({ onLogin }) {
             </Text>
             <Text style={styles.modalEmail}>{verifyEmail}</Text>
             <Text style={styles.modalInstruction}>
-              Please tap the link in that email to activate your Pigify Swine account, then sign in.
+              Please tap the link in that email to activate your account, then sign in.
             </Text>
 
             {resendSuccess ? (
               <View style={styles.successBanner}>
-                <Ionicons name="checkmark-circle" size={16} color="#059669" />
+                <Ionicons name="checkmark-circle" size={16} color="#10B981" />
                 <Text style={styles.successBannerText}>{resendSuccess}</Text>
               </View>
             ) : null}
@@ -506,7 +548,7 @@ export default function AuthScreen({ onLogin }) {
             <Button
               mode="contained"
               buttonColor={THEME.primary}
-              style={{ marginTop: 12, borderRadius: 12 }}
+              style={{ marginTop: 12, borderRadius: 12, width: '100%' }}
               onPress={() => {
                 setNeedsVerification(false);
                 setIsLogin(true);
@@ -514,7 +556,7 @@ export default function AuthScreen({ onLogin }) {
             >
               Back to Sign In
             </Button>
-          </Surface>
+          </View>
         </View>
       </Modal>
     </View>
@@ -524,47 +566,34 @@ export default function AuthScreen({ onLogin }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: THEME.bgDeep,
   },
-  headerBackground: {
+  glowTopLeft: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 290,
+    top: -50,
+    left: -50,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(244, 63, 94, 0.16)',
   },
-  gradientHeader: {
-    flex: 1,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-    overflow: 'hidden',
-  },
-  patternCircle1: {
+  glowTopRight: {
     position: 'absolute',
+    top: 40,
+    right: -60,
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    top: -60,
-    right: -50,
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
   },
-  patternCircle2: {
+  glowBottomCenter: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    bottom: 20,
-    left: -40,
-  },
-  patternCircle3: {
-    position: 'absolute',
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    top: 40,
-    left: 40,
+    bottom: -60,
+    alignSelf: 'center',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
   },
   keyboardView: {
     flex: 1,
@@ -579,18 +608,44 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
+  kickerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.28)',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 16,
+  },
+  kickerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: THEME.emerald,
+    marginRight: 8,
+  },
+  kickerText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#34D399',
+    letterSpacing: 1.1,
+  },
   logoBadge: {
     width: 72,
     height: 72,
     borderRadius: 22,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0D1424',
+    borderWidth: 1.5,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 12,
     elevation: 8,
-    shadowColor: '#000000',
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
+    shadowColor: THEME.primary,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
   },
   logoImage: {
@@ -601,27 +656,72 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: THEME.textMain,
     letterSpacing: 0.5,
   },
   appTagline: {
     fontSize: 13,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: THEME.textMuted,
     marginTop: 4,
     fontWeight: '500',
   },
   authCard: {
-    backgroundColor: THEME.surface,
+    backgroundColor: THEME.bgCard,
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     padding: 22,
-    shadowColor: '#1E293B',
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    position: 'relative',
+    shadowColor: '#000000',
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+  },
+  cornerTL: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    width: 12,
+    height: 12,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerTR: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderTopWidth: 2,
+    borderRightWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerBL: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    width: 12,
+    height: 12,
+    borderBottomWidth: 2,
+    borderLeftWidth: 2,
+    borderColor: THEME.primary,
+  },
+  cornerBR: {
+    position: 'absolute',
+    bottom: 8,
+    right: 8,
+    width: 12,
+    height: 12,
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    borderColor: THEME.primary,
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: 'rgba(20, 29, 48, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 14,
     padding: 4,
     marginBottom: 20,
@@ -634,20 +734,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: '#FFFFFF',
-    elevation: 2,
-    shadowColor: '#000000',
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   tabText: {
     fontSize: 14,
     fontWeight: '600',
-    color: THEME.textLight,
+    color: THEME.textFaint,
   },
   tabTextActive: {
-    color: THEME.primary,
+    color: THEME.textMain,
     fontWeight: '700',
   },
   formContent: {
@@ -656,8 +753,16 @@ const styles = StyleSheet.create({
   inputWrapper: {
     marginBottom: 14,
   },
+  inputLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: THEME.textMuted,
+    letterSpacing: 0.8,
+    marginBottom: 6,
+    marginLeft: 2,
+  },
   input: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: THEME.bgInput,
     fontSize: 14,
   },
   strengthBox: {
@@ -671,7 +776,7 @@ const styles = StyleSheet.create({
   },
   strengthLabelText: {
     fontSize: 11,
-    color: THEME.textLight,
+    color: THEME.textMuted,
   },
   strengthValueText: {
     fontSize: 11,
@@ -680,7 +785,7 @@ const styles = StyleSheet.create({
   strengthTrack: {
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
   },
   strengthBar: {
@@ -690,9 +795,9 @@ const styles = StyleSheet.create({
   errorBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF2F2',
+    backgroundColor: THEME.errorBg,
     borderWidth: 1,
-    borderColor: '#FECACA',
+    borderColor: THEME.errorBorder,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -711,7 +816,7 @@ const styles = StyleSheet.create({
   },
   forgotText: {
     fontSize: 12,
-    color: THEME.primary,
+    color: THEME.primaryHover,
     fontWeight: '600',
   },
   submitBtnWrapper: {
@@ -720,8 +825,8 @@ const styles = StyleSheet.create({
     marginTop: 4,
     elevation: 6,
     shadowColor: THEME.primary,
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
     shadowOffset: { width: 0, height: 5 },
   },
   submitGradient: {
@@ -736,9 +841,9 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 0.4,
   },
   dividerRow: {
     flexDirection: 'row',
@@ -748,27 +853,27 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
     fontSize: 12,
-    color: THEME.textLight,
+    color: THEME.textFaint,
     marginHorizontal: 12,
   },
   googleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(20, 29, 48, 0.85)',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: THEME.borderInput,
     borderRadius: 14,
-    paddingVertical: 12,
+    paddingVertical: 13,
   },
   googleBtnText: {
     fontSize: 14,
     fontWeight: '600',
-    color: THEME.textDark,
+    color: THEME.textMain,
   },
   footer: {
     marginTop: 22,
@@ -777,19 +882,21 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 11,
-    color: '#94A3B8',
+    color: THEME.textFaint,
     textAlign: 'center',
     lineHeight: 16,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.55)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     padding: 24,
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#0D1424',
     borderRadius: 24,
+    borderWidth: 1,
+    borderColor: THEME.borderCard,
     padding: 24,
     alignItems: 'center',
   },
@@ -797,7 +904,7 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: 'rgba(199, 21, 133, 0.1)',
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
@@ -805,23 +912,23 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: THEME.textMain,
     marginBottom: 6,
   },
   modalDesc: {
     fontSize: 13,
-    color: THEME.textLight,
+    color: THEME.textMuted,
     textAlign: 'center',
   },
   modalEmail: {
     fontSize: 14,
     fontWeight: '700',
-    color: THEME.primary,
+    color: THEME.primaryHover,
     marginVertical: 4,
   },
   modalInstruction: {
     fontSize: 12,
-    color: THEME.textLight,
+    color: THEME.textMuted,
     textAlign: 'center',
     marginTop: 6,
     marginBottom: 16,
@@ -833,22 +940,22 @@ const styles = StyleSheet.create({
   },
   resendBtnText: {
     fontSize: 13,
-    color: THEME.primary,
+    color: THEME.primaryHover,
     fontWeight: '600',
   },
   successBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#ECFDF5',
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderWidth: 1,
-    borderColor: '#A7F3D0',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
     borderRadius: 10,
     padding: 10,
     marginBottom: 12,
   },
   successBannerText: {
     fontSize: 12,
-    color: '#059669',
+    color: '#34D399',
     marginLeft: 6,
   },
 });

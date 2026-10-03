@@ -19,18 +19,18 @@ import { ScanService } from '../services/ScanService';
 import { CommunityService } from '../services/CommunityService';
 
 const THEME = {
-  bg: '#F6F7FB',
-  cardBg: '#FFFFFF',
-  cardBgAlt: '#FFFFFF',
-  border: '#E2E8F0',
-  primary: '#C71585',
-  rose: '#FF69B4',
-  emerald: '#00B894',
-  cyan: '#0284C7',
-  amber: '#D97706',
-  text: '#1E293B',
-  textSub: '#64748B',
-  textMuted: '#94A3B8',
+  bg: '#070A13',
+  cardBg: 'rgba(13, 20, 36, 0.92)',
+  cardBgAlt: 'rgba(20, 29, 48, 0.85)',
+  border: 'rgba(255, 255, 255, 0.10)',
+  primary: '#F43F5E',
+  rose: '#FB7185',
+  emerald: '#10B981',
+  cyan: '#06B6D4',
+  amber: '#F59E0B',
+  text: '#F8FAFC',
+  textSub: '#94A3B8',
+  textMuted: '#64748B',
 };
 
 const BAD_WORD_PATTERNS = [
