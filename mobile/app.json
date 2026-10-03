@@ -7,11 +7,7 @@
     "icon": "./screens/assets/icon.png",
     "scheme": "pigify",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./screens/assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#060911"
-    },
+
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -52,7 +48,16 @@
           "locationWhenInUsePermission": "Allow Pigify to use your location to show local weather and improve scan context."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-status-bar",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./screens/assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#060911"
+        }
+      ]
     ],
     "extra": {
       "eas": {
