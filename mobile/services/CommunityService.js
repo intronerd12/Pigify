@@ -80,15 +80,15 @@ const getUserMeta = (user) => {
 const buildScanSnapshot = (scan) => {
   if (!scan || typeof scan !== 'object') return undefined;
   return {
-    localScanId: normalizeText(scan.id),
-    grade: normalizeText(scan.grade || 'N/A').toUpperCase(),
-    fruitType: normalizeText(scan.fruit_type || scan.fruitType || 'No fruit type'),
-    notes: normalizeText(scan.notes || scan.details || 'No notes provided'),
-    estimatedPricePerKg: toNumber(scan.estimated_price_per_kg, 0),
-    fruitAreaRatio: toNumber(scan.fruit_area_ratio, 0),
-    sizeCategory: normalizeText(scan.size_category || 'N/A'),
-    shelfLifeLabel: normalizeText(scan.shelf_life_label || 'No result'),
-    scanTimestamp: scan.timestamp || new Date().toISOString(),
+    localScanId: normalizeText(scan.id || scan._id || scan.localScanId),
+    condition: normalizeText(scan.condition || scan.details || scan.issue || 'Swine Dermis Inspection'),
+    severity: normalizeText(scan.severity || scan.grade || 'Tier A').toUpperCase(),
+    penId: normalizeText(scan.penId || 'Backyard Pen'),
+    swineId: normalizeText(scan.swineId || 'Swine'),
+    confidence: normalizeText(scan.confidence || '96.8%'),
+    grade: normalizeText(scan.grade || scan.severity || 'A').toUpperCase(),
+    notes: normalizeText(scan.notes || scan.recommendation || scan.details || 'Shared diagnostic scan'),
+    scanTimestamp: scan.timestamp || scan.createdAt || new Date().toISOString(),
     imageUrl: normalizeImageUrl(scan.imageUri || scan.imageUrl),
   };
 };

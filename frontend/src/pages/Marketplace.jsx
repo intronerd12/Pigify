@@ -3,12 +3,12 @@ import { BRAND_NAME } from '../config/brand'
 import './Landing.css'
 
 const PRODUCTS = [
-  { id: 1, name: 'Premium Red Dragon Fruit', grade: 'A', price: 450, image: '🔴', ripeness: 'Perfect', region: 'Northern District' },
-  { id: 2, name: 'Pink White Dragon Fruit', grade: 'A', price: 380, image: '🟣', ripeness: 'Ripe', region: 'Central Valley' },
-  { id: 3, name: 'Standard White Fruit', grade: 'B', price: 280, image: '⚪', ripeness: 'Good', region: 'South Region' },
-  { id: 4, name: 'Mixed Variety Batch', grade: 'B', price: 320, image: '🟢', ripeness: 'Ready', region: 'Multi-source' },
-  { id: 5, name: 'Under-ripe Red Selection', grade: 'C', price: 180, image: '🟠', ripeness: 'Developing', region: 'East Valley' },
-  { id: 6, name: 'Processing Grade', grade: 'C', price: 150, image: '🟡', ripeness: 'Various', region: 'West Region' },
+  { id: 1, name: 'Penicillin G Injectable (100ml)', grade: 'Veterinary Grade', price: 450, image: '💉', ripeness: 'Ready to Dispense', region: 'Sector A Nursery' },
+  { id: 2, name: 'Chlorhexidine 0.5% Medicated Swine Wash', grade: 'Antiseptic', price: 380, image: '🧴', ripeness: 'In Stock', region: 'Sector B Grower' },
+  { id: 3, name: 'Oral Electrolyte Formula (1kg)', grade: 'Piglet Care', price: 280, image: '🧪', ripeness: 'In Stock', region: 'Nursery Stalls' },
+  { id: 4, name: 'Ivermectin 1% Dewormer (50ml)', grade: 'Antiparasitic', price: 320, image: '🛡️', ripeness: 'Ready to Dispense', region: 'Finisher Herd' },
+  { id: 5, name: 'Biosecurity Disinfectant Powder (5kg)', grade: 'Sanitation', price: 180, image: '🧽', ripeness: 'In Stock', region: 'Gate Buffer' },
+  { id: 6, name: 'Floor Desiccant Bedding Powder (25kg)', grade: 'Bio-Safety', price: 150, image: '📦', ripeness: 'In Stock', region: 'All Pens' },
 ]
 
 function Marketplace() {
@@ -100,7 +100,7 @@ function Marketplace() {
                 <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}> Sample Batches</span>
               </h1>
               <p className="lp-subtitle" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                Explore representative fruit lots from our database, graded by our AI system. Each batch shows quality grade, ripeness level, and market value estimates.
+                Explore representative veterinary supplies and medication batches from our database, verified by our AI clinical system. Each batch shows compliance grade, availability, and clinical indications.
               </p>
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px', marginBottom: '32px' }}>
                 <input
@@ -185,9 +185,9 @@ function Marketplace() {
             <h2 className="section-title">How Grades Work</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginTop: '32px' }}>
               {[
-                { grade: 'A', color: '#dcfce7', desc: 'Premium quality, export-ready fruit with perfect ripeness and minimal defects' },
-                { grade: 'B', color: '#fef3c7', desc: 'Good quality fruit suitable for fresh market sales with minor surface marks' },
-                { grade: 'C', color: '#fee2e2', desc: 'Processing or local market grade with acceptable quality for non-premium channels' }
+                { grade: 'A', color: '#dcfce7', desc: 'Veterinary grade, high-potency medication and clinical formulations' },
+                { grade: 'B', color: '#fef3c7', desc: 'Commercial feed additives and biosecurity sanitation supplies' },
+                { grade: 'C', color: '#fee2e2', desc: 'General farm bedding and basic hygiene materials' }
               ].map((item, i) => (
                 <div key={i} className="grade-guide-card" style={{
                   padding: '24px',
@@ -212,8 +212,8 @@ function Marketplace() {
         marginTop: '48px'
       }}>
         <div className="container-pro" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🌴 {BRAND_NAME}</div>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Dragon Fruit Detection & Quality Control</p>
+          <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🛡️ {BRAND_NAME}</div>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Swine Disease Telemetry & Biosecurity Control</p>
           <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>© {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.</div>
         </div>
       </footer>

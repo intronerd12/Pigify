@@ -7,6 +7,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const { getScans, createScan, deleteScanByLocalScanId, deleteAllScansForUser, getScanStats, getScanAnalytics } = require('../controllers/scanController');
 const { ensureAiServiceRunning } = require('../services/aiServiceManager');
+const { cloudinary } = require('../config/cloudinary');
 
 // Configure Multer for temporary file storage
 const upload = multer({ dest: 'uploads/' });
@@ -37,7 +38,34 @@ router.get('/stats', getScanStats);
 // @route   GET /api/scan/analytics
 router.get('/analytics', getScanAnalytics);
 
-// @desc    Analyze dragon fruit image
+// @desc    Upload scan image directly to Cloudinary
+// @route   POST /api/scan/upload-image
+router.post('/upload-image', upload.single('image'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ message: 'No image file uploaded' });
+  }
+
+  const filePath = req.file.path;
+  try {
+    const result = await cloudinary.uploader.upload(filePath, {
+      folder: 'pigify/scans',
+      resource_type: 'image',
+      quality: 'auto:good',
+    });
+
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    return res.status(201).json({
+      imageUrl: result.secure_url,
+      publicId: result.public_id,
+    });
+  } catch (err) {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    console.error('Scan image upload error:', err);
+    return res.status(500).json({ message: err.message || 'Failed to upload image to Cloudinary' });
+  }
+});
+
+// @desc    Analyze swine clinical image
 // @route   POST /api/scan/analyze
 // @access  Public (or Private if we add auth middleware)
 router.post('/analyze', upload.single('image'), async (req, res) => {
@@ -79,11 +107,32 @@ router.post('/analyze', upload.single('image'), async (req, res) => {
       },
     });
 
-    // Cleanup temp file
-    fs.unlinkSync(filePath);
+    // Automatically store clinical scan image in Cloudinary
+    let cloudImageUrl = null;
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(filePath, {
+          folder: 'pigify/scans',
+          resource_type: 'image',
+          quality: 'auto:good',
+        });
+        cloudImageUrl = uploadResult.secure_url;
+      } catch (cErr) {
+        console.warn('Cloudinary scan backup notice:', cErr.message);
+      }
+    }
 
-    // Return analysis result
-    res.json(response.data);
+    // Cleanup temp file
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+    // Return analysis result enriched with Cloudinary hosted URL
+    const finalData = { ...response.data };
+    if (cloudImageUrl) {
+      finalData.imageUrl = cloudImageUrl;
+      finalData.image_url = cloudImageUrl;
+    }
+
+    res.json(finalData);
 
   } catch (error) {
     console.error('Scan Analysis Error:', error.message);

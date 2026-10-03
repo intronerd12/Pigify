@@ -1,5 +1,5 @@
 {
-  "name": "dragon-vision-mobile",
+  "name": "pigify-mobile",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "@react-navigation/bottom-tabs": "^7.9.0",
     "@react-navigation/native": "^7.1.26",
     "@react-navigation/stack": "^7.6.13",
+    "@supabase/supabase-js": "^2.117.2",
     "expo": "~54.0.33",
     "expo-blur": "~15.0.8",
     "expo-camera": "~17.0.10",

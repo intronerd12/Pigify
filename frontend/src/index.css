@@ -7,10 +7,10 @@
   --brand-accent: #ffeb3b;
 
   /* Back-compat tokens (gradually migrate to --brand-*) */
-  --dragon-primary: var(--brand-primary);
-  --dragon-secondary: var(--brand-secondary);
-  --dragon-flesh: var(--brand-surface);
-  --dragon-accent: var(--brand-accent);
+  
+  
+  
+  
   
   --white: #ffffff;
   --gray-50: #f9fafb;

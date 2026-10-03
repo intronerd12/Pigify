@@ -1,8 +1,7 @@
 import { Platform } from 'react-native';
 
 // NOTE: For physical devices, replace 'localhost' with your machine's LAN IP address (e.g., '192.168.1.5')
-// You can find your LAN IP by running 'ipconfig' (Windows) or 'ifconfig' (Mac/Linux) in your terminal.
-const renderUrl = 'https://ruin13-dragonfruit.hf.space';
+const renderUrl = 'http://localhost:5000';
 const ngrokUrl = '';
 const envNgrokUrl =
   typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_NGROK_URL
@@ -55,7 +54,7 @@ export const buildApiUrl = (path = '') => buildApiUrlInternal(activeBaseUrl, pat
 export const getActiveApiUrl = () => activeBaseUrl;
 export const API_URL = activeBaseUrl;
 
-export const apiFetch = async (path, options = {}) => {
+export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
   const urls = getBaseOrder();
   if (!urls.length) {
     throw new Error('No API URL configured');
@@ -67,8 +66,14 @@ export const apiFetch = async (path, options = {}) => {
     const baseUrl = urls[i];
     const isLast = i === urls.length - 1;
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
     try {
-      const response = await fetch(buildApiUrlInternal(baseUrl, path), options);
+      const response = await fetch(buildApiUrlInternal(baseUrl, path), {
+        ...options,
+        signal: controller.signal,
+      });
 
       if (response.ok || !shouldRetryResponse(response.status) || isLast) {
         if (activeBaseUrl !== baseUrl) {
@@ -86,6 +91,8 @@ export const apiFetch = async (path, options = {}) => {
       if (isLast) {
         throw error;
       }
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -96,47 +103,13 @@ console.log('API URL primary:', normalizeBaseUrl(renderUrl));
 console.log('API URL fallback:', normalizeBaseUrl(envNgrokUrl) || normalizeBaseUrl(ngrokUrl) || '(not set)');
 
 export const loginUser = async (email, password) => {
-  try {
-    const response = await apiFetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Login failed');
-    }
-
-    return data;
-  } catch (error) {
-    throw error;
-  }
+  const { signInWithSupabase } = require('./supabaseAuth');
+  return await signInWithSupabase(email, password);
 };
 
 export const registerUser = async (name, email, password) => {
-  try {
-    const response = await apiFetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name, email, password }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Registration failed');
-    }
-
-    return data;
-  } catch (error) {
-    throw error;
-  }
+  const { signUpWithSupabase } = require('./supabaseAuth');
+  return await signUpWithSupabase(name, email, password);
 };
 
 export const verifyEmail = async (email, code) => {

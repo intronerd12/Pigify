@@ -1,384 +1,556 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Linking } from 'react-native';
-import { Text, Avatar, Surface, Button, Title, Paragraph, Dialog, Portal } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Modal,
+  Platform,
+  Alert,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const { width } = Dimensions.get('window');
-
-// Consistent Theme Palette
 const THEME = {
-  primary: '#C71585', // Deep Pink
-  primaryDark: '#8B008B', // Dark Magenta
-  primaryLight: '#FF69B4', // Hot Pink
-  secondary: '#FFC0CB', // Pink
-  accent: '#00FA9A', // Medium Spring Green
-  white: '#FFFFFF',
-  textDark: '#2D3436',
-  textLight: '#636E72',
-  background: '#F8F9FA',
-  surface: '#FFFFFF',
-  error: '#FF5252',
+  bgDeep: '#060911',
+  bgCard: 'rgba(13, 20, 36, 0.94)',
+  primary: '#f43f5e',
+  emerald: '#10b981',
+  textMain: '#f8fafc',
+  textMuted: '#94a3b8',
+  textFaint: '#64748b',
 };
 
-export default function UserScreen({ navigation, user, onLogout, onUpdateUser }) {
+export default function UserScreen({ navigation, user, onLogout }) {
   const insets = useSafeAreaInsets();
-  const [logoutVisible, setLogoutVisible] = React.useState(false);
-  const [contactVisible, setContactVisible] = React.useState(false);
+  const [logoutVisible, setLogoutVisible] = useState(false);
 
-  const handleLogoutPress = () => {
-    setLogoutVisible(true);
-  };
+  const operatorName = user?.name || user?.fullName || 'Operator';
+  const operatorEmail = user?.email || 'operator@pigify.ai';
+  const operatorRole = (user?.role || 'Operator').toUpperCase();
 
   const handleLogoutConfirm = async () => {
     setLogoutVisible(false);
-    try {
-      if (onLogout) onLogout();
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
+    if (onLogout) onLogout();
   };
 
   const MENU_SECTIONS = [
     {
-      title: 'Account Settings',
+      title: 'OPERATOR & FACILITY',
       items: [
-        { id: 'edit_profile', icon: 'person-outline', title: 'Edit Profile', subtitle: 'Update your personal information', route: 'EditProfile' },
-        { id: 'notifications', icon: 'notifications-outline', title: 'Notifications', subtitle: 'Manage your alerts' },
-        { id: 'privacy', icon: 'shield-checkmark-outline', title: 'Privacy & Security', subtitle: 'Password, 2FA' },
-      ]
+        {
+          id: 'edit_profile',
+          icon: 'person-outline',
+          title: 'Operator Profile',
+          subtitle: 'Update clinical identity and credentials',
+          action: () => navigation.navigate('EditProfile'),
+        },
+        {
+          id: 'pen_sensors',
+          icon: 'partly-sunny-outline',
+          title: 'Farm Environment & Pen Telemetry',
+          subtitle: 'Monitor pen ambient temperature & humidity',
+          action: () => navigation.navigate('Weather'),
+        },
+        {
+          id: 'notifications',
+          icon: 'notifications-outline',
+          title: 'Biosecurity Notifications',
+          subtitle: 'Alerts on high contagion risk & pen warnings',
+          action: () => navigation.navigate('Notifications'),
+        },
+      ],
     },
     {
-      title: 'Support',
+      title: 'CLINICAL GUIDANCE & FORUM',
       items: [
-        { id: 'help', icon: 'help-circle-outline', title: 'Help Center' },
-        { id: 'contact', icon: 'mail-outline', title: 'Contact Us' },
-      ]
-    }
+        {
+          id: 'guide',
+          icon: 'book-outline',
+          title: 'Swine Disease Clinical Guide',
+          subtitle: 'Diagnostics manual for Erysipelas, Greasy Pig & Mange',
+          action: () => navigation.navigate('Guide'),
+        },
+        {
+          id: 'community',
+          icon: 'people-outline',
+          title: 'Backyard Swine Community',
+          subtitle: 'Share lesion photos and peer discussions',
+          action: () => navigation.navigate('CommunityForum'),
+        },
+        {
+          id: 'support',
+          icon: 'help-circle-outline',
+          title: 'Technical Veterinary Support',
+          subtitle: 'YOLOv11 engine support & troubleshooting',
+          action: () => Alert.alert('Pigify Support', 'For veterinary inquiries, email support@pigify.ai'),
+        },
+      ],
+    },
   ];
 
-  const MenuItem = ({ icon, title, subtitle, onPress, color = THEME.textDark }) => (
-    <TouchableOpacity onPress={onPress} style={styles.menuItem}>
-      <View style={[styles.menuIcon, { backgroundColor: '#F0F2F5' }]}>
-        <Ionicons name={icon} size={24} color={THEME.primary} />
-      </View>
-      <View style={styles.menuContent}>
-        <Text style={[styles.menuTitle, { color }]}>{title}</Text>
-        {subtitle && <Text style={styles.menuSubtitle}>{subtitle}</Text>}
-      </View>
-      <Ionicons name="chevron-forward" size={20} color="#BDC3C7" />
-    </TouchableOpacity>
-  );
-
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
-        {/* Header Profile Section */}
-        <View style={styles.headerContainer}>
-          <LinearGradient
-            colors={[THEME.primaryDark, THEME.primary]}
-            style={[styles.headerGradient, { paddingTop: insets.top + 20 }]}
-          >
-            <View style={styles.profileHeader}>
-              <View style={styles.avatarContainer}>
-                {user?.avatar ? (
-                  <Avatar.Image 
-                    size={80} 
-                    source={{ uri: user.avatar }} 
-                    style={{ backgroundColor: THEME.white }}
-                  />
-                ) : (
-                  <Avatar.Text 
-                    size={80} 
-                    label={user?.name ? user.name.substring(0, 2).toUpperCase() : 'DV'} 
-                    style={{ backgroundColor: THEME.white }}
-                    labelStyle={{ color: THEME.primary, fontWeight: 'bold', fontSize: 28 }}
-                  />
-                )}
-                <View style={styles.editBadge}>
-                  <Ionicons name="pencil" size={14} color={THEME.white} />
-                </View>
-              </View>
-              <Text style={styles.userName}>{user?.name || 'Dragon Tamer'}</Text>
-              <Text style={styles.userEmail}>{user?.email || 'dragon@example.com'}</Text>
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+
+      {/* Top Header */}
+      <View style={[styles.headerContainer, { paddingTop: insets.top + (Platform.OS === 'ios' ? 12 : 16) }]}>
+        <View style={styles.kickerRow}>
+          <View style={styles.kickerDot} />
+          <Text style={styles.kickerText}>OPERATOR PROFILE // CLINICAL CREDENTIALS</Text>
+        </View>
+        <Text style={styles.headerTitle}>System Account</Text>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* ── OPERATOR IDENTITY CARD ── */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileRow}>
+            <View style={styles.avatarWrap}>
+              <LinearGradient
+                colors={['#f43f5e', '#fb7185']}
+                style={styles.avatarGradient}
+              >
+                <Text style={styles.avatarInitial}>
+                  {operatorName.substring(0, 2).toUpperCase()}
+                </Text>
+              </LinearGradient>
             </View>
 
-            {/* Stats Overview */}
-            <View style={styles.statsContainer}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>12</Text>
-                <Text style={styles.statLabel}>Scans</Text>
+            <View style={styles.metaGroup}>
+              <View style={styles.roleTag}>
+                <Text style={styles.roleTagText}>{operatorRole}</Text>
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>A</Text>
-                <Text style={styles.statLabel}>Avg Grade</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>Pro</Text>
-                <Text style={styles.statLabel}>Plan</Text>
-              </View>
+              <Text style={styles.operatorName}>{operatorName}</Text>
+              <Text style={styles.operatorEmail}>{operatorEmail}</Text>
             </View>
-          </LinearGradient>
+          </View>
+
+          {/* Telemetry row */}
+          <View style={styles.telemetryRow}>
+            <View style={styles.telemetryBadge}>
+              <View style={styles.pulseDot} />
+              <Text style={styles.telemetryBadgeText}>TLS-256 SECURED</Text>
+            </View>
+            <Text style={styles.telemetrySector}>Sector A • Backyard Unit</Text>
+          </View>
         </View>
 
-        {/* Menu Options */}
-        <View style={styles.contentContainer}>
-          <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionHeader}>Account Settings</Text>
-            <MenuItem 
-              icon="person-outline" 
-              title="Edit Profile" 
-              subtitle="Update your personal information"
-              onPress={() => navigation.navigate('EditProfile', { user })}
-            />
-            <MenuItem 
-              icon="notifications-outline" 
-              title="Notifications" 
-              subtitle="Manage your alerts"
-              onPress={() => navigation.navigate('Notifications')}
-            />
-          </Surface>
-
-          <Surface style={styles.section} elevation={1}>
-            <Text style={styles.sectionHeader}>Support</Text>
-            <MenuItem 
-              icon="chatbubbles-outline" 
-              title="Chatbot Assistant" 
-              subtitle="Get help from our AI"
-              onPress={() => navigation.navigate('Chatbot')}
-            />
-            <MenuItem 
-              icon="mail-outline" 
-              title="Contact Support" 
-              subtitle="Email & Social Media"
-              onPress={() => setContactVisible(true)}
-            />
-          </Surface>
-
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogoutPress}
-          >
-            <Text style={styles.logoutText}>Log Out</Text>
-          </TouchableOpacity>
-          
-          <Text style={styles.versionText}>Version 1.0.0</Text>
+        {/* ── CLINICAL STATS COUNTERS ── */}
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={styles.statNum}>53</Text>
+            <Text style={styles.statLabel}>Herd Size</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={styles.statNum}>42</Text>
+            <Text style={styles.statLabel}>Scans Taken</Text>
+          </View>
+          <View style={styles.statBox}>
+            <Text style={[styles.statNum, { color: '#10b981' }]}>98%</Text>
+            <Text style={styles.statLabel}>Biosecurity</Text>
+          </View>
         </View>
+
+        {/* ── MENU SECTIONS ── */}
+        {MENU_SECTIONS.map((section, sIdx) => (
+          <View key={sIdx} style={styles.sectionContainer}>
+            <Text style={styles.sectionHeading}>{section.title}</Text>
+            <View style={styles.sectionCard}>
+              {section.items.map((item, iIdx) => (
+                <TouchableOpacity
+                  key={item.id}
+                  activeOpacity={0.8}
+                  onPress={item.action}
+                  style={[
+                    styles.menuRow,
+                    iIdx !== section.items.length - 1 && styles.menuRowBorder,
+                  ]}
+                >
+                  <View style={styles.menuIconWrap}>
+                    <Ionicons name={item.icon} size={18} color="#fb7185" />
+                  </View>
+                  <View style={styles.menuTextGroup}>
+                    <Text style={styles.menuItemTitle}>{item.title}</Text>
+                    <Text style={styles.menuItemSub}>{item.subtitle}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={17} color="#64748b" />
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
+
+        {/* ── SIGN OUT BUTTON ── */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => setLogoutVisible(true)}
+          style={styles.logoutBtn}
+        >
+          <Ionicons name="log-out-outline" size={18} color="#f43f5e" />
+          <Text style={styles.logoutBtnText}>Sign Out of Operator Terminal</Text>
+        </TouchableOpacity>
+
+        {/* System info footer */}
+        <View style={styles.footerNote}>
+          <Text style={styles.footerNoteText}>PIGIFY CLINICAL AI // VERSION 4.2</Text>
+          <Text style={styles.footerNoteSub}>Supabase TLS Cloud Telemetry Active</Text>
+        </View>
+
+        <View style={{ height: 80 }} />
       </ScrollView>
 
-      {/* Contact Dialog */}
-      <Portal>
-        <Dialog visible={contactVisible} onDismiss={() => setContactVisible(false)} style={{ backgroundColor: THEME.white }}>
-          <Dialog.Title style={{ textAlign: 'center', color: THEME.primaryDark }}>Contact Support</Dialog.Title>
-          <Dialog.Content>
-            <TouchableOpacity 
-              style={styles.contactOption}
-              onPress={() => {
-                setContactVisible(false);
-                Linking.openURL('https://facebook.com/tropiscan');
-              }}
-            >
-              <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-              <Text style={styles.contactText}>Facebook</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.contactOption}
-              onPress={() => {
-                setContactVisible(false);
-                Linking.openURL('mailto:support@tropiscan.com');
-              }}
-            >
-              <Ionicons name="mail" size={24} color="#DB4437" />
-              <Text style={styles.contactText}>Gmail / Email</Text>
-            </TouchableOpacity>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setContactVisible(false)} textColor={THEME.textLight}>Close</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+      {/* Logout Confirmation Modal */}
+      <Modal
+        visible={logoutVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLogoutVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalAlertIcon}>
+              <Ionicons name="log-out" size={24} color="#f43f5e" />
+            </View>
+            <Text style={styles.modalTitle}>Sign Out?</Text>
+            <Text style={styles.modalText}>
+              Are you sure you want to end your operator session on this device?
+            </Text>
 
-      {/* Logout Dialog */}
-      <Portal>
-        <Dialog visible={logoutVisible} onDismiss={() => setLogoutVisible(false)} style={{ backgroundColor: THEME.white }}>
-          <Dialog.Icon icon="alert" color={THEME.primary} />
-          <Dialog.Title style={{ textAlign: 'center', color: THEME.primaryDark }}>Logout?</Dialog.Title>
-          <Dialog.Content>
-            <Paragraph style={{ textAlign: 'center', color: THEME.textLight }}>
-              Are you sure you want to log out of Tropiscan?
-            </Paragraph>
-          </Dialog.Content>
-          <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 20 }}>
-            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textLight}>Cancel</Button>
-            <Button onPress={handleLogoutConfirm} mode="contained" buttonColor={THEME.primary}>Logout</Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                onPress={() => setLogoutVisible(false)}
+                style={styles.modalCancelBtn}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleLogoutConfirm}
+                style={styles.modalConfirmBtn}
+              >
+                <Text style={styles.modalConfirmText}>Sign Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: THEME.bgDeep,
   },
   headerContainer: {
-    overflow: 'hidden',
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-    backgroundColor: THEME.white,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(11, 18, 32, 0.95)',
   },
-  headerGradient: {
-    paddingBottom: 30,
-  },
-  profileHeader: {
+  kickerRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 12,
-    padding: 3,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 50,
-  },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: THEME.accent,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: THEME.white,
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: THEME.white,
+    gap: 6,
     marginBottom: 4,
   },
-  userEmail: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.8)',
+  kickerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
   },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 16,
+  kickerText: {
+    fontSize: 9,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#34d399',
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#ffffff',
+    letterSpacing: -0.4,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+
+  // ── Profile Card ──
+  profileCard: {
+    backgroundColor: 'rgba(13, 20, 36, 0.94)',
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 16,
+    marginBottom: 14,
   },
-  statItem: {
+  profileRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 14,
+    marginBottom: 14,
+  },
+  avatarWrap: {
+    width: 58,
+    height: 58,
+    borderRadius: 18,
+    overflow: 'hidden',
+  },
+  avatarGradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitial: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  metaGroup: {
     flex: 1,
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    height: '60%',
-    alignSelf: 'center',
+  roleTag: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginBottom: 4,
   },
-  statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: THEME.white,
+  roleTagText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fb7185',
+    letterSpacing: 0.8,
   },
-  statLabel: {
+  operatorName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: -0.3,
+  },
+  operatorEmail: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
+    color: THEME.textMuted,
     marginTop: 2,
   },
-  contentContainer: {
-    padding: 20,
+  telemetryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
   },
-  section: {
-    backgroundColor: THEME.white,
-    borderRadius: 16,
-    padding: 16,
+  telemetryBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  pulseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+  },
+  telemetryBadgeText: {
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#10b981',
+    fontWeight: '700',
+  },
+  telemetrySector: {
+    fontSize: 10,
+    color: THEME.textFaint,
+  },
+
+  // ── Stats Row ──
+  statsRow: {
+    flexDirection: 'row',
+    gap: 10,
     marginBottom: 20,
   },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: THEME.textDark,
-    marginBottom: 16,
-    marginLeft: 4,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F6F8',
-  },
-  menuIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  menuContent: {
+  statBox: {
     flex: 1,
+    backgroundColor: 'rgba(11, 18, 32, 0.85)',
+    borderRadius: 13,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 12,
+    alignItems: 'center',
   },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: THEME.textDark,
+  statNum: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
   },
-  menuSubtitle: {
-    fontSize: 12,
-    color: THEME.textLight,
+  statLabel: {
+    fontSize: 10,
+    color: THEME.textFaint,
     marginTop: 2,
   },
-  logoutButton: {
-    marginTop: 10,
-    padding: 16,
-    backgroundColor: '#FFF0F0',
+
+  // ── Menu Sections ──
+  sectionContainer: {
+    marginBottom: 18,
+  },
+  sectionHeading: {
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: THEME.textFaint,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    paddingLeft: 4,
+  },
+  sectionCard: {
+    backgroundColor: 'rgba(13, 20, 36, 0.94)',
     borderRadius: 16,
-    alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#FFE0E0',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    overflow: 'hidden',
   },
-  logoutText: {
-    color: THEME.error,
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  versionText: {
-    textAlign: 'center',
-    marginTop: 30,
-    color: THEME.textLight,
-    fontSize: 12,
-  },
-  contactOption: {
+  menuRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    padding: 14,
+    gap: 12,
   },
-  contactText: {
-    fontSize: 16,
-    marginLeft: 16,
-    color: THEME.textDark,
+  menuRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  menuIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuTextGroup: {
+    flex: 1,
+  },
+  menuItemTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#f8fafc',
+  },
+  menuItemSub: {
+    fontSize: 11,
+    color: THEME.textMuted,
+    marginTop: 2,
+  },
+
+  // ── Logout Button ──
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.3)',
+    paddingVertical: 14,
+    marginTop: 8,
+  },
+  logoutBtnText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#fb7185',
+  },
+
+  footerNote: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  footerNoteText: {
+    fontSize: 10,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: THEME.textFaint,
+    letterSpacing: 0.6,
+  },
+  footerNoteSub: {
+    fontSize: 10,
+    color: '#64748b',
+    marginTop: 2,
+  },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    backgroundColor: '#0c1424',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    padding: 22,
+    alignItems: 'center',
+  },
+  modalAlertIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: 'rgba(244, 63, 94, 0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 13,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 18,
+    marginBottom: 20,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalCancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  modalConfirmBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#f43f5e',
+    alignItems: 'center',
+  },
+  modalConfirmText: {
+    fontSize: 13,
+    color: '#fff',
+    fontWeight: '700',
   },
 });

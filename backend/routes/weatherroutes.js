@@ -77,25 +77,29 @@ const getGrowthRecommendation = (weather) => {
   const { temperature, humidity, condition } = weather;
   let status = 'Suitable';
   let color = 'green';
-  let message = 'Conditions are excellent for dragon fruit growth.';
+  let message = 'Pen microclimate and biosecurity conditions are within optimal range for swine herd.';
   let details = [];
 
-  // Temperature Analysis (Dragon Fruit Ideal: 20-30°C)
-  if (temperature < 20) {
+  // Temperature Analysis (Swine Comfort Zone: 18-26°C)
+  if (temperature < 18) {
     status = 'Caution';
     color = 'orange';
-    details.push('Temperature is below optimal range (20-30°C). Growth may slow down.');
-  } else if (temperature > 35) {
+    details.push('Temperature is below optimal range (18-26°C). Engage nursery heating lamps for piglets.');
+  } else if (temperature > 30) {
     status = 'Warning';
     color = 'red';
-    details.push('High temperature detected. Ensure adequate hydration for plants.');
+    details.push('High temperature detected. Activate misting sprinklers and cross-ventilation to prevent heat stress.');
   } else {
-    details.push('Temperature is within the ideal range.');
+    details.push('Temperature is within optimal swine thermo-neutral range.');
   }
 
-  // Humidity Analysis (Ideal: 60-80%)
-  if (humidity < 50) {
-      details.push('Humidity is low. Consider misting if prolonged.');
+  // Humidity Analysis (Ideal: 55-70%)
+  if (humidity > 75) {
+    status = status === 'Suitable' ? 'Caution' : status;
+    color = color === 'green' ? 'orange' : color;
+    details.push('High humidity detected (>75%). Damp concrete elevates Greasy Pig and dermatitis risks.');
+  } else if (humidity < 50) {
+    details.push('Low humidity. Maintain pen cross-ventilation without direct cold drafts.');
   }
 
   // Condition Analysis
@@ -104,9 +108,9 @@ const getGrowthRecommendation = (weather) => {
       status = 'Caution';
       color = 'orange';
     }
-    details.push('Rain may affect pollination if flowering. Ensure good drainage.');
+    details.push('Heavy rainfall. Ensure pen gutter drainage to prevent slurry buildup.');
   } else if (condition === 'Sunny') {
-    details.push('Good sunlight exposure for photosynthesis.');
+    details.push('Clear weather. Monitor barn roof temperature and pen drinking nipple flow.');
   }
 
   return {

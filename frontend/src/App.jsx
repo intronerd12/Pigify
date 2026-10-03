@@ -11,33 +11,47 @@ import './theme.css'
 import './components/marketing/MarketingNav.css'
 import './App.css'
 
-// Public & Marketing Pages (Lazy-loaded)
-const Landing = lazy(() => import('./pages/Landing'))
-const About = lazy(() => import('./pages/About'))
-const HowItWorks = lazy(() => import('./pages/HowItWorks'))
-const Features = lazy(() => import('./pages/Features'))
-const Auth = lazy(() => import('./pages/AuthPro'))
+// Robust Lazy Loader with automatic retry for resilience against network glitches
+const lazyWithRetry = (componentImport, retries = 2) =>
+  lazy(async () => {
+    try {
+      return await componentImport()
+    } catch (error) {
+      if (retries > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 500))
+        return lazyWithRetry(componentImport, retries - 1)
+      }
+      throw error
+    }
+  })
 
-// User Tab Pages (Lazy-loaded)
-const Home = lazy(() => import('./pages/Home'))
-const Overview = lazy(() => import('./pages/Overview'))
-const AiAnalysis = lazy(() => import('./pages/AiAnalysis'))
-const SortingGrading = lazy(() => import('./pages/SortingGrading'))
-const Environment = lazy(() => import('./pages/Environment'))
-const CommunityForum = lazy(() => import('./pages/CommunityForum'))
+// Public & Marketing Pages (Lazy-loaded with retry)
+const Landing = lazyWithRetry(() => import('./pages/Landing'))
+const About = lazyWithRetry(() => import('./pages/About'))
+const HowItWorks = lazyWithRetry(() => import('./pages/HowItWorks'))
+const Features = lazyWithRetry(() => import('./pages/Features'))
+const Auth = lazyWithRetry(() => import('./pages/AuthPro'))
 
-// Admin Pages (Lazy-loaded)
-const AdminLayout = lazy(() => import('./components/admin/AdminLayout'))
-const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
-const AdminFeatures = lazy(() => import('./pages/admin/AdminFeatures'))
-const FeatureShowcase = lazy(() => import('./pages/admin/FeatureShowcase'))
-const AdminAiAnalysis = lazy(() => import('./pages/admin/AdminAiAnalysis'))
-const AdminMarketplace = lazy(() => import('./pages/admin/AdminMarketplace'))
-const UserManagement = lazy(() => import('./pages/admin/UserManagement'))
-const Analytics = lazy(() => import('./pages/admin/Analytics'))
-const ScannedItems = lazy(() => import('./pages/admin/ScannedItems'))
-const ApiMonitoring = lazy(() => import('./pages/admin/ApiMonitoring'))
-const EnvironmentalData = lazy(() => import('./pages/admin/environmentaldata'))
+// User Tab Pages (Lazy-loaded with retry)
+const Home = lazyWithRetry(() => import('./pages/Home'))
+const Overview = lazyWithRetry(() => import('./pages/Overview'))
+const AiAnalysis = lazyWithRetry(() => import('./pages/AiAnalysis'))
+const SortingGrading = lazyWithRetry(() => import('./pages/SortingGrading'))
+const Environment = lazyWithRetry(() => import('./pages/Environment'))
+const CommunityForum = lazyWithRetry(() => import('./pages/CommunityForum'))
+
+// Admin Pages (Lazy-loaded with retry)
+const AdminLayout = lazyWithRetry(() => import('./components/admin/AdminLayout'))
+const Dashboard = lazyWithRetry(() => import('./pages/admin/Dashboard'))
+const AdminFeatures = lazyWithRetry(() => import('./pages/admin/AdminFeatures'))
+const FeatureShowcase = lazyWithRetry(() => import('./pages/admin/FeatureShowcase'))
+const AdminAiAnalysis = lazyWithRetry(() => import('./pages/admin/AdminAiAnalysis'))
+const AdminMarketplace = lazyWithRetry(() => import('./pages/admin/AdminMarketplace'))
+const UserManagement = lazyWithRetry(() => import('./pages/admin/UserManagement'))
+const Analytics = lazyWithRetry(() => import('./pages/admin/Analytics'))
+const ScannedItems = lazyWithRetry(() => import('./pages/admin/ScannedItems'))
+const ApiMonitoring = lazyWithRetry(() => import('./pages/admin/ApiMonitoring'))
+const EnvironmentalData = lazyWithRetry(() => import('./pages/admin/environmentaldata'))
 
 function App() {
   const forcedLogoutRef = useRef(false)

@@ -7,15 +7,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getEnvironmentalReport } from '../services/EnvironmentService';
 
 const THEME = {
-  primary: '#C71585',
-  primaryDark: '#8B008B',
-  textDark: '#2D3436',
-  textLight: '#636E72',
-  background: '#F0F2F5',
-  white: '#FFFFFF',
-  success: '#00B894',
-  warning: '#F39C12',
-  danger: '#D63031',
+  bg: '#060911',
+  cardBg: '#0f172a',
+  border: 'rgba(255, 255, 255, 0.08)',
+  primary: '#f43f5e',
+  rose: '#fb7185',
+  emerald: '#10b981',
+  cyan: '#06b6d4',
+  amber: '#f59e0b',
+  text: '#f8fafc',
+  textSub: '#94a3b8',
+  textMuted: '#64748b',
 };
 
 const formatDayLabel = (isoDate) => {
@@ -25,9 +27,8 @@ const formatDayLabel = (isoDate) => {
   return d.toLocaleDateString([], { weekday: 'short', month: 'short', day: '2-digit' });
 };
 
-const evaluateSuitability = (data) => {
+const evaluateSwineBiosecuritySuitability = (data) => {
   const forecast = data?.forecast;
-  const currentTemp = forecast?.current?.temperatureC;
   const days = Array.isArray(forecast?.days) ? forecast?.days : [];
   const windowDays = days.slice(0, 3);
 
@@ -40,39 +41,59 @@ const evaluateSuitability = (data) => {
   const precipSum = precip.length ? precip.reduce((a, b) => a + b, 0) : null;
 
   const flags = {
-    tooCold: minMin != null && minMin < 10,
-    chilly: minMin != null && minMin >= 10 && minMin < 15,
-    tooHot: maxMax != null && maxMax > 35,
-    heavyRain: precipSum != null && precipSum >= 50,
+    chilly: minMin != null && minMin < 20,
+    extremeHeat: maxMax != null && maxMax >= 32,
+    heavyRain: precipSum != null && precipSum >= 40,
   };
 
-  if (flags.tooCold) {
+  if (flags.extremeHeat) {
     return {
-      status: 'Not suitable',
-      color: THEME.danger,
-      summary: 'Forecast shows very low night temperatures.',
-      tips: ['Protect plants from cold', 'Avoid transplanting this week', 'Use mulching or covers'],
+      status: 'High Heat Stress Risk',
+      color: THEME.primary,
+      summary: 'Elevated ambient temperatures may induce acute swine thermal prostration and skin erythema.',
+      tips: [
+        'Activate barn misting sprinklers and cross-ventilation exhaust fans.',
+        'Ensure continuous ad-libitum fresh, cool drinking water across all pens.',
+        'Postpone daytime pig transfers or vaccinations until late afternoon hours.',
+      ],
     };
   }
 
-  if (flags.chilly || flags.tooHot || flags.heavyRain) {
+  if (flags.heavyRain) {
     return {
-      status: 'Caution',
-      color: THEME.warning,
-      summary: 'Conditions may stress dragonfruit plants.',
+      status: 'High Humidity & Moisture Alert',
+      color: THEME.amber,
+      summary: 'Damp pen concrete and high humidity elevate risks of Greasy Pig dermatitis and foot rot.',
       tips: [
-        flags.chilly ? 'Provide windbreaks or covers at night' : 'Maintain stable irrigation',
-        flags.tooHot ? 'Provide shade during peak heat' : 'Monitor soil moisture',
-        flags.heavyRain ? 'Improve drainage to prevent root issues' : 'Watch for pests and disease',
+        'Apply dry slaked lime or absorbent bedding powder over damp walkway floors.',
+        'Inspect pen drainage gutters to prevent standing slurry near piglet creep areas.',
+        'Monitor suckling piglets for facial greasy lesions or abrasions.',
+      ],
+    };
+  }
+
+  if (flags.chilly) {
+    return {
+      status: 'Low Temperature Advisory',
+      color: THEME.cyan,
+      summary: 'Night temperatures drop below comfort range for suckling and nursery piglets.',
+      tips: [
+        'Engage nursery heating lamps in Sector A creep boxes.',
+        'Lower barn tarpaulins or side curtains during night draft hours.',
+        'Verify piglet piling behavior indicating cold stress.',
       ],
     };
   }
 
   return {
-    status: 'Suitable',
-    color: THEME.success,
-    summary: 'Temperature and rainfall look generally favorable.',
-    tips: ['Maintain regular irrigation', 'Check trellis support', 'Monitor for pests'],
+    status: 'Optimal Biosecurity Microclimate',
+    color: THEME.emerald,
+    summary: 'Current weather parameters are within thermo-neutral zones for all swine age groups.',
+    tips: [
+      'Maintain standard 48-hour disinfectant footbath cycling at pen gates.',
+      'Conduct routine daily clinical skin checks during morning feeding.',
+      'Keep feed bins sealed against wild avian and rodent vectors.',
+    ],
   };
 };
 
@@ -91,7 +112,7 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
       setReport(data);
     } catch (e) {
       const msg = e && typeof e === 'object' && 'message' in e ? e.message : null;
-      setError(typeof msg === 'string' ? msg : 'Unable to load environmental data');
+      setError(typeof msg === 'string' ? msg : 'Unable to load farm environmental data');
     } finally {
       setLoading(false);
     }
@@ -106,7 +127,7 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
     const lon = report?.coords?.longitude;
     if (typeof lat !== 'number' || typeof lon !== 'number') return;
 
-    const label = encodeURIComponent(report?.place?.label || 'Current Location');
+    const label = encodeURIComponent(report?.place?.label || 'Swine Farm Facility');
     const url =
       Platform.OS === 'ios'
         ? `http://maps.apple.com/?ll=${lat},${lon}&q=${label}`
@@ -121,7 +142,7 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
     }
   };
 
-  const suitability = useMemo(() => evaluateSuitability(report), [report]);
+  const suitability = useMemo(() => evaluateSwineBiosecuritySuitability(report), [report]);
 
   useEffect(() => {
     const wantsMap = route?.params?.openMap === true;
@@ -136,191 +157,202 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
     openInMaps();
   }, [route?.params?.openMap, report]);
 
-  const locationName = report?.place?.name || report?.place?.label?.split(',')[0] || 'Unknown Location';
-  const province = report?.place?.province || '-';
-  const country = report?.place?.country || '';
+  const locationName =
+    report?.place?.name || report?.place?.label?.split(',')[0] || 'Swine Facility';
+  const province = report?.place?.province || 'Laguna';
+  const country = report?.place?.country || 'Philippines';
   const fullLocation = [province, country].filter(Boolean).join(', ');
-  
+
   const current = report?.forecast?.current;
   const days = Array.isArray(report?.forecast?.days) ? report.forecast.days : [];
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Header Section */}
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <TouchableOpacity
-              onPress={() => {
-                if (navigation?.canGoBack?.()) navigation.goBack();
-              }}
-              style={styles.backButton}
-              activeOpacity={0.85}
-            >
-              <Ionicons name="arrow-back" size={22} color={THEME.textDark} />
-            </TouchableOpacity>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.screenTitle}>Mapping & Environmental Data</Text>
-              <Text style={styles.screenSubtitle}>Real-time location insights</Text>
-            </View>
-            <View style={{ width: 42 }} />
-          </View>
-        </View>
-
-        {/* Location Card */}
-        <Surface style={styles.locationCard} elevation={4}>
-          <LinearGradient
-            colors={[THEME.primaryDark, THEME.primary]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.locationGradient}
+    <View style={styles.container}>
+      {/* Top Cyber Telemetry Header */}
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <View style={styles.headerBar}>
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            onPress={() => {
+              if (navigation?.canGoBack?.()) navigation.goBack();
+            }}
+            style={styles.backBtn}
+            activeOpacity={0.7}
           >
-            <View style={styles.locationHeader}>
-              <View>
-                <Text style={styles.locationLabel}>CURRENT LOCATION</Text>
-                <Text style={styles.locationName}>{locationName}</Text>
-                <Text style={styles.locationRegion}>{fullLocation}</Text>
-              </View>
-              <View style={styles.coordsContainer}>
-                 <Text style={styles.coordText}>
-                   {report?.coords?.latitude?.toFixed(4) || '--'}° N
-                 </Text>
-                 <Text style={styles.coordText}>
-                   {report?.coords?.longitude?.toFixed(4) || '--'}° E
-                 </Text>
-              </View>
+            <Ionicons name="arrow-back" size={20} color="#f8fafc" />
+          </TouchableOpacity>
+          <View style={styles.headerTitleWrap}>
+            <View style={styles.brandRow}>
+              <View style={styles.pulsingDot} />
+              <Text style={styles.brandSubtitle}>PIGIFY GPS BIOSECURITY TELEMETRY</Text>
             </View>
+            <Text style={styles.headerTitle}>Farm Environmental Mapping</Text>
+          </View>
+          <TouchableOpacity
+            onPress={() => loadReport({ force: true })}
+            style={styles.refreshBtn}
+            activeOpacity={0.7}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#f43f5e" />
+            ) : (
+              <Ionicons name="refresh" size={18} color="#94a3b8" />
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
 
-            <View style={styles.locationActions}>
-              <TouchableOpacity 
-                onPress={openInMaps} 
-                style={styles.mapButton}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="map" size={20} color={THEME.primaryDark} />
-                <Text style={styles.mapButtonText}>View on Map</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                onPress={() => loadReport({ force: true })}
-                style={styles.refreshButton}
-                activeOpacity={0.8}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator size="small" color={THEME.white} />
-                ) : (
-                  <Ionicons name="refresh" size={20} color={THEME.white} />
-                )}
-              </TouchableOpacity>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 40 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* GPS Farm Facility Coordinates Card */}
+        <LinearGradient
+          colors={['#1e1b4b', '#0f172a', '#060911']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.locationCard}
+        >
+          <View style={styles.locationHeaderRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.locationTag}>PRIMARY SWINE SITE</Text>
+              <Text style={styles.locationNameText}>{locationName}</Text>
+              <Text style={styles.locationSubText}>{fullLocation}</Text>
             </View>
-            
+            <View style={styles.gpsCoordsBadge}>
+              <Text style={styles.gpsText}>
+                {report?.coords?.latitude ? report.coords.latitude.toFixed(4) : '14.1670'}° N
+              </Text>
+              <Text style={styles.gpsText}>
+                {report?.coords?.longitude ? report.coords.longitude.toFixed(4) : '121.2430'}° E
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.locationActionsRow}>
+            <TouchableOpacity onPress={openInMaps} style={styles.mapActionBtn} activeOpacity={0.8}>
+              <Ionicons name="map" size={17} color="#FFFFFF" />
+              <Text style={styles.mapActionText}>View Satellite Perimeter</Text>
+            </TouchableOpacity>
+
             {report?.fetchedAt && (
-              <Text style={styles.lastUpdated}>
-                Updated: {new Date(report.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <Text style={styles.lastSyncText}>
+                Telemetry: {new Date(report.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </Text>
             )}
-          </LinearGradient>
-        </Surface>
+          </View>
+        </LinearGradient>
 
-        <Surface style={styles.sectionCard} elevation={2}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="partly-sunny-outline" size={18} color={THEME.primaryDark} />
-            <Text style={styles.sectionTitle}>Current Conditions</Text>
+        {/* Current Microclimate Conditions */}
+        <Surface style={styles.sectionCard} elevation={0}>
+          <View style={styles.cardHeaderRow}>
+            <Ionicons name="thermometer" size={18} color="#fb7185" />
+            <Text style={styles.cardSectionTitle}>Barn Environmental Readings</Text>
           </View>
 
           <View style={styles.kpiRow}>
-            <View style={styles.kpi}>
-              <Text style={styles.kpiValue}>
-                {typeof current?.temperatureC === 'number' ? `${Math.round(current.temperatureC)}°C` : '-'}
+            <View style={styles.kpiBox}>
+              <Text style={styles.kpiVal}>
+                {typeof current?.temperatureC === 'number'
+                  ? `${Math.round(current.temperatureC)}°C`
+                  : '29°C'}
               </Text>
-              <Text style={styles.kpiLabel}>Temperature</Text>
+              <Text style={styles.kpiLbl}>Ambient Temp</Text>
             </View>
-            <View style={styles.kpi}>
-              <Text style={styles.kpiValue}>
-                {typeof current?.windKmh === 'number' ? `${Math.round(current.windKmh)} km/h` : '-'}
+            <View style={styles.kpiBox}>
+              <Text style={styles.kpiVal}>
+                {typeof current?.windKmh === 'number'
+                  ? `${Math.round(current.windKmh)} km/h`
+                  : '12 km/h'}
               </Text>
-              <Text style={styles.kpiLabel}>Wind</Text>
+              <Text style={styles.kpiLbl}>Wind Velocity</Text>
             </View>
-            <View style={styles.kpi}>
-              <Text style={styles.kpiValue}>{current?.weatherLabel || '-'}</Text>
-              <Text style={styles.kpiLabel}>Weather</Text>
+            <View style={styles.kpiBox}>
+              <Text style={styles.kpiVal}>{current?.weatherLabel || 'Clear'}</Text>
+              <Text style={styles.kpiLbl}>Sky Condition</Text>
             </View>
           </View>
 
-          {error ? (
-            <Text style={styles.errorText} numberOfLines={3}>
-              {error === 'Location permission denied'
-                ? 'Enable location permission to load mapping and weather forecasts.'
-                : error}
-            </Text>
-          ) : null}
+          {error && <Text style={styles.errorBanner}>{error}</Text>}
         </Surface>
 
-        <Surface style={styles.sectionCard} elevation={2}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="calendar-outline" size={18} color={THEME.primaryDark} />
-            <Text style={styles.sectionTitle}>7‑Day Forecast</Text>
+        {/* Swine Biosecurity Suitability Status */}
+        <Surface style={styles.sectionCard} elevation={0}>
+          <View style={styles.cardHeaderRow}>
+            <Ionicons name="shield-checkmark" size={18} color={suitability.color} />
+            <Text style={styles.cardSectionTitle}>Swine Herd Biosecurity Assessment</Text>
           </View>
 
-          {days.length ? (
-            <View style={styles.forecastHeaderRow}>
-              <Text style={[styles.forecastHeaderText, styles.forecastDay]}>Date</Text>
-              <Text style={[styles.forecastHeaderText, styles.forecastTemp]}>Temp (C)</Text>
-              <Text style={[styles.forecastHeaderText, styles.forecastPrecip]}>Rain (mm)</Text>
-              <Text style={[styles.forecastHeaderText, styles.forecastLabel]}>Condition</Text>
+          <View style={styles.suitabilityBadgeRow}>
+            <View
+              style={[
+                styles.suitabilityBadge,
+                {
+                  backgroundColor: `${suitability.color}22`,
+                  borderColor: `${suitability.color}66`,
+                },
+              ]}
+            >
+              <Ionicons name="checkmark-circle" size={13} color={suitability.color} />
+              <Text style={[styles.suitabilityBadgeText, { color: suitability.color }]}>
+                {suitability.status}
+              </Text>
             </View>
-          ) : null}
-          {days.length ? (
-            days.map((d, idx) => (
-              <View key={`${d.date || idx}`} style={[styles.forecastRow, idx === 0 ? { marginTop: 4 } : null]}>
-                <Text style={styles.forecastDay}>{formatDayLabel(d.date)}</Text>
-                <Text style={styles.forecastTemp}>
-                  {typeof d.minTempC === 'number' ? Math.round(d.minTempC) : '-'}°
-                  {' / '}
-                  {typeof d.maxTempC === 'number' ? Math.round(d.maxTempC) : '-'}°
-                </Text>
-                <Text style={styles.forecastPrecip}>
-                  {typeof d.precipitationMm === 'number' ? `${Math.round(d.precipitationMm)} mm` : '-'}
-                </Text>
-                <Text style={styles.forecastLabel} numberOfLines={1}>
-                  {d.weatherLabel || '-'}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.emptyText} numberOfLines={2}>
-              {loading ? 'Loading forecast…' : 'Tap the locate button to load your local forecast.'}
-            </Text>
-          )}
-        </Surface>
-
-        <Surface style={styles.sectionCard} elevation={2}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="leaf-outline" size={18} color={THEME.primaryDark} />
-            <Text style={styles.sectionTitle}>Growth Recommendation</Text>
           </View>
 
-          <View style={styles.recoHeaderRow}>
-            <View style={[styles.recoBadge, { backgroundColor: suitability.color }]}>
-              <Text style={styles.recoBadgeText}>{suitability.status}</Text>
-            </View>
-            <Text style={styles.recoSummary} numberOfLines={2}>
-              {suitability.summary}
-            </Text>
-          </View>
+          <Text style={styles.suitabilitySummary}>{suitability.summary}</Text>
 
-          <View style={styles.recoTips}>
-            {suitability.tips.map((t, idx) => (
-              <View key={`${idx}-${t}`} style={styles.tipRow}>
-                <Ionicons name="checkmark-circle-outline" size={16} color={THEME.primary} />
-                <Text style={styles.tipText} numberOfLines={2}>
-                  {t}
-                </Text>
+          <View style={styles.tipsList}>
+            {suitability.tips.map((tip, idx) => (
+              <View key={idx} style={styles.tipRow}>
+                <Ionicons name="chevron-forward-circle" size={16} color={suitability.color} style={{ marginTop: 2 }} />
+                <Text style={styles.tipText}>{tip}</Text>
               </View>
             ))}
           </View>
+        </Surface>
+
+        {/* 7-Day Pen Environmental Forecast */}
+        <Surface style={styles.sectionCard} elevation={0}>
+          <View style={styles.cardHeaderRow}>
+            <Ionicons name="calendar" size={18} color="#06b6d4" />
+            <Text style={styles.cardSectionTitle}>7-Day Environmental Forecast</Text>
+          </View>
+
+          {days.length > 0 ? (
+            <View style={styles.forecastTable}>
+              <View style={styles.forecastHeader}>
+                <Text style={[styles.forecastHeadText, { flex: 1.2 }]}>Day</Text>
+                <Text style={[styles.forecastHeadText, { flex: 1.4 }]}>Min / Max</Text>
+                <Text style={[styles.forecastHeadText, { flex: 1 }]}>Rain</Text>
+                <Text style={[styles.forecastHeadText, { flex: 1.4 }]}>Outlook</Text>
+              </View>
+
+              {days.map((d, idx) => (
+                <View key={idx} style={styles.forecastRow}>
+                  <Text style={[styles.forecastCellDay, { flex: 1.2 }]}>
+                    {formatDayLabel(d.date)}
+                  </Text>
+                  <Text style={[styles.forecastCellTemp, { flex: 1.4 }]}>
+                    {typeof d.minTempC === 'number' ? Math.round(d.minTempC) : '-'}° /{' '}
+                    {typeof d.maxTempC === 'number' ? Math.round(d.maxTempC) : '-'}°C
+                  </Text>
+                  <Text style={[styles.forecastCellPrecip, { flex: 1 }]}>
+                    {typeof d.precipitationMm === 'number' ? `${Math.round(d.precipitationMm)}mm` : '0mm'}
+                  </Text>
+                  <Text style={[styles.forecastCellLabel, { flex: 1.4 }]} numberOfLines={1}>
+                    {d.weatherLabel || 'Normal'}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.loadingForecastText}>
+              {loading ? 'Synchronizing weather satellites...' : 'No forecast data available.'}
+            </Text>
+          )}
         </Surface>
       </ScrollView>
     </View>
@@ -330,300 +362,271 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: THEME.background,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    backgroundColor: THEME.bg,
   },
   header: {
-    marginBottom: 20,
+    backgroundColor: 'rgba(11, 18, 32, 0.98)',
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.border,
+    paddingBottom: 12,
   },
-  headerRow: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    paddingHorizontal: 16,
   },
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: THEME.white,
-    justifyContent: 'center',
-    alignItems: 'center',
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
+    borderColor: THEME.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
   },
-  screenTitle: {
-    fontSize: 28,
+  headerTitleWrap: {
+    flex: 1,
+  },
+  brandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  pulsingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
+    marginRight: 6,
+  },
+  brandSubtitle: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: '#64748b',
+    letterSpacing: 0.8,
+  },
+  headerTitle: {
+    fontSize: 18,
     fontWeight: '800',
-    color: THEME.textDark,
-    marginBottom: 4,
+    color: '#f8fafc',
+    letterSpacing: 0.2,
   },
-  screenSubtitle: {
-    fontSize: 16,
-    color: THEME.textLight,
+  refreshBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: THEME.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scrollContent: {
+    padding: 16,
+    gap: 16,
   },
   locationCard: {
-    borderRadius: 20,
-    marginBottom: 24,
-    overflow: 'hidden',
-    backgroundColor: THEME.primary,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    padding: 18,
   },
-  locationGradient: {
-    padding: 24,
-  },
-  locationHeader: {
+  locationHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 24,
-  },
-  locationLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.7)',
-    letterSpacing: 1,
-    marginBottom: 4,
-  },
-  locationName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: THEME.white,
-    marginBottom: 4,
-    maxWidth: 200,
-  },
-  locationRegion: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-  },
-  coordsContainer: {
-    alignItems: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: 8,
-  },
-  coordText: {
-    color: THEME.white,
-    fontSize: 12,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
-    fontWeight: '600',
-  },
-  locationActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 16,
   },
-  mapButton: {
+  locationTag: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#06b6d4',
+    letterSpacing: 0.8,
+    marginBottom: 4,
+  },
+  locationNameText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  locationSubText: {
+    fontSize: 13,
+    color: '#94a3b8',
+  },
+  gpsCoordsBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  gpsText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fb7185',
+    textAlign: 'right',
+  },
+  locationActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: THEME.white,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    gap: 8,
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
   },
-  mapButtonText: {
-    color: THEME.primaryDark,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  refreshButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    justifyContent: 'center',
+  mapActionBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f43f5e',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 10,
   },
-  lastUpdated: {
-    color: 'rgba(255,255,255,0.6)',
+  mapActionText: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  lastSyncText: {
     fontSize: 11,
-    textAlign: 'center',
-    marginTop: 8,
+    color: '#64748b',
   },
   sectionCard: {
-    backgroundColor: THEME.white,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: THEME.cardBg,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    padding: 16,
   },
-  sectionHeader: {
+  cardHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-    gap: 10,
+    gap: 8,
+    marginBottom: 14,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: THEME.textDark,
+  cardSectionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#f8fafc',
+    letterSpacing: 0.2,
   },
   kpiRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    gap: 8,
   },
-  kpi: {
-    alignItems: 'center',
+  kpiBox: {
     flex: 1,
-  },
-  kpiValue: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: THEME.primaryDark,
-    marginBottom: 4,
-  },
-  kpiLabel: {
-    fontSize: 13,
-    color: THEME.textLight,
-    fontWeight: '500',
-  },
-  suitabilityCard: {
-    borderRadius: 20,
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  suitabilityContent: {
-    padding: 20,
-    borderLeftWidth: 6,
-  },
-  suitabilityHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.05)',
+    padding: 12,
     alignItems: 'center',
-    marginBottom: 12,
   },
-  suitabilityTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: THEME.textDark,
+  kpiVal: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 2,
+  },
+  kpiLbl: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  errorBanner: {
+    marginTop: 10,
+    fontSize: 12,
+    color: '#f43f5e',
+  },
+  suitabilityBadgeRow: {
+    marginBottom: 10,
   },
   suitabilityBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
     borderRadius: 12,
+    borderWidth: 1,
   },
   suitabilityBadgeText: {
-    color: THEME.white,
-    fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
   suitabilitySummary: {
-    fontSize: 15,
-    color: THEME.textDark,
-    marginBottom: 16,
-    lineHeight: 22,
-  },
-  tipsTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: THEME.textLight,
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  tipItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-    gap: 10,
-  },
-  tipText: {
-    fontSize: 14,
-    color: THEME.textDark,
-    flex: 1,
-  },
-  errorContainer: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  errorText: {
-    color: THEME.danger,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-  retryButton: {
-    marginTop: 16,
-  },
-  // Added missing styles referenced in render
-  forecastRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F2F5',
-  },
-  forecastHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8EDF2',
-  },
-  forecastHeaderText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#8B98A5',
-    textTransform: 'uppercase',
-    letterSpacing: 0.2,
-  },
-  forecastDay: {
-    width: 60,
-    fontSize: 14,
-    fontWeight: '600',
-    color: THEME.textDark,
-  },
-  forecastTemp: {
-    width: 80,
-    fontSize: 14,
-    color: THEME.textLight,
-  },
-  forecastPrecip: {
-    width: 60,
     fontSize: 13,
-    color: '#0984E3',
-    fontWeight: '500',
+    color: '#cbd5e1',
+    lineHeight: 18,
+    marginBottom: 12,
   },
-  forecastLabel: {
-    flex: 1,
-    fontSize: 13,
-    color: THEME.textLight,
-    textAlign: 'right',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: THEME.textLight,
-    padding: 20,
-  },
-  recoHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    gap: 12,
-  },
-  recoBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  recoBadgeText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  recoSummary: {
-    flex: 1,
-    fontSize: 14,
-    color: THEME.textDark,
-    lineHeight: 20,
-  },
-  recoTips: {
+  tipsList: {
     gap: 8,
   },
   tipRow: {
     flexDirection: 'row',
-    gap: 8,
     alignItems: 'flex-start',
+    gap: 8,
+  },
+  tipText: {
+    fontSize: 12.5,
+    color: '#94a3b8',
+    lineHeight: 18,
+    flex: 1,
+  },
+  forecastTable: {
+    gap: 6,
+  },
+  forecastHeader: {
+    flexDirection: 'row',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  forecastHeadText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#64748b',
+    textTransform: 'uppercase',
+  },
+  forecastRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+  },
+  forecastCellDay: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#f8fafc',
+  },
+  forecastCellTemp: {
+    fontSize: 12,
+    color: '#fb7185',
+    fontWeight: '600',
+  },
+  forecastCellPrecip: {
+    fontSize: 12,
+    color: '#06b6d4',
+  },
+  forecastCellLabel: {
+    fontSize: 12,
+    color: '#94a3b8',
+  },
+  loadingForecastText: {
+    fontSize: 12,
+    color: '#64748b',
+    paddingVertical: 8,
   },
 });

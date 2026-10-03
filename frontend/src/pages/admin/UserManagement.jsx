@@ -132,7 +132,7 @@ const UserManagement = () => {
         const parsed = JSON.parse(userStr);
         setCurrentAdminId(parsed.id || parsed._id || '');
       }
-    } catch (e) {}
+    } catch (e) { }
 
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.id) setCurrentAdminId(data.user.id);
@@ -220,7 +220,7 @@ const UserManagement = () => {
         { status: 'active', status_reason: '' },
         `Login access restored for ${user.name || user.email}`
       );
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Open disable modal
@@ -267,7 +267,7 @@ const UserManagement = () => {
         { role: nextRole },
         `Role changed to ${label} for ${user.name || user.email}`
       );
-    } catch (e) {}
+    } catch (e) { }
   };
 
   // Handle User Deletion
@@ -681,8 +681,8 @@ const UserManagement = () => {
                               currentStatus === 'active'
                                 ? 'admin-badge-grade-a'
                                 : currentStatus === 'inactive'
-                                ? 'admin-badge-grade-c'
-                                : 'admin-badge-grade-e'
+                                  ? 'admin-badge-grade-c'
+                                  : 'admin-badge-grade-e'
                             }
                             style={{
                               display: 'inline-flex',

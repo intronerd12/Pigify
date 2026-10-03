@@ -84,7 +84,7 @@ function UserFeatures() {
               }}>System Capabilities</span>
               <h1 className="lp-title" style={{ color: '#fff' }}>
                 Powerful Features for
-                <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}> Fruit Operations</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}> Swine Operations</span>
               </h1>
               <p className="lp-subtitle" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
                 Our system combines computer vision, machine learning, and agricultural expertise to deliver consistent, actionable quality intelligence for every batch.
@@ -120,7 +120,7 @@ function UserFeatures() {
                 {
                   icon: '📊',
                   title: 'Quality Scoring System',
-                  desc: 'Produces consistent A/B/C grades with ripeness levels and quality confidence metrics for every fruit'
+                  desc: 'Produces consistent diagnostic severity grades with lesion classification and confidence metrics for every swine subject'
                 },
                 {
                   icon: '⚡',
@@ -199,8 +199,8 @@ function UserFeatures() {
         marginTop: '48px'
       }}>
         <div className="container-pro" style={{ textAlign: 'center' }}>
-          <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🌴 {BRAND_NAME}</div>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Dragon Fruit Detection & Quality Control</p>
+          <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🛡️ {BRAND_NAME}</div>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Swine Disease Telemetry & Biosecurity Control</p>
           <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>© {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.</div>
         </div>
       </footer>

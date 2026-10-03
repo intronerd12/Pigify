@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import PageLoader from '../PageLoader';
 import {
   LayoutDashboard,
   Users,
@@ -26,6 +27,19 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Pre-fetch critical admin modules in background idle time
+  useEffect(() => {
+    const idleFn = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+    idleFn(() => {
+      import('../../pages/admin/Dashboard').catch(() => {});
+      import('../../pages/admin/UserManagement').catch(() => {});
+      import('../../pages/admin/Analytics').catch(() => {});
+      import('../../pages/admin/ScannedItems').catch(() => {});
+      import('../../pages/admin/ApiMonitoring').catch(() => {});
+      import('../../pages/admin/AdminAiAnalysis').catch(() => {});
+    });
+  }, []);
 
   const currentUser = React.useMemo(() => {
     try {
@@ -309,7 +323,9 @@ const AdminLayout = () => {
         boxSizing: 'border-box'
       }}>
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-          <Outlet />
+          <Suspense fallback={<PageLoader label="Loading Admin Console..." />}>
+            <Outlet />
+          </Suspense>
         </div>
       </main>
 

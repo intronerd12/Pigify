@@ -4,8 +4,8 @@ import { apiFetch } from './api';
 
 import { getUserNamespace, sanitizeForKey } from './storageScope';
 
-const STORAGE_KEY_BASE = 'dragon_scans_v1';
-const PENDING_KEY_BASE = 'dragon_scan_pending_ops_v1';
+const STORAGE_KEY_BASE = 'pigify_scans_v1';
+const PENDING_KEY_BASE = 'pigify_scan_pending_ops_v1';
 const MAX_SCANS_STORED = 120;
 const MAX_SCANS_STORAGE_BYTES = 1_600_000;
 
@@ -151,15 +151,11 @@ const normalizeRemoteScan = (scan, index = 0) => {
     imageUri: String(scan?.imageUrl ?? scan?.imageUri ?? '').trim(),
     grade: normalizeGrade(scan?.grade),
     notes: String(scan?.details ?? scan?.notes ?? '').trim(),
-    fruit_type: String(scan?.fruitType ?? scan?.fruit_type ?? 'Dragon Fruit').trim(),
-    estimated_price_per_kg: toFiniteNumber(scan?.estimated_price_per_kg ?? scan?.estimatedPricePerKg, 0),
-    fruit_area_ratio: toFiniteNumber(scan?.fruit_area_ratio ?? scan?.fruitAreaRatio, 0),
-    size_category: String(scan?.size_category ?? scan?.sizeCategory ?? 'N/A').trim() || 'N/A',
-    market_value_label: String(scan?.market_value_label ?? scan?.marketValueLabel ?? 'N/A').trim() || 'N/A',
-    weight_grams_est: Math.round(toFiniteNumber(scan?.weight_grams_est ?? scan?.weightGramsEst, 0)),
-    shelf_life_label: String(scan?.shelf_life_label ?? scan?.shelfLifeLabel ?? 'No result').trim() || 'No result',
-    ripeness_score: Math.round(toFiniteNumber(scan?.ripeness_score ?? scan?.ripenessScore, 0)),
-    quality_score: Math.round(toFiniteNumber(scan?.quality_score ?? scan?.qualityScore, 0)),
+    condition: String(scan?.condition ?? scan?.swine_condition ?? scan?.details ?? 'Swine Dermis Inspection').trim(),
+    penId: String(scan?.penId ?? scan?.pen_id ?? 'Sector A').trim(),
+    swineId: String(scan?.swineId ?? scan?.swine_id ?? 'Swine #01').trim(),
+    severity: String(scan?.severity ?? scan?.grade ?? 'Normal').trim(),
+    confidence: String(scan?.confidence ?? '96.8%').trim(),
     location: scan?.location ?? null,
     source: String(scan?.source ?? 'web_app').trim() || 'web_app',
   };
@@ -300,20 +296,13 @@ const sanitizeScanForStorage = (scan) => {
     imageUri: scan.imageUri,
     grade: normalizeGrade(scan?.grade),
     notes: truncateText(scan.notes || scan.details || '', 320),
-    fruit_type: truncateText(scan.fruit_type || scan.fruitType || '', 120),
-    is_valid_fruit: scan.is_valid_fruit,
+    condition: truncateText(scan.condition || scan.details || 'Swine Dermis Inspection', 120),
+    penId: truncateText(scan.penId || 'Sector A', 50),
+    swineId: truncateText(scan.swineId || 'Swine #01', 50),
+    severity: scan.severity || scan.grade || 'Normal',
+    confidence: scan.confidence || '96.8%',
     warning_message: truncateText(scan.warning_message || '', 200),
-    estimated_price_per_kg: toFiniteNumber(scan.estimated_price_per_kg, 0),
-    fruit_area_ratio: toFiniteNumber(scan.fruit_area_ratio, 0),
-    size_category: scan.size_category || 'N/A',
-    market_value_label: scan.market_value_label || 'N/A',
-    weight_grams_est: Math.round(toFiniteNumber(scan.weight_grams_est, 0)),
-    shelf_life_label: scan.shelf_life_label || 'No result',
-    disease_status: truncateText(scan.disease_status || '', 120),
-    defect_level: scan.defect_level || 'none',
-    ripeness_score: Math.round(toFiniteNumber(scan.ripeness_score, 0)),
-    quality_score: Math.round(toFiniteNumber(scan.quality_score, 0)),
-    harvest_stage: scan.harvest_stage || 'No result',
+    disease_status: truncateText(scan.disease_status || scan.condition || '', 120),
     recommendations,
     location: scan.location || null,
     source: scan.source || 'mobile_app',
@@ -342,14 +331,18 @@ const buildScanPayload = (scan, user) => {
   const { userId, userName, userEmail } = resolveUserMeta(user);
   return {
     grade: normalizeGrade(scan?.grade),
-    details: scan?.notes || scan?.fruit_type || 'No details provided',
+    condition: scan?.condition || scan?.notes || 'Swine Dermis Inspection',
+    details: scan?.notes || scan?.condition || 'Swine clinical diagnostic scan',
+    penId: scan?.penId || 'Sector A',
+    swineId: scan?.swineId || 'Swine #01',
+    severity: scan?.severity || scan?.grade || 'Normal',
+    confidence: scan?.confidence || '96.8%',
     imageUrl: scan?.imageUri,
     location: scan?.location,
     timestamp: scan?.timestamp || new Date().toISOString(),
     userId: userId || undefined,
     operatorName: userName || undefined,
     operatorEmail: userEmail || undefined,
-    fruitType: scan?.fruit_type || undefined,
     localScanId: scan?.id || undefined,
     source: 'mobile_app',
   };

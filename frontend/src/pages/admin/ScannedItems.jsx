@@ -172,7 +172,7 @@ const ScannedItems = () => {
 
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
-      const condition = String(scan?.swine_condition || scan?.details || scan?.fruitType || '').toLowerCase();
+      const condition = String(scan?.swine_condition || scan?.details || scan?.swineType || scan?.breed || '').toLowerCase();
       const operator = String(scan?.operatorName || scan?.user?.name || '').toLowerCase();
       const pen = String(scan?.pen_id || scan?.penId || '').toLowerCase();
       return condition.includes(q) || operator.includes(q) || pen.includes(q);
@@ -349,11 +349,8 @@ const ScannedItems = () => {
                 const operatorName = scan?.user?.name || scan?.operatorName || 'Backyard Raiser';
                 const operatorEmail = scan?.user?.email || scan?.operatorEmail || '-';
 
-                // Display condition cleanly, fallback if legacy fruitType existed
-                const rawCondition = scan?.swine_condition || scan?.details || scan?.fruitType || 'Healthy Dermis Baseline';
-                const displayCondition = rawCondition.toLowerCase().includes('dragon') || rawCondition.toLowerCase().includes('fruit')
-                  ? 'Swine Dermal Inspection (Healthy)'
-                  : rawCondition;
+                // Display condition cleanly
+                const displayCondition = scan?.swine_condition || scan?.details || scan?.condition || 'Healthy Dermis Baseline';
 
                 const scanNotes = scan?.details && scan?.details !== rawCondition
                   ? scan.details

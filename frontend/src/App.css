@@ -6,9 +6,9 @@
 }
 
 :root {
-  --dragon-primary: #e71d73; /* vibrant magenta */
-  --dragon-secondary: #23b28a; /* teal green */
-  --dragon-flesh: rgba(231, 29, 115, 0.08);
+  --brand-primary: #e71d73; /* vibrant magenta */
+  --brand-secondary: #23b28a; /* teal green */
+  --brand-surface: rgba(231, 29, 115, 0.08);
   --gray-50: #f7fafc;
   --gray-100: #eef2f7;
   --gray-200: #e6eef6;
@@ -140,7 +140,7 @@ header .container-pro {
   font-size: 20px;
   font-weight: 800;
   letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--dragon-primary), var(--dragon-secondary));
+  background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -159,7 +159,7 @@ nav {
 }
 
 .nav-link:hover {
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
 }
 
 .header-right {
@@ -186,7 +186,7 @@ nav {
 .status-value {
   font-size: 13px;
   font-weight: 600;
-  color: var(--dragon-secondary);
+  color: var(--brand-secondary);
   display: flex;
   align-items: center;
   gap: 6px;
@@ -198,7 +198,7 @@ nav {
 
 /* Buttons */
 .btn-primary {
-  background: var(--dragon-primary);
+  background: var(--brand-primary);
   color: white;
   border: none;
   padding: 12px 24px;
@@ -237,7 +237,7 @@ nav {
 }
 
 .hero-button-secondary:hover {
-  border-color: var(--dragon-primary);
+  border-color: var(--brand-primary);
   background: var(--gray-50);
   box-shadow: 0 6px 16px rgba(230, 0, 92, 0.1);
   transform: translateY(-2px);
@@ -255,8 +255,8 @@ nav {
 }
 
 .btn-outline:hover {
-  border-color: var(--dragon-primary);
-  color: var(--dragon-primary);
+  border-color: var(--brand-primary);
+  color: var(--brand-primary);
 }
 
 /* Hero Section */
@@ -352,8 +352,8 @@ nav {
 .hero-badge {
   display: inline-block;
   padding: 6px 12px;
-  background: var(--dragon-flesh);
-  color: var(--dragon-primary);
+  background: var(--brand-surface);
+  color: var(--brand-primary);
   border-radius: 100px;
   font-size: 13px;
   font-weight: 600;
@@ -370,7 +370,7 @@ nav {
 }
 
 .hero-title-accent {
-  background: linear-gradient(135deg, var(--dragon-primary), #ff80b5);
+  background: linear-gradient(135deg, var(--brand-primary), #ff80b5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -438,13 +438,13 @@ nav {
 .home-slide img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.95); }
 .home-slide-overlay { position: absolute; left: 24px; bottom: 24px; display: flex; gap: 14px; align-items: center; z-index: 5; }
 .home-slide-overlay figcaption { color: #fff; font-weight: 800; background: rgba(0,0,0,0.52); padding: 10px 16px; border-radius: 999px; backdrop-filter: blur(8px); font-size: 15px; }
-.home-slide-btn { background: rgba(255,255,255,0.96); color: var(--dragon-primary); border: none; padding: 11px 18px; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.home-slide-btn { background: rgba(255,255,255,0.96); color: var(--brand-primary); border: none; padding: 11px 18px; border-radius: 14px; font-weight: 700; font-size: 14px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
 .home-slide-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); background: #ffffff; }
 .home-slider-dots { position: absolute; right: 16px; top: 16px; display: flex; gap: 8px; z-index: 5; }
 .home-dot { width: 11px; height: 11px; border-radius: 50%; background: rgba(255,255,255,0.65); border: 1.5px solid rgba(255,255,255,0.9); cursor: pointer; transition: all 0.25s; }
 .home-dot.active { background: white; transform: scale(1.2); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
-.hero-fruit-display {
+.hero-item-display {
   font-size: 160px;
   line-height: 1;
   margin-bottom: 24px;
@@ -472,7 +472,7 @@ nav {
 .hero-price-value {
   font-size: 20px;
   font-weight: 700;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
 }
 
 /* Features Section */
@@ -559,7 +559,7 @@ nav {
 }
 
 .search-box input:focus {
-  border-color: var(--dragon-primary);
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 4px rgba(230, 0, 92, 0.1);
 }
 
@@ -618,7 +618,7 @@ nav {
 .product-grade {
   display: inline-block;
   padding: 2px 8px;
-  background: var(--dragon-secondary);
+  background: var(--brand-secondary);
   color: white;
   border-radius: 4px;
   font-size: 11px;
@@ -628,7 +628,7 @@ nav {
 .product-price {
   font-size: 18px;
   font-weight: 700;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
 }
 
 .product-desc {
@@ -664,7 +664,7 @@ nav {
   right: -10%;
   width: 600px;
   height: 600px;
-  background: var(--dragon-primary);
+  background: var(--brand-primary);
   opacity: 0.2;
   filter: blur(100px);
   border-radius: 50%;
@@ -706,7 +706,7 @@ nav {
 }
 
 .upload-zone:hover {
-  border-color: var(--dragon-primary);
+  border-color: var(--brand-primary);
   background: rgba(0, 0, 0, 0.3);
 }
 
@@ -780,7 +780,7 @@ nav {
 .result-avatar {
   width: 48px;
   height: 48px;
-  background: var(--dragon-flesh);
+  background: var(--brand-surface);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -830,12 +830,12 @@ nav {
 
 .metric-fill {
   height: 100%;
-  background: var(--dragon-primary);
+  background: var(--brand-primary);
   border-radius: 100px;
 }
 
 .metric-fill.secondary {
-  background: var(--dragon-secondary);
+  background: var(--brand-secondary);
 }
 
 .result-footer {
@@ -955,7 +955,7 @@ nav {
 }
 
 .auth-input:focus {
-  border-color: var(--dragon-primary);
+  border-color: var(--brand-primary);
   background: white;
   box-shadow: 0 0 0 4px rgba(230, 0, 92, 0.1);
 }
@@ -971,7 +971,7 @@ nav {
 .auth-button {
   width: 100%;
   padding: 14px;
-  background: var(--dragon-primary);
+  background: var(--brand-primary);
   color: white;
   border: none;
   border-radius: 12px;
@@ -1004,7 +1004,7 @@ nav {
 .auth-toggle button {
   background: none;
   border: none;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
   font-weight: 600;
   cursor: pointer;
   margin-left: 4px;
@@ -1202,7 +1202,7 @@ nav {
 }
 
 .auth-back-link:hover {
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
   border-color: rgba(230, 0, 92, 0.3);
   box-shadow: 0 6px 14px rgba(230, 0, 92, 0.12);
   transform: translateY(-1px);
@@ -1321,7 +1321,7 @@ nav {
 .auth-toggle-pro button {
   background: none;
   border: none;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
   font-weight: 800;
 }
 
@@ -1369,7 +1369,7 @@ nav {
   padding: 14px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--dragon-primary) 0%, #ff4d9e 100%);
+  background: linear-gradient(135deg, var(--brand-primary) 0%, #ff4d9e 100%);
   color: white;
   font-weight: 700;
   font-size: 15px;
@@ -1509,7 +1509,7 @@ nav {
 }
 
 .admin-select:focus, .admin-input:focus {
-  border-color: var(--dragon-primary);
+  border-color: var(--brand-primary);
   box-shadow: 0 0 0 4px rgba(230, 0, 92, 0.1);
 }
 
@@ -1753,7 +1753,7 @@ nav {
 }
 
 .landing-slider-dot.active {
-  background: var(--dragon-primary);
+  background: var(--brand-primary);
   border-color: rgba(255, 255, 255, 0.42);
   transform: scale(1.15);
 }
@@ -1812,7 +1812,7 @@ nav {
 }
 
 .landing-title-accent {
-  background: linear-gradient(135deg, var(--dragon-primary), #ff80b5);
+  background: linear-gradient(135deg, var(--brand-primary), #ff80b5);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -1915,7 +1915,7 @@ nav {
   font-weight: 900;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
   background: rgba(230, 0, 92, 0.1);
   border: 1px solid rgba(230, 0, 92, 0.15);
   padding: 6px 10px;
@@ -2172,7 +2172,7 @@ nav {
 }
 
 .landing-footer-col a:hover {
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
 }
 
 .landing-footer-text {
@@ -2195,7 +2195,7 @@ nav {
 
 .landing-footer-login {
   text-decoration: none;
-  color: var(--dragon-primary);
+  color: var(--brand-primary);
   font-weight: 900;
 }
 

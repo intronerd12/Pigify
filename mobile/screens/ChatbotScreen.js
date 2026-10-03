@@ -11,28 +11,31 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { Text, Surface, Chip } from 'react-native-paper';
-import { LinearGradient } from 'expo-linear-gradient';
+import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { ChatbotService } from '../services/ChatbotService';
 import { getUserNamespace, sanitizeForKey } from '../services/storageScope';
 
 const THEME = {
-  primary: '#C71585',
-  primaryDark: '#8B008B',
-  background: '#F0F2F5',
-  surface: '#FFFFFF',
-  textDark: '#2D3436',
-  textLight: '#636E72',
-  userBubble: '#1f2937',
-  botBubble: '#ffffff',
+  bgDeep: '#060911',
+  bgCard: 'rgba(13, 20, 36, 0.94)',
+  primary: '#f43f5e',
+  emerald: '#10b981',
+  userBubble: 'rgba(244, 63, 94, 0.22)',
+  userBubbleBorder: 'rgba(244, 63, 94, 0.45)',
+  botBubble: 'rgba(17, 26, 46, 0.88)',
+  botBubbleBorder: 'rgba(255, 255, 255, 0.08)',
+  textMain: '#f8fafc',
+  textMuted: '#94a3b8',
+  textFaint: '#64748b',
 };
 
-const STORAGE_KEY_BASE = 'chat_history_v1';
-
+const STORAGE_KEY_BASE = 'chat_history_swine_v1';
 const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const TypingIndicator = () => {
@@ -64,10 +67,10 @@ const TypingIndicator = () => {
   }, [d1, d2, d3]);
 
   return (
-    <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
-      <Animated.View style={[styles.dot, { opacity: d1 }]} />
-      <Animated.View style={[styles.dot, { opacity: d2 }]} />
-      <Animated.View style={[styles.dot, { opacity: d3 }]} />
+    <View style={styles.typingRow}>
+      <Animated.View style={[styles.typingDot, { opacity: d1 }]} />
+      <Animated.View style={[styles.typingDot, { opacity: d2 }]} />
+      <Animated.View style={[styles.typingDot, { opacity: d3 }]} />
     </View>
   );
 };
@@ -80,15 +83,15 @@ export default function ChatbotScreen({ navigation, user }) {
   const storageKey = useMemo(() => {
     const ns = sanitizeForKey(getUserNamespace(user));
     return ns ? `${STORAGE_KEY_BASE}:${ns}` : `${STORAGE_KEY_BASE}:anon`;
-  }, [user?.id, user?._id, user?.userId, user?.uid, user?.email, user?.username]);
+  }, [user]);
 
   const quickPrompts = useMemo(
     () => [
-      { label: 'Scan tips', text: 'Scan tips' },
-      { label: 'My scan stats', text: 'My scan stats' },
-      { label: 'Weather now', text: 'Weather now' },
-      { label: '7-day forecast', text: '7-day forecast' },
-      { label: 'Account help', text: 'Account help' },
+      { label: 'Erysipelas symptoms', text: 'How do I detect Erysipelas (Diamond Skin)?' },
+      { label: 'Greasy pig treatment', text: 'What is the treatment for Greasy Pig Disease?' },
+      { label: 'Pen biosecurity', text: 'What are the essential pen biosecurity protocols?' },
+      { label: 'Lesion scan tips', text: 'Scan tips for lesion photos' },
+      { label: 'Herd scan stats', text: 'Show my herd scan stats' },
     ],
     []
   );
@@ -97,10 +100,6 @@ export default function ChatbotScreen({ navigation, user }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-  const keyboardOffset = 0;
-  const composerBottomOffset = (Platform.OS === 'android' && keyboardHeight > 0) ? 12 : inputBottomOffset;
-  const listBottomPadding = Math.max(tabBarHeight + 96, 150);
 
   useEffect(() => {
     (async () => {
@@ -113,360 +112,191 @@ export default function ChatbotScreen({ navigation, user }) {
             return;
           }
         }
-      } catch {}
+      } catch {
+        // Fallback
+      }
 
       setMessages([
         {
-          id: 'm0',
-          role: 'assistant',
-          text:
-            'Hi — I’m your Tropiscan assistant. Ask me for scan tips, weather/location insights, scan stats, or account help.',
-          at: Date.now(),
+          id: makeId(),
+          sender: 'bot',
+          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Operator'}! I am the Pigify Clinical AI Vet Assistant.\n\nI can answer questions regarding swine skin diseases (Erysipelas, Greasy Pig, Sarcoptic Mange), lesion photography, and biosecurity quarantine measures. How can I help your herd today?`,
+          timestamp: new Date().toISOString(),
         },
       ]);
     })();
-  }, [storageKey]);
+  }, [storageKey, user?.name]);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const trimmed = messages.slice(-60);
-        await AsyncStorage.setItem(storageKey, JSON.stringify(trimmed));
-      } catch {}
-    })();
-  }, [messages, storageKey]);
-
-  const scrollToBottom = () => {
+  const saveMessages = async (msgs) => {
     try {
-      listRef.current?.scrollToEnd?.({ animated: true });
-    } catch {}
+      await AsyncStorage.setItem(storageKey, JSON.stringify(msgs.slice(-50)));
+    } catch {
+      // Ignored
+    }
   };
 
-  useEffect(() => {
-    const t = setTimeout(scrollToBottom, 50);
-    return () => clearTimeout(t);
-  }, [messages, sending]);
-
-  useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const onShow = (event) => {
-      const h = Number(event?.endCoordinates?.height || 0);
-      setKeyboardHeight(Number.isFinite(h) ? h : 0);
-    };
-
-    const onHide = () => setKeyboardHeight(0);
-
-    const showSub = Keyboard.addListener(showEvent, onShow);
-    const hideSub = Keyboard.addListener(hideEvent, onHide);
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
-
-  const send = async (text) => {
-    const trimmed = String(text || '').trim();
-    if (!trimmed || sending) return;
+  const handleSend = async (customText) => {
+    const textToSend = String(customText || input || '').trim();
+    if (!textToSend || sending) return;
 
     setInput('');
-    setMessages((prev) => [...prev, { id: makeId(), role: 'user', text: trimmed, at: Date.now() }]);
+    const userMsg = {
+      id: makeId(),
+      sender: 'user',
+      text: textToSend,
+      timestamp: new Date().toISOString(),
+    };
+
+    const next = [...messages, userMsg];
+    setMessages(next);
     setSending(true);
 
     try {
-      await new Promise((r) => setTimeout(r, 350));
-      const res = await ChatbotService.reply({ message: trimmed, user });
-      setMessages((prev) => [
-        ...prev,
-        { id: makeId(), role: 'assistant', text: res.text, card: res.card, at: Date.now() },
-      ]);
+      const reply = await ChatbotService.reply({ message: textToSend, user });
+      const botMsg = {
+        id: makeId(),
+        sender: 'bot',
+        text: reply.text || 'I processed your swine health query.',
+        timestamp: new Date().toISOString(),
+      };
 
-      if (res?.action?.type === 'navigate' && res.action.screen) {
-        const parentNav = navigation?.getParent?.();
-        if (parentNav?.navigate) parentNav.navigate(res.action.screen, res.action.params);
-        else navigation?.navigate?.(res.action.screen, res.action.params);
+      const finalMsgs = [...next, botMsg];
+      setMessages(finalMsgs);
+      saveMessages(finalMsgs);
+
+      if (reply?.action?.type === 'navigate' && reply.action.screen) {
+        navigation.navigate(reply.action.screen);
       }
-    } catch (e) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: makeId(),
-          role: 'assistant',
-          text: `Sorry — I ran into an issue. ${e?.message || ''}`.trim(),
-          at: Date.now(),
-        },
-      ]);
+    } catch {
+      const errorMsg = {
+        id: makeId(),
+        sender: 'bot',
+        text: 'Unable to reach veterinary AI server. Please check connection.',
+        timestamp: new Date().toISOString(),
+      };
+      setMessages([...next, errorMsg]);
     } finally {
       setSending(false);
     }
   };
 
-  const ForecastCard = ({ card }) => {
-    return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{card.title}</Text>
-        <Text style={styles.cardSubtitle}>{card.place}</Text>
-        <View style={styles.cardNowRow}>
-          <Text style={styles.cardNowText}>
-            {card?.now?.temperature} • {card?.now?.conditions} • Wind {card?.now?.wind}
-          </Text>
-        </View>
-        <View style={styles.cardDivider} />
-        <View style={styles.cardSectionHead}>
-          <Text style={styles.cardSectionTitle}>Next days</Text>
-        </View>
-        {Array.isArray(card.days) &&
-          card.days.map((d) => (
-            <View key={`${d.date}-${d.label}-${d.tempRange}`} style={styles.cardRow}>
-              <Text style={styles.cardRowDate}>{d.date}</Text>
-              <Text style={styles.cardRowMeta}>
-                {d.label} • {d.tempRange} • Rain {d.rain}
-              </Text>
-            </View>
-          ))}
-      </View>
-    );
-  };
-
-  const WeatherCard = ({ card }) => {
-    return (
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>{card.title}</Text>
-        <Text style={styles.cardSubtitle}>{card.place}</Text>
-        <View style={styles.cardMetrics}>
-          {Array.isArray(card.metrics) &&
-            card.metrics.map((m) => (
-              <View key={`${m.label}-${m.value}`} style={styles.metricRow}>
-                <Text style={styles.metricLabel}>{m.label}</Text>
-                <Text style={styles.metricValue}>{m.value}</Text>
-              </View>
-            ))}
-        </View>
-      </View>
-    );
-  };
-  
-  const parseFormattedText = (text) => {
-    const parts = [];
-    const boldRegex = /\*\*(.*?)\*\*/g;
-    let lastIndex = 0;
-    let match;
-
-    while ((match = boldRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push({ text: text.substring(lastIndex, match.index), bold: false });
-      }
-      parts.push({ text: match[1], bold: true });
-      lastIndex = boldRegex.lastIndex;
-    }
-    if (lastIndex < text.length) {
-      parts.push({ text: text.substring(lastIndex), bold: false });
-    }
-    
-    if (parts.length === 0) return [{ text: text, bold: false }];
-
-    return parts.map(p => ({
-        ...p,
-        text: p.text.replace(/\*/g, '')
-    }));
-  };
-
-  const MessageText = ({ text, isUser }) => {
-    const t = String(text || '');
-    if (isUser) {
-      return <Text style={[styles.bubbleText, styles.bubbleTextUser]}>{t}</Text>;
-    }
-    const lines = t.split('\n');
-    return (
-      <View style={styles.msgTextWrap}>
-        {lines.map((line, idx) => {
-          let trimmed = String(line || '').trim();
-          if (!trimmed) return <View key={`br-${idx}`} style={{ height: 4 }} />;
-
-          let isBullet = false;
-          if (/^[\*•-]\s+/.test(trimmed)) {
-            isBullet = true;
-            trimmed = trimmed.replace(/^[\*•-]\s+/, '');
-          }
-
-          const parts = parseFormattedText(trimmed);
-
-          const renderContent = () => (
-             <Text style={styles.msgLine}>
-                {parts.map((p, i) => (
-                  <Text key={i} style={p.bold ? { fontWeight: '800' } : {}}>
-                    {p.text}
-                  </Text>
-                ))}
-             </Text>
-          );
-
-          if (idx === 0 && !isBullet) {
-             return (
-               <Text key={`ttl-${idx}`} style={styles.msgTitle}>
-                 {parts.map(p => p.text).join('')}
-               </Text>
-             );
-          }
-
-          if (isBullet) {
-            return (
-              <View key={`row-${idx}`} style={styles.msgRow}>
-                <View style={styles.msgDot} />
-                {renderContent()}
-              </View>
-            );
-          }
-          
-          return (
-             <View key={`ln-${idx}`}>
-               {renderContent()}
-             </View>
-          );
-        })}
-      </View>
-    );
-  };
-
-  const renderMessage = ({ item }) => {
-    const isUser = item.role === 'user';
-    return (
-      <View style={[styles.row, { justifyContent: isUser ? 'flex-end' : 'flex-start' }]}>
-        {!isUser ? (
-          <View style={styles.avatar}>
-            <Ionicons name="sparkles" size={14} color={THEME.primaryDark} />
-          </View>
-        ) : null}
-        <Surface
-          style={[
-            styles.bubble,
-            isUser ? styles.bubbleUser : styles.bubbleBot,
-            isUser ? { marginLeft: 60 } : { marginRight: 60 },
-          ]}
-          elevation={isUser ? 1 : 2}
-        >
-          {item?.card && !isUser ? (
-            item.card.type === 'forecast' ? (
-              <ForecastCard card={item.card} />
-            ) : item.card.type === 'weather' ? (
-              <WeatherCard card={item.card} />
-            ) : (
-              <MessageText text={item.text} isUser={isUser} />
-            )
-          ) : (
-            <MessageText text={item.text} isUser={isUser} />
-          )}
-        </Surface>
-      </View>
-    );
+  const clearChat = () => {
+    Alert.alert('Reset Chat', 'Clear all messages in this conversation?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clear',
+        style: 'destructive',
+        onPress: async () => {
+          const fresh = [
+            {
+              id: makeId(),
+              sender: 'bot',
+              text: 'Conversation cleared. How can I assist with your herd diagnostics?',
+              timestamp: new Date().toISOString(),
+            },
+          ];
+          setMessages(fresh);
+          await AsyncStorage.removeItem(storageKey);
+        },
+      },
+    ]);
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}> 
-      <View style={styles.headerWrap}>
-        <LinearGradient
-          colors={[THEME.primaryDark, THEME.primary]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
-        <View style={styles.headerRow}>
-          <View style={styles.headerLeft}>
-            <View style={styles.headerIcon}>
-              <Ionicons name="chatbubble-ellipses" size={18} color="#fff" />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>Chat Assistant</Text>
-              <View style={styles.statusRow}>
-                <View style={styles.onlineDot} />
-                <Text style={styles.headerSubtitle}>Online • Scan, weather, account help</Text>
-              </View>
-            </View>
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+
+      {/* Top Header */}
+      <View style={[styles.header, { paddingTop: insets.top + (Platform.OS === 'ios' ? 10 : 14) }]}>
+        <View style={styles.headerInfo}>
+          <View style={styles.botAvatar}>
+            <Ionicons name="chatbubbles" size={17} color="#fb7185" />
           </View>
-
-          <TouchableOpacity
-            onPress={async () => {
-              setMessages((prev) => (prev?.length ? [prev[0]] : prev));
-              try {
-                await AsyncStorage.removeItem(storageKey);
-              } catch {}
-            }}
-            style={styles.clearBtn}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="trash-outline" size={18} color="#fff" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.promptsWrap}>
-          <FlatList
-            horizontal
-            data={quickPrompts}
-            keyExtractor={(p) => p.label}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 14, gap: 10 }}
-            renderItem={({ item: p }) => (
-              <Chip
-                mode="flat"
-                onPress={() => send(p.text)}
-                style={styles.promptChip}
-                textStyle={styles.promptChipText}
-              >
-                {p.label}
-              </Chip>
-            )}
-          />
-        </View>
-      </View>
-
-      <FlatList
-        ref={listRef}
-        data={messages}
-        style={{ flex: 1 }}
-        keyExtractor={(m) => m.id}
-        renderItem={renderMessage}
-        contentContainerStyle={[styles.listContent, { paddingBottom: listBottomPadding }]}
-        onContentSizeChange={scrollToBottom}
-        ListFooterComponent={
-          sending ? (
-            <View style={[styles.row, { justifyContent: 'flex-start' }]}> 
-              <View style={styles.avatar}>
-                <Ionicons name="sparkles" size={14} color={THEME.primaryDark} />
+          <View>
+            <View style={styles.titleRow}>
+              <Text style={styles.titleText}>Pigify AI Vet</Text>
+              <View style={styles.botBadge}>
+                <Text style={styles.botBadgeText}>CLINICAL BOT</Text>
               </View>
-              <Surface style={[styles.bubble, styles.bubbleBot]} elevation={2}>
-                <TypingIndicator />
-              </Surface>
             </View>
-          ) : (
-            <View style={{ height: 6 }} />
-          )
-        }
-      />
+            <Text style={styles.subText}>24/7 Swine Disease Diagnostic Intelligence</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity onPress={clearChat} style={styles.resetBtn}>
+          <Ionicons name="trash-outline" size={18} color="#94a3b8" />
+        </TouchableOpacity>
+      </View>
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? tabBarHeight + 14 : 0}
+        style={styles.keyboardContainer}
       >
-        <View style={[styles.inputWrap, { paddingBottom: Math.max(insets.bottom, 12), marginBottom: composerBottomOffset }]}>
-          <View style={styles.inputInner}>
-            <Ionicons name="search" size={18} color={THEME.textLight} />
-            <TextInput
-              value={input}
-              onChangeText={setInput}
-              placeholder="Ask about scan tips, weather, stats, or your account…"
-              placeholderTextColor="#9CA3AF"
-              style={styles.input}
-              multiline
-            />
-          </View>
+        {/* Messages List */}
+        <FlatList
+          ref={listRef}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messagesList}
+          onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
+          renderItem={({ item }) => {
+            const isUser = item.sender === 'user';
+            return (
+              <View style={[styles.messageRow, isUser ? styles.userRow : styles.botRow]}>
+                {!isUser && (
+                  <View style={styles.botSmallIcon}>
+                    <Ionicons name="hardware-chip" size={14} color="#34d399" />
+                  </View>
+                )}
+                <View style={[styles.bubble, isUser ? styles.userBubble : styles.botBubble]}>
+                  <Text style={[styles.bubbleText, isUser ? styles.userText : styles.botText]}>
+                    {item.text}
+                  </Text>
+                  <Text style={styles.bubbleTime}>
+                    {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </Text>
+                </View>
+              </View>
+            );
+          }}
+          ListFooterComponent={sending ? <TypingIndicator /> : null}
+        />
+
+        {/* Quick Prompts */}
+        <View style={styles.promptsBar}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.promptsScroll}>
+            {quickPrompts.map((p, idx) => (
+              <TouchableOpacity
+                key={idx}
+                activeOpacity={0.8}
+                onPress={() => handleSend(p.text)}
+                style={styles.promptPill}
+              >
+                <Text style={styles.promptPillText}>{p.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* Input Bar */}
+        <View style={[styles.inputBar, { paddingBottom: inputBottomOffset }]}>
+          <TextInput
+            value={input}
+            onChangeText={setInput}
+            placeholder="Ask about swine symptoms, dosage, biosecurity..."
+            placeholderTextColor="#64748b"
+            style={styles.inputField}
+            multiline={false}
+            returnKeyType="send"
+            onSubmitEditing={() => handleSend()}
+          />
           <TouchableOpacity
-            onPress={() => send(input)}
-            disabled={sending || !String(input).trim().length}
             activeOpacity={0.85}
-            style={[styles.sendBtn, (sending || !String(input).trim().length) ? styles.sendBtnDisabled : null]}
+            disabled={!input.trim() || sending}
+            onPress={() => handleSend()}
+            style={[styles.sendBtn, !input.trim() && styles.sendBtnDisabled]}
           >
-            <Ionicons name="send" size={18} color="#fff" />
+            <Ionicons name="arrow-up" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -475,286 +305,192 @@ export default function ChatbotScreen({ navigation, user }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: THEME.background,
+    backgroundColor: THEME.bgDeep,
   },
-  headerWrap: {
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    overflow: 'hidden',
-    paddingBottom: 12,
-  },
-  headerRow: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 10,
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: 'rgba(11, 18, 32, 0.95)',
   },
-  headerLeft: {
+  headerInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+    flex: 1,
   },
-  headerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 0.3,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 10,
-    backgroundColor: '#10B981',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.7)',
-  },
-  headerSubtitle: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  clearBtn: {
+  botAvatar: {
     width: 38,
     height: 38,
     borderRadius: 12,
+    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.25)',
   },
-  promptsWrap: {
-    paddingBottom: 10,
-  },
-  promptChip: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderColor: 'rgba(255,255,255,0.35)',
-  },
-  promptChipText: {
-    color: THEME.primaryDark,
-    fontWeight: '800',
-    fontSize: 12,
-  },
-  listContent: {
-    paddingHorizontal: 14,
-    paddingTop: 14,
-    paddingBottom: 10,
-    gap: 10,
-  },
-  row: {
+  titleRow: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-  },
-  avatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    backgroundColor: '#fff',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  bubble: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 16,
-    maxWidth: '84%',
-    borderWidth: 1,
-  },
-  bubbleBot: {
-    backgroundColor: THEME.botBubble,
-    borderColor: 'rgba(0,0,0,0.06)',
-    borderTopLeftRadius: 8,
-  },
-  bubbleUser: {
-    backgroundColor: THEME.userBubble,
-    borderColor: 'rgba(255,255,255,0.10)',
-    borderTopRightRadius: 8,
-  },
-  bubbleText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  bubbleTextBot: {
-    color: THEME.textDark,
-    fontWeight: '600',
-  },
-  bubbleTextUser: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  msgTextWrap: {
     gap: 6,
   },
-  msgTitle: {
-    fontSize: 14,
+  titleText: {
+    fontSize: 16,
     fontWeight: '800',
-    color: THEME.textDark,
+    color: '#ffffff',
   },
-  msgRow: {
+  botBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 5,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  botBadgeText: {
+    fontSize: 9,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontWeight: '700',
+    color: '#34d399',
+  },
+  subText: {
+    fontSize: 11,
+    color: THEME.textMuted,
+    marginTop: 1,
+  },
+  resetBtn: {
+    padding: 8,
+  },
+  keyboardContainer: {
+    flex: 1,
+  },
+  messagesList: {
+    padding: 16,
+    gap: 12,
+  },
+  messageRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'flex-end',
     gap: 8,
   },
-  msgDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 6,
-    backgroundColor: THEME.textLight,
-    marginTop: 6,
+  userRow: {
+    justifyContent: 'flex-end',
   },
-  msgLine: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: THEME.textDark,
-    fontWeight: '600',
-    flex: 1,
+  botRow: {
+    justifyContent: 'flex-start',
   },
-  card: {
-    gap: 4,
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: THEME.textDark,
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: THEME.textLight,
-    marginBottom: 4,
-  },
-  cardDivider: {
-    height: 1,
-    backgroundColor: 'rgba(0,0,0,0.06)',
-    marginVertical: 6,
-  },
-  cardSectionHead: {
-    marginBottom: 4,
-  },
-  cardSectionTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: THEME.textDark,
-  },
-  cardNowRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardNowText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: THEME.textDark,
-  },
-  cardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 2,
-  },
-  cardRowDate: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: THEME.textDark,
-  },
-  cardRowMeta: {
-    flex: 1,
-    textAlign: 'right',
-    fontSize: 12,
-    fontWeight: '600',
-    color: THEME.textLight,
-  },
-  cardMetrics: {
-    gap: 6,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  metricLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: THEME.textDark,
-  },
-  metricValue: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: THEME.textLight,
-  },
-  inputWrap: {
-    paddingHorizontal: 14,
-    paddingTop: 10,
-    backgroundColor: THEME.background,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-  },
-  inputInner: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: 10,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-  },
-  input: {
-    flex: 1,
-    minHeight: 20,
-    maxHeight: 90,
-    fontSize: 14,
-    color: THEME.textDark,
-    padding: 0,
-  },
-  sendBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
+  botSmallIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: THEME.primary,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 3,
+    marginBottom: 4,
   },
-  sendBtnDisabled: {
-    backgroundColor: '#9CA3AF',
+  bubble: {
+    maxWidth: '82%',
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderWidth: 1,
   },
-  dot: {
+  userBubble: {
+    backgroundColor: THEME.userBubble,
+    borderColor: THEME.userBubbleBorder,
+    borderBottomRightRadius: 4,
+  },
+  botBubble: {
+    backgroundColor: THEME.botBubble,
+    borderColor: THEME.botBubbleBorder,
+    borderBottomLeftRadius: 4,
+  },
+  bubbleText: {
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  userText: {
+    color: '#ffffff',
+  },
+  botText: {
+    color: '#e2e8f0',
+  },
+  bubbleTime: {
+    fontSize: 9,
+    color: THEME.textFaint,
+    alignSelf: 'flex-end',
+    marginTop: 4,
+  },
+  typingRow: {
+    flexDirection: 'row',
+    gap: 5,
+    paddingLeft: 34,
+    paddingVertical: 8,
+  },
+  typingDot: {
     width: 6,
     height: 6,
-    borderRadius: 6,
-    backgroundColor: THEME.textLight,
+    borderRadius: 3,
+    backgroundColor: '#34d399',
+  },
+  promptsBar: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  promptsScroll: {
+    gap: 8,
+  },
+  promptPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  promptPillText: {
+    fontSize: 11,
+    color: '#fb7185',
+    fontWeight: '600',
+  },
+  inputBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingTop: 8,
+    backgroundColor: 'rgba(11, 18, 32, 0.98)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 10,
+  },
+  inputField: {
+    flex: 1,
+    backgroundColor: 'rgba(20, 29, 48, 0.85)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingHorizontal: 14,
+    height: 42,
+    color: '#ffffff',
+    fontSize: 13,
+  },
+  sendBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#f43f5e',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sendBtnDisabled: {
+    opacity: 0.4,
   },
 });

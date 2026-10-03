@@ -19,37 +19,61 @@ const formatWind = (v) => (typeof v === 'number' ? `${Math.round(v)} km/h` : '�
 
 const scanTips = () => {
   return [
-    'Scan tips for better results:',
-    '• Use bright, even light (avoid harsh shadows).',
-    '• Fill the frame: keep the fruit centered and close.',
-    '• Wipe lens + fruit surface to reduce blur and glare.',
-    '• Keep your hand steady; tap to focus before capturing.',
-    '• Avoid busy backgrounds; use a plain surface if possible.',
+    'Veterinary scanning tips for swine diagnostics:',
+    '• Ensure good pen lighting (avoid harsh glare on wet swine skin).',
+    '• Center lesion or rash in viewfinder reticle (12-24 inches away).',
+    '• Gently wipe heavy mud/feed crust from the skin lesion.',
+    '• Keep hands steady while the AI segments dermatitis boundaries.',
+    '• Note the pen number and swine tag ID for epidemiological records.',
   ].join('\n');
 };
 
-const accountHelp = (user) => {
-  const name = user?.name ? String(user.name) : 'there';
-  const email = user?.email ? String(user.email) : null;
-
+const swineDiseaseAdvice = (topic) => {
+  if (topic.includes('erysipelas') || topic.includes('diamond')) {
+    return [
+      'Diamond Skin Disease (Swine Erysipelas):',
+      '• Symptoms: Raised diamond-shaped red/purple skin plaques, fever, lethargy, stiff gait.',
+      '• Biosecurity Action: ISOLATE animal immediately to quarantine pen.',
+      '• Treatment: Injectable Penicillin or broad-spectrum antimicrobial under veterinary guidance.',
+      '• Prevention: Vaccinate herd at weaning; disinfect pen troughs and floor.',
+    ].join('\n');
+  }
+  if (topic.includes('greasy') || topic.includes('epidermitis')) {
+    return [
+      'Greasy Pig Disease (Exudative Epidermitis):',
+      '• Symptoms: Brown greasy/crusted skin lesions, predominantly affecting piglets and weaners.',
+      '• Biosecurity Action: Separate affected piglets from crowded pens.',
+      '• Treatment: Bathe affected skin with mild antiseptic (chlorhexidine), apply topical antibiotic.',
+      '• Prevention: Smooth sharp pen floor surfaces, clip needle teeth, maintain dry bedding.',
+    ].join('\n');
+  }
+  if (topic.includes('mange') || topic.includes('mite') || topic.includes('scratch')) {
+    return [
+      'Sarcoptic Swine Mange:',
+      '• Symptoms: Excessive scratching against pen railings, thick crusted ear lesions.',
+      '• Treatment: Avermectin (Ivermectin) injectable or topical treatment prescribed by a vet.',
+      '• Prevention: Treat sow prior to farrowing; sanitize pen walls.',
+    ].join('\n');
+  }
   return [
-    `Account help, ${name}:`,
-    email ? `• Signed in as: ${email}` : '• Signed in status: available in User tab.',
-    '• Update profile: User → Edit Profile.',
-    '• Logout: User → Logout.',
-    '• If login fails: check email/password, then try again on a stable connection.',
+    'Backyard Swine Health Protocol:',
+    '• 1. Quarantine new herd arrivals for at least 21-30 days.',
+    '• 2. Monitor pen ambient temperature: 24-28°C for nursery, 18-22°C for growers.',
+    '• 3. Disinfect pen boot dips and feeding troughs weekly.',
+    '• 4. Scan swine lesions at first sign of redness or skin crust.',
   ].join('\n');
 };
 
 const defaultHelp = () => {
   return [
-    'I can help with:',
-    '• Scan tips and photo quality',
-    '• Your scan stats (stored on this device)',
-    '• Weather + location insights (uses your GPS)',
-    '• User/account guidance',
+    'Pigify Clinical AI Swine Assistant:',
+    'I can assist you with:',
+    '• Swine skin disease diagnosis (Erysipelas, Greasy Pig, Mange)',
+    '• Photography tips for lesion AI segmentation',
+    '• Backyard pen biosecurity & disinfection protocols',
+    '• Your recent swine scan telemetry',
     '',
-    'Try: “scan tips”, “my scan stats”, “weather now”, or “7-day forecast”.',
+    'Try asking: “How to treat Erysipelas?”, “Greasy pig symptoms?”, “Scan tips”, or “Biosecurity protocol”.',
   ].join('\n');
 };
 
@@ -72,6 +96,10 @@ export const ChatbotService = {
     }
     if (/(^|\b)(edit|update)(\b|\s).*(profile|account)/.test(text)) {
       return { text: 'Opening Edit Profile…', action: { type: 'navigate', screen: 'EditProfile' } };
+    }
+
+    if (text.includes('erysipelas') || text.includes('diamond') || text.includes('greasy') || text.includes('mange') || text.includes('biosecurity') || text.includes('disease') || text.includes('treatment') || text.includes('lesion')) {
+      return { text: swineDiseaseAdvice(text) };
     }
 
     if (text.includes('scan tip') || text.includes('tips') || text.includes('photo') || text.includes('blurry') || text.includes('glare')) {

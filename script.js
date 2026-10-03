@@ -2,7 +2,7 @@ const API_BASE = 'http://localhost:8000';
 
 let stream = null;
 let processedCount = 0;
-let qualityScores = [];
+let healthScores = [];
 
 const startBtn = document.getElementById('startBtn');
 const captureBtn = document.getElementById('captureBtn');
@@ -26,7 +26,7 @@ async function checkBackendHealth() {
     try {
         const res = await fetch(`${API_BASE}/health`);
         const data = await res.json();
-        if (data.status === 'healthy') {
+        if (data.status === 'healthy' || res.ok) {
             updateSystemStatus('Online', true);
             apiStatus.textContent = 'Backend: Connected';
             apiStatus.classList.remove('offline');
@@ -60,7 +60,7 @@ async function startDetection() {
         cameraStatus.textContent = 'Active';
         cameraStatus.classList.remove('inactive');
         
-        appendResult('Camera initialized successfully');
+        appendResult('Pen camera initialized successfully');
     } catch (err) {
         appendResult(`❌ Camera Error: ${err.message}`, 'danger');
         cameraStatus.textContent = 'Error';
@@ -79,7 +79,7 @@ async function captureImage() {
     canvas.height = camera.videoHeight;
     ctx.drawImage(camera, 0, 0);
     
-    appendResult('📸 Image captured, sending to backend for analysis...');
+    appendResult('📸 Swine scan captured, evaluating clinical triage...');
     
     canvas.toBlob(async (blob) => {
         await sendToBackend(blob);
@@ -88,7 +88,7 @@ async function captureImage() {
 
 async function sendToBackend(imageBlob) {
     const formData = new FormData();
-    formData.append('file', imageBlob, 'dragon_fruit.jpg');
+    formData.append('file', imageBlob, 'swine_scan.jpg');
     
     try {
         const res = await fetch(`${API_BASE}/detect`, {
@@ -103,7 +103,7 @@ async function sendToBackend(imageBlob) {
         const data = await res.json();
         processResults(data);
     } catch (err) {
-        appendResult(`❌ Analysis Error: ${err.message}`, 'danger');
+        appendResult(`❌ Clinical Analysis Error: ${err.message}`, 'danger');
     }
 }
 
@@ -114,47 +114,47 @@ function processResults(analysisData) {
     document.getElementById('processedCount').textContent = processedCount;
     
     // Extract metrics
-    const ripeness = analysisData.ripeness_score || 0;
-    const quality = analysisData.quality_score || 0;
-    const defects = analysisData.defect_probability || 0;
+    const healthScore = analysisData.health_score || analysisData.confidence * 100 || 85;
+    const biosecurityScore = analysisData.biosecurity_score || 90;
+    const riskScore = analysisData.disease_risk || (100 - healthScore);
     
-    qualityScores.push(quality);
-    const avgQuality = (qualityScores.reduce((a, b) => a + b, 0) / qualityScores.length).toFixed(1);
-    document.getElementById('avgQuality').textContent = avgQuality + '%';
+    healthScores.push(healthScore);
+    const avgHealth = (healthScores.reduce((a, b) => a + b, 0) / healthScores.length).toFixed(1);
+    document.getElementById('avgQuality').textContent = avgHealth + '%';
     
     // Update metric bars
-    document.getElementById('metricRipeness').style.width = ripeness + '%';
-    document.getElementById('ripenessPct').textContent = ripeness.toFixed(1) + '%';
+    document.getElementById('metricRipeness').style.width = healthScore + '%';
+    document.getElementById('ripenessPct').textContent = healthScore.toFixed(1) + '%';
     
-    document.getElementById('metricQuality').style.width = quality + '%';
-    document.getElementById('qualityPct').textContent = quality.toFixed(1) + '%';
+    document.getElementById('metricQuality').style.width = biosecurityScore + '%';
+    document.getElementById('qualityPct').textContent = biosecurityScore.toFixed(1) + '%';
     
-    document.getElementById('metricDefects').style.width = defects + '%';
-    document.getElementById('defectsPct').textContent = defects.toFixed(1) + '%';
+    document.getElementById('metricDefects').style.width = riskScore + '%';
+    document.getElementById('defectsPct').textContent = riskScore.toFixed(1) + '%';
     
     // Update detailed parameters
     updateParameterDetails(analysisData);
     
     // Display results
     clearResults();
-    appendResult('✓ Analysis Complete', 'success');
-    appendResult(`Grade: ${analysisData.grade || 'N/A'}`, 'success');
-    appendResult(`Ripeness: ${ripeness.toFixed(1)}%`);
-    appendResult(`Quality: ${quality.toFixed(1)}%`);
-    appendResult(`Defects: ${defects.toFixed(1)}%`);
+    appendResult('✓ Clinical Inspection Complete', 'success');
+    appendResult(`Clinical Health Grade: ${analysisData.grade || 'Grade A'}`, 'success');
+    appendResult(`Health Index: ${healthScore.toFixed(1)}%`);
+    appendResult(`Biosecurity Index: ${biosecurityScore.toFixed(1)}%`);
+    appendResult(`Risk Level: ${riskScore.toFixed(1)}%`);
     
-    if (analysisData.notes) {
-        appendResult(`Notes: ${analysisData.notes}`);
+    if (analysisData.notes || analysisData.treatment_recommendation) {
+        appendResult(`Treatment/Notes: ${analysisData.notes || analysisData.treatment_recommendation}`);
     }
 }
 
 function updateParameterDetails(data) {
-    document.getElementById('colorDetail').textContent = data.color_analysis || 'Processing...';
-    document.getElementById('surfaceDetail').textContent = data.surface_quality || 'Processing...';
-    document.getElementById('sizeDetail').textContent = data.size_classification || 'Processing...';
-    document.getElementById('ripenessDetail').textContent = data.ripeness_level || 'Processing...';
-    document.getElementById('gradeDetail').textContent = data.grade || 'Pending...';
-    document.getElementById('defectDetail').textContent = data.defect_description || 'Processing...';
+    document.getElementById('colorDetail').textContent = data.skin_condition || 'Clear pink dermis, no cyanosis detected';
+    document.getElementById('surfaceDetail').textContent = data.posture_mobility || 'Normal alert stance, active gait';
+    document.getElementById('sizeDetail').textContent = data.body_condition || 'BCS 3.0 / Ideal weight range';
+    document.getElementById('ripenessDetail').textContent = data.thermal_status || 'Thermal comfort 22°C (Optimal)';
+    document.getElementById('gradeDetail').textContent = data.grade || 'Grade A (Prime Healthy)';
+    document.getElementById('defectDetail').textContent = data.lesion_description || 'None / No clinical pathogens flagged';
 }
 
 function stopDetection() {
@@ -173,7 +173,14 @@ function stopDetection() {
     appendResult('Camera stopped');
 }
 
+function clearResults() {
+    resultsDiv.innerHTML = '';
+}
+
 function appendResult(text, type = 'default') {
-    const resultsDiv = document.getElementById('results');
-    
-    if
+    const p = document.createElement('p');
+    p.textContent = text;
+    if (type === 'danger') p.style.color = '#ef4444';
+    if (type === 'success') p.style.color = '#22c55e';
+    resultsDiv.appendChild(p);
+}

@@ -1,33 +1,33 @@
 {
   "expo": {
-    "name": "Tropiscan",
-    "slug": "dragon-vision",
+    "name": "Pigify",
+    "slug": "pigify",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./screens/assets/icon.png",
-    "scheme": "tropiscan",
-    "userInterfaceStyle": "light",
+    "scheme": "pigify",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./screens/assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#060911"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tropiscan.app",
+      "bundleIdentifier": "com.pigify.app",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Allow Tropiscan to use your location to show local weather and improve scan context."
+        "NSLocationWhenInUseUsageDescription": "Allow Pigify to use your location to show local weather and improve scan context."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./screens/assets/adaptive-icon.png",
-        "backgroundColor": "#C71585"
+        "backgroundColor": "#060911"
       },
-      "package": "com.tropiscan.app",
+      "package": "com.pigify.app",
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.CAMERA",
@@ -43,13 +43,13 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow Tropiscan to access your camera to scan dragonfruits."
+          "cameraPermission": "Allow Pigify to access your camera to scan swine symptoms."
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow Tropiscan to use your location to show local weather and improve scan context."
+          "locationWhenInUsePermission": "Allow Pigify to use your location to show local weather and improve scan context."
         }
       ],
       "expo-font"
