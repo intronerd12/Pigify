@@ -265,6 +265,7 @@ export default function AuthScreen({ onLogin }) {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          style={styles.scrollView}
         >
           {/* Header Brand Section */}
           <View style={styles.headerContent}>
@@ -567,12 +568,18 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+    backgroundColor: 'transparent',
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: Platform.OS === 'ios' ? 52 : 36,
     paddingBottom: 40,
+    backgroundColor: 'transparent',
   },
   headerContent: {
     alignItems: 'center',
