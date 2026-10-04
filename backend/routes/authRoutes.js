@@ -1,9 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const { supabaseSync, getSessionStatus, getMe, socialLogin } = require('../controllers/authController');
+const {
+  supabaseSync,
+  getSessionStatus,
+  getMe,
+  socialLogin,
+  directRegister,
+  autoConfirmUser,
+} = require('../controllers/authController');
 const { protect, ensureActiveAccount } = require('../middleware/authMiddleware');
 
 // ─── Public routes ───────────────────────────────────────────────────────────
+
+// Direct register without email verification (creates user with email_confirm: true)
+router.post('/register', directRegister);
+
+// Auto-confirm unconfirmed user
+router.post('/auto-confirm', autoConfirmUser);
 
 // Supabase Auth sync — called by frontend after Supabase login/signup
 // Verifies the Supabase JWT and upserts the profile in Supabase DB

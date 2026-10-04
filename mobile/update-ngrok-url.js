@@ -23,6 +23,18 @@ const updateApiFile = (publicUrl) => {
   const updated = source.replace(pattern, `const ngrokUrl = '${publicUrl}';`);
   fs.writeFileSync(apiPath, updated, 'utf8');
   console.log('Updated ngrokUrl to:', publicUrl);
+
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    let envContent = fs.readFileSync(envPath, 'utf8');
+    if (/EXPO_PUBLIC_NGROK_URL=/.test(envContent)) {
+      envContent = envContent.replace(/EXPO_PUBLIC_NGROK_URL=.*/, `EXPO_PUBLIC_NGROK_URL=${publicUrl}`);
+    } else {
+      envContent += `\nEXPO_PUBLIC_NGROK_URL=${publicUrl}\n`;
+    }
+    fs.writeFileSync(envPath, envContent, 'utf8');
+    console.log('Updated EXPO_PUBLIC_NGROK_URL in .env to:', publicUrl);
+  }
 };
 
 http

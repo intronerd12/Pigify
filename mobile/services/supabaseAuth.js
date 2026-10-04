@@ -91,6 +91,32 @@ export async function signInWithSupabase(email, password) {
     if (error) {
       const msg = (error.message || '').toLowerCase();
       if (msg.includes('email not confirmed')) {
+        // Attempt instant auto-confirm bypass via backend
+        try {
+          const autoConfirmUrl = buildApiUrl('/api/auth/auto-confirm');
+          const autoRes = await fetchWithTimeout(
+            autoConfirmUrl,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ email: cleanEmail }),
+            },
+            4000
+          );
+          if (autoRes.ok) {
+            const retryRes = await supabase.auth.signInWithPassword({
+              email: cleanEmail,
+              password,
+            });
+            if (retryRes.data?.session) {
+              const nameHint = retryRes.data.user?.user_metadata?.full_name || cleanEmail.split('@')[0];
+              return await syncWithBackend(retryRes.data.session.access_token, nameHint, cleanEmail);
+            }
+          }
+        } catch (autoErr) {
+          console.warn('[supabaseAuth] Auto-confirm error:', autoErr?.message);
+        }
+
         const err = new Error('Please confirm your email before signing in. Check your inbox.');
         err.needsVerification = true;
         err.email = cleanEmail;
@@ -119,12 +145,49 @@ export async function signInWithSupabase(email, password) {
 }
 
 /**
- * Register via Supabase Auth (Exact same client and credentials as Web AuthPro.jsx)
+ * Register via Supabase Auth with email verification bypassed
+ * Creates user in Supabase with email_confirm: true and logs in immediately
  */
 export async function signUpWithSupabase(name, email, password) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanName = String(name || '').trim();
 
+  // 1. Direct register through backend (creates user with email_confirm: true in Supabase Auth)
+  try {
+    const regUrl = buildApiUrl('/api/auth/register');
+    const resp = await fetchWithTimeout(
+      regUrl,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ name: cleanName, email: cleanEmail, password }),
+      },
+      6000
+    );
+
+    const regData = await resp.json().catch(() => ({}));
+    if (resp.ok && regData?.success) {
+      // User registered with instant email confirmation! Sign in immediately:
+      const signedIn = await signInWithSupabase(cleanEmail, password);
+      return {
+        user: signedIn,
+        needsVerification: false,
+      };
+    } else if (resp.status === 400 && regData?.message) {
+      const msg = regData.message.toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists')) {
+        throw new Error('An account with this email already exists. Please sign in instead.');
+      }
+      throw new Error(regData.message);
+    }
+  } catch (backendRegErr) {
+    if (backendRegErr.message?.includes('already exists') || backendRegErr.message?.includes('already registered')) {
+      throw backendRegErr;
+    }
+    console.warn('[supabaseAuth] Backend direct register fallback:', backendRegErr?.message);
+  }
+
+  // 2. Fallback to client-side Supabase signUp
   try {
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -144,8 +207,28 @@ export async function signUpWithSupabase(name, email, password) {
       throw new Error(error.message || 'Registration failed. Please try again.');
     }
 
-    // If email confirmation is required by Supabase:
+    // Try auto-confirming if session wasn't issued
     if (data?.user && !data?.session) {
+      try {
+        const autoConfirmUrl = buildApiUrl('/api/auth/auto-confirm');
+        const autoRes = await fetchWithTimeout(
+          autoConfirmUrl,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: cleanEmail }),
+          },
+          3000
+        );
+        if (autoRes.ok) {
+          const autoLogin = await signInWithSupabase(cleanEmail, password);
+          return {
+            user: autoLogin,
+            needsVerification: false,
+          };
+        }
+      } catch {}
+
       return {
         needsVerification: true,
         email: cleanEmail,
@@ -153,7 +236,6 @@ export async function signUpWithSupabase(name, email, password) {
       };
     }
 
-    // Immediate session if email confirmation is disabled:
     if (data?.session) {
       const synced = await syncWithBackend(data.session.access_token, cleanName, cleanEmail);
       return {

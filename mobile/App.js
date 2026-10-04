@@ -1,59 +1,37 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { Alert, View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { Alert, View, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { clearEnvironmentCaches } from './services/EnvironmentService';
 import { getUserNamespace, sanitizeForKey } from './services/storageScope';
 import { getSessionStatus } from './services/api';
 import { signOutSupabase } from './services/supabaseAuth';
 
-// ── Lightweight Cyber Screen Loader for Lazy Suspense Fallbacks ─────────────
-function ScreenLoader({ label = 'Initializing Module...' }) {
-  return (
-    <View style={styles.screenLoaderContainer}>
-      <StatusBar style="light" />
-      <View style={styles.screenLoaderCircle}>
-        <ActivityIndicator size="large" color="#f43f5e" />
-      </View>
-      <Text style={styles.screenLoaderLabel}>{label}</Text>
-      <Text style={styles.screenLoaderSub}>YOLOv11-VET Telemetry Ready</Text>
-    </View>
-  );
-}
+// Direct static screen imports: enables instant zero-latency page transitions without Suspense waterfall
+import AuthScreen from './screens/AuthScreen';
+import HomeScreen from './screens/HomeScreen';
+import ScanScreen from './screens/ScanScreen';
+import SortingGradingScreen from './screens/SortingGradingScreen';
+import ChatbotScreen from './screens/ChatbotScreen';
+import UserScreen from './screens/UserScreen';
 
-// Higher-order helper for lazy-loaded screens with Suspense
-function lazyScreen(importFn, label) {
-  const LazyComponent = lazy(importFn);
-  return function LazyScreenWrapper(props) {
-    return (
-      <Suspense fallback={<ScreenLoader label={label} />}>
-        <LazyComponent {...props} />
-      </Suspense>
-    );
-  };
-}
+// Secondary Stacks
+import GuideScreen from './screens/GuideScreen';
+import WeatherScreen from './screens/WeatherScreen';
+import MappingEnvironmentScreen from './screens/MappingEnvironmentScreen';
+import EditProfileScreen from './screens/EditProfileScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
+import CommunityForumScreen from './screens/CommunityForumScreen';
 
-// ── Lazy-loaded Screen Modules (Reduces initial bundle and startup lag) ──────
-const AuthScreen = lazyScreen(() => import('./screens/AuthScreen'), 'Loading Pigify Portal...');
-const HomeScreen = lazyScreen(() => import('./screens/HomeScreen'), 'Loading Swine Command...');
-const ScanScreen = lazyScreen(() => import('./screens/ScanScreen'), 'Calibrating YOLOv11-VET...');
-const SortingGradingScreen = lazyScreen(() => import('./screens/SortingGradingScreen'), 'Loading Triage Pipeline...');
-const ChatbotScreen = lazyScreen(() => import('./screens/ChatbotScreen'), 'Loading Swine AI Vet...');
-const UserScreen = lazyScreen(() => import('./screens/UserScreen'), 'Loading Operator Profile...');
-
-// Secondary Stacks (Loaded on-demand only when tapped)
-const GuideScreen = lazyScreen(() => import('./screens/GuideScreen'), 'Loading Swine Pathology Guide...');
-const WeatherScreen = lazyScreen(() => import('./screens/WeatherScreen'), 'Synchronizing Pen Telemetry...');
-const MappingEnvironmentScreen = lazyScreen(() => import('./screens/MappingEnvironmentScreen'), 'Loading Farm GIS Telemetry...');
-const EditProfileScreen = lazyScreen(() => import('./screens/EditProfileScreen'), 'Loading Profile Editor...');
-const NotificationsScreen = lazyScreen(() => import('./screens/NotificationsScreen'), 'Loading Alert Preferences...');
-const CommunityForumScreen = lazyScreen(() => import('./screens/CommunityForumScreen'), 'Connecting Swine Community...');
+// Prevent splash flicker before auth state is read
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -151,18 +129,6 @@ export default function App() {
     checkUser();
   }, []);
 
-  // Idle background prefetch for core user tabs so clicking them is 0ms delay
-  useEffect(() => {
-    if (!user) return;
-    const prefetchTimer = setTimeout(() => {
-      import('./screens/ScanScreen').catch(() => {});
-      import('./screens/SortingGradingScreen').catch(() => {});
-      import('./screens/ChatbotScreen').catch(() => {});
-    }, 1500);
-
-    return () => clearTimeout(prefetchTimer);
-  }, [user]);
-
   const checkUser = async () => {
     try {
       const userData = await AsyncStorage.getItem('user');
@@ -173,6 +139,7 @@ export default function App() {
       console.error('Error loading user:', error);
     } finally {
       setLoading(false);
+      SplashScreen.hideAsync().catch(() => {});
     }
   };
 
@@ -286,35 +253,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#070A13',
-  },
-  screenLoaderContainer: {
-    flex: 1,
-    backgroundColor: '#070A13',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  screenLoaderCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  screenLoaderLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    marginBottom: 4,
-    letterSpacing: 0.3,
-  },
-  screenLoaderSub: {
-    fontSize: 12,
-    color: '#64748B',
   },
   tabBar: {
     position: 'absolute',

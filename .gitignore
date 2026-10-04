@@ -3,6 +3,7 @@ node_modules/
 .env
 .env.*
 !/frontend/.env.example
+!/mobile/.env.example
 backend/config/.env
 frontend/.env.local
 .venv/
@@ -47,6 +48,7 @@ Wallpaper Dragon/
 !backend/ml_models/yolo_bad_own.pt
 mobile/.expo/
 mobile/.expo-shared/
+mobile/.expo-test-dist/
 mobile/dist/
 frontend/dist/
 npm-debug.log*

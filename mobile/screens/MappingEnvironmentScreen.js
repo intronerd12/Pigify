@@ -119,7 +119,7 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
   };
 
   useEffect(() => {
-    loadReport({ force: true });
+    loadReport({ force: false });
   }, []);
 
   const openInMaps = async () => {

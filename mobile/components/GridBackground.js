@@ -12,12 +12,28 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  * IMPORTANT: The parent screen must set ScrollView and KeyboardAvoidingView
  * to backgroundColor: 'transparent' for this to show through.
  */
-function GridBackground({ gridSize = 40, style }) {
+function GridBackground({ gridSize = 48, style }) {
   const W = SCREEN_WIDTH;
-  const H = SCREEN_HEIGHT * 2.5; // tall enough to cover scroll
+  const H = SCREEN_HEIGHT; // Exact screen height since GridBackground is fixed behind scroll
 
-  const vCount = useMemo(() => Math.ceil(W / gridSize) + 2, [W, gridSize]);
-  const hCount = useMemo(() => Math.ceil(H / gridSize) + 2, [H, gridSize]);
+  const vCount = useMemo(() => Math.ceil(W / gridSize) + 1, [W, gridSize]);
+  const hCount = useMemo(() => Math.ceil(H / gridSize) + 1, [H, gridSize]);
+
+  const vLines = useMemo(
+    () =>
+      Array.from({ length: vCount }).map((_, i) => (
+        <View key={`v${i}`} style={[styles.vLine, { left: i * gridSize }]} />
+      )),
+    [vCount, gridSize]
+  );
+
+  const hLines = useMemo(
+    () =>
+      Array.from({ length: hCount }).map((_, i) => (
+        <View key={`h${i}`} style={[styles.hLine, { top: i * gridSize }]} />
+      )),
+    [hCount, gridSize]
+  );
 
   return (
     <View style={[styles.root, style]} pointerEvents="none">
@@ -25,14 +41,10 @@ function GridBackground({ gridSize = 40, style }) {
       <View style={StyleSheet.absoluteFillObject} />
 
       {/* ── Vertical grid lines ── */}
-      {Array.from({ length: vCount }).map((_, i) => (
-        <View key={`v${i}`} style={[styles.vLine, { left: i * gridSize }]} />
-      ))}
+      {vLines}
 
       {/* ── Horizontal grid lines ── */}
-      {Array.from({ length: hCount }).map((_, i) => (
-        <View key={`h${i}`} style={[styles.hLine, { top: i * gridSize }]} />
-      ))}
+      {hLines}
 
       {/* ── Ambient radial glow blobs ── */}
       <View style={styles.glowTopLeft} />
@@ -52,11 +64,11 @@ const styles = StyleSheet.create({
   vLine: {
     position: 'absolute',
     top: 0,
-    height: SCREEN_HEIGHT * 2.5,
+    height: SCREEN_HEIGHT,
     width: 1,
     // Bright enough to see on any device — web equivalent is 0.03 but
     // native 1dp views need 0.16+ to be visible on dark backgrounds
-    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
   },
   hLine: {
     position: 'absolute',

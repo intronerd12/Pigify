@@ -1,9 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase project credentials (identical 1:1 with web configuration)
-export const SUPABASE_URL = 'https://nmlffxrpdickyvlzrtyr.supabase.co';
-export const SUPABASE_ANON_KEY = 'sb_publishable_xs1GntpWlwPMEoCeA8ASpg_1A6rmGvH';
+// Supabase project credentials (matches backend/.env and web configuration)
+export const SUPABASE_URL =
+  (typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_SUPABASE_URL) ||
+  'https://nmlffxrpdickyvlzrtyr.supabase.co';
+
+export const SUPABASE_ANON_KEY =
+  (typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_SUPABASE_ANON_KEY) ||
+  'sb_publishable_xs1GntpWlwPMEoCeA8ASpg_1A6rmGvH';
 
 /**
  * Shared Supabase Client for Pigify Mobile

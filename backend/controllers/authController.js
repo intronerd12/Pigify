@@ -221,9 +221,140 @@ const socialLogin = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Direct Register (creates Supabase auth user with email_confirm: true)
+// @route   POST /api/auth/register
+// @access  Public (Temporary bypass for email verification)
+// ─────────────────────────────────────────────────────────────────────────────
+const directRegister = async (req, res) => {
+  const { name, email, password } = req.body;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanName = String(name || '').trim();
+
+  if (!cleanEmail || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    let targetUser = null;
+
+    const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
+      email: cleanEmail,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: cleanName || cleanEmail.split('@')[0],
+      },
+    });
+
+    if (createError) {
+      const msg = (createError.message || '').toLowerCase();
+      if (msg.includes('already registered') || msg.includes('already exists')) {
+        const { data: { users }, error: listErr } = await supabaseAdmin.auth.admin.listUsers();
+        if (listErr) throw listErr;
+        const existing = users.find((u) => u.email === cleanEmail);
+        if (existing) {
+          const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
+            password,
+            email_confirm: true,
+            user_metadata: { full_name: cleanName || existing.user_metadata?.full_name },
+          });
+          if (updateErr) throw updateErr;
+          targetUser = updated.user;
+        }
+      } else {
+        return res.status(400).json({ message: createError.message });
+      }
+    } else {
+      targetUser = createData?.user;
+    }
+
+    if (!targetUser) {
+      const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+      targetUser = users.find((u) => u.email === cleanEmail);
+    }
+
+    if (!targetUser) {
+      return res.status(500).json({ message: 'Could not register user in Supabase' });
+    }
+
+    // Upsert profile in Supabase profiles table
+    const defaultRole = cleanEmail === 'admin@pigify.com' ? 'admin' : 'user';
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .upsert(
+        {
+          id: targetUser.id,
+          name: cleanName || cleanEmail.split('@')[0],
+          avatar: '',
+          role: defaultRole,
+          status: 'active',
+          last_login_at: new Date().toISOString(),
+        },
+        { onConflict: 'id', ignoreDuplicates: false }
+      )
+      .select('id, name, avatar, role, status, status_reason')
+      .single();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Account created with email verification bypassed',
+      user: {
+        id: targetUser.id,
+        _id: targetUser.id,
+        email: cleanEmail,
+        name: cleanName || cleanEmail.split('@')[0],
+        role: profile?.role || defaultRole,
+        status: 'active',
+      },
+    });
+  } catch (error) {
+    console.error('Direct register error:', error);
+    return res.status(500).json({ message: error.message || 'Server error during registration' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// @desc    Auto-confirm an unconfirmed user by email
+// @route   POST /api/auth/auto-confirm
+// @access  Public
+// ─────────────────────────────────────────────────────────────────────────────
+const autoConfirmUser = async (req, res) => {
+  const cleanEmail = String(req.body?.email || '').trim().toLowerCase();
+  if (!cleanEmail) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers();
+    if (error) throw error;
+
+    const user = users.find((u) => u.email === cleanEmail);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found in Supabase Auth' });
+    }
+
+    const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+    });
+    if (updateErr) throw updateErr;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Email confirmation bypassed for user',
+      userId: user.id,
+    });
+  } catch (err) {
+    console.error('Auto confirm error:', err);
+    return res.status(500).json({ message: err.message || 'Failed to auto-confirm user' });
+  }
+};
+
 module.exports = {
   supabaseSync,
   getSessionStatus,
   getMe,
   socialLogin,
+  directRegister,
+  autoConfirmUser,
 };

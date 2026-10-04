@@ -16,6 +16,7 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as Location from 'expo-location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiFetch } from '../services/api';
 
 const { width } = Dimensions.get('window');
@@ -112,68 +113,91 @@ const PEN_ZONES = [
   },
 ];
 
+const WEATHER_CACHE_KEY = '@pigify_cached_weather';
+
+const DEFAULT_WEATHER = {
+  province: 'Laguna, PH',
+  temperature: 29,
+  humidity: 68,
+  condition: 'Partly Cloudy',
+  windSpeed: 14,
+  heatStress: {
+    index: 78.4,
+    status: 'Mild Heat Stress',
+    color: '#f59e0b',
+    recommendation:
+      'Engage misting fans in Sector B and increase water trough flow to prevent heat rash.',
+  },
+  forecast: [
+    { day: 'Today', temp: 29, condition: 'Partly Cloudy', humidity: 68 },
+    { day: 'Tomorrow', temp: 31, condition: 'Sunny', humidity: 62 },
+    { day: 'Day 3', temp: 28, condition: 'Light Rain', humidity: 82 },
+  ],
+};
+
 export default function WeatherScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [weatherData, setWeatherData] = useState(null);
+  const [weatherData, setWeatherData] = useState(DEFAULT_WEATHER);
   const [selectedZoneId, setSelectedZoneId] = useState(PEN_ZONES[0].id);
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
+    animateIn();
+    // Instant cache read for zero-latency screen presentation
+    AsyncStorage.getItem(WEATHER_CACHE_KEY).then((saved) => {
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            setWeatherData(parsed);
+          }
+        } catch {}
+      }
+    }).catch(() => {});
+
     getLocationAndWeather();
   }, []);
 
   const getLocationAndWeather = async () => {
-    setLoading(true);
     try {
       let province = 'Laguna';
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Low });
-          const address = await Location.reverseGeocodeAsync({
-            latitude: loc.coords.latitude,
-            longitude: loc.coords.longitude,
-          });
-          if (address && address.length > 0) {
-            province = address[0].region || address[0].city || 'Laguna';
+          // Fast path: use cached last-known position (< 10ms) or rapid balanced GPS
+          const lastLoc = await Location.getLastKnownPositionAsync().catch(() => null);
+          let coords = lastLoc?.coords;
+          if (!coords) {
+            const loc = await Promise.race([
+              Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error('Location timeout')), 3500)),
+            ]);
+            coords = loc?.coords;
+          }
+
+          if (coords) {
+            const address = await Location.reverseGeocodeAsync({
+              latitude: coords.latitude,
+              longitude: coords.longitude,
+            });
+            if (address && address.length > 0) {
+              province = address[0].region || address[0].city || 'Laguna';
+            }
           }
         }
       } catch (locErr) {
-        console.log('Location fallback to Laguna:', locErr?.message);
+        console.log('Location fast fallback to Laguna:', locErr?.message);
       }
 
       await fetchWeatherData(province);
     } catch (error) {
       console.warn('Weather fetch fallback:', error?.message);
-      // Fallback mock weather for offline / development
-      setWeatherData({
-        province: 'Laguna, PH',
-        temperature: 29,
-        humidity: 68,
-        condition: 'Partly Cloudy',
-        windSpeed: 14,
-        heatStress: {
-          index: 78.4,
-          status: 'Mild Heat Stress',
-          color: '#f59e0b',
-          recommendation:
-            'Engage misting fans in Sector B and increase water trough flow to prevent heat rash.',
-        },
-        forecast: [
-          { day: 'Today', temp: 29, condition: 'Partly Cloudy', humidity: 68 },
-          { day: 'Tomorrow', temp: 31, condition: 'Sunny', humidity: 62 },
-          { day: 'Day 3', temp: 28, condition: 'Light Rain', humidity: 82 },
-        ],
-      });
     } finally {
-      setLoading(false);
       setRefreshing(false);
-      animateIn();
     }
   };
 
@@ -207,7 +231,7 @@ export default function WeatherScreen() {
       heatRec = 'Slightly elevated heat. Check piglet creeping areas and avoid pen over-crowding.';
     }
 
-    setWeatherData({
+    const formattedData = {
       ...data,
       province: data.province || province,
       heatStress: {
@@ -216,14 +240,17 @@ export default function WeatherScreen() {
         color: heatColor,
         recommendation: heatRec,
       },
-    });
+    };
+
+    setWeatherData(formattedData);
+    AsyncStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(formattedData)).catch(() => {});
   };
 
   const animateIn = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 450,
+        duration: 350,
         useNativeDriver: true,
       }),
       Animated.spring(slideAnim, {
@@ -263,15 +290,6 @@ export default function WeatherScreen() {
         return 'partly-sunny';
     }
   };
-
-  if (loading && !refreshing) {
-    return (
-      <View style={[styles.loadingContainer, { paddingTop: insets.top }]}>
-        <ActivityIndicator size="large" color="#f43f5e" />
-        <Text style={styles.loadingText}>Calibrating Pen Environmental Telemetry...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>

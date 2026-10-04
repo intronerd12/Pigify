@@ -71,20 +71,44 @@ const weatherCodeToLabel = (code) => {
   return 'Unknown';
 };
 
+const DEFAULT_FARM_COORDS = {
+  latitude: 14.2817,
+  longitude: 121.4173,
+};
+
 const getCoords = async () => {
-  const permission = await Location.requestForegroundPermissionsAsync();
-  if (permission.status !== 'granted') {
-    throw new Error('Location permission denied');
+  try {
+    const permission = await Location.requestForegroundPermissionsAsync();
+    if (permission.status !== 'granted') {
+      return DEFAULT_FARM_COORDS;
+    }
+
+    // 1. Instant check: last known position (< 10ms)
+    const lastPos = await Location.getLastKnownPositionAsync().catch(() => null);
+    if (lastPos?.coords?.latitude && lastPos?.coords?.longitude) {
+      return {
+        latitude: lastPos.coords.latitude,
+        longitude: lastPos.coords.longitude,
+      };
+    }
+
+    // 2. Fast balanced lock (max 3500ms instead of 15000ms freeze)
+    const pos = await Promise.race([
+      Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+        maximumAge: 300000,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Location timeout')), 3500)),
+    ]);
+
+    return {
+      latitude: pos.coords.latitude,
+      longitude: pos.coords.longitude,
+    };
+  } catch (err) {
+    console.log('Location acquisition fallback to Laguna farm coords:', err?.message);
+    return DEFAULT_FARM_COORDS;
   }
-  const pos = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.High,
-    maximumAge: 0,
-    timeout: 15000,
-  });
-  return {
-    latitude: pos.coords.latitude,
-    longitude: pos.coords.longitude,
-  };
 };
 
 const getPlaceDetailsFromCoords = async ({ latitude, longitude }, { signal } = {}) => {

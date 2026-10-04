@@ -206,7 +206,7 @@ const fetchRemoteScans = async ({ user } = {}) => {
   }
 
   try {
-    const res = await apiFetch('/api/scan', { headers, cache: 'no-store' });
+    const res = await apiFetch('/api/scan', { headers, cache: 'no-store' }, 2000);
     if (!res.ok) {
       return [];
     }
@@ -679,9 +679,9 @@ export const ScanService = {
     return newScan;
   },
 
-  getStats: async ({ user } = {}) => {
+  getStats: async ({ user, scans: providedScans } = {}) => {
     try {
-      const scans = await ScanService.getScans({ user });
+      const scans = Array.isArray(providedScans) ? providedScans : await ScanService.getScans({ user });
       const total = scans.length;
       if (total === 0) return { total: 0, best: '-', avg: '0%' };
 

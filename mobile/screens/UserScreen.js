@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,12 +8,22 @@ import {
   Dimensions,
   Platform,
   Alert,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { Avatar, Dialog, Portal, Button, Paragraph } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+
+import {
+  getActiveApiUrl,
+  setActiveApiUrl,
+  resetActiveApiUrl,
+  checkBackendHealth,
+  getBackendEnvironments,
+} from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -39,6 +49,56 @@ const THEME = {
 export default function UserScreen({ navigation, user, onLogout }) {
   const insets = useSafeAreaInsets();
   const [logoutVisible, setLogoutVisible] = useState(false);
+
+  // Backend Environment State
+  const [backendModalVisible, setBackendModalVisible] = useState(false);
+  const [currentApiUrl, setCurrentApiUrl] = useState(getActiveApiUrl());
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [testingBackend, setTestingBackend] = useState(false);
+  const [backendHealth, setBackendHealth] = useState(null);
+
+  useEffect(() => {
+    setCurrentApiUrl(getActiveApiUrl());
+  }, [backendModalVisible]);
+
+  const handleTestConnection = async (targetUrl) => {
+    setTestingBackend(true);
+    setBackendHealth(null);
+    try {
+      const urlToTest = targetUrl || currentApiUrl || getActiveApiUrl();
+      const res = await checkBackendHealth(urlToTest);
+      setBackendHealth(res);
+    } catch (err) {
+      setBackendHealth({ ok: false, error: err?.message || 'Failed to ping backend' });
+    } finally {
+      setTestingBackend(false);
+    }
+  };
+
+  const handleSelectEnvironment = async (url) => {
+    await setActiveApiUrl(url, true);
+    setCurrentApiUrl(url);
+    handleTestConnection(url);
+  };
+
+  const handleApplyCustomUrl = async () => {
+    const trimmed = String(customUrlInput || '').trim();
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      Alert.alert('Invalid URL', 'Please enter a valid HTTP or HTTPS URL (e.g. http://192.168.8.153:5000)');
+      return;
+    }
+    await setActiveApiUrl(trimmed, true);
+    setCurrentApiUrl(trimmed);
+    setCustomUrlInput('');
+    handleTestConnection(trimmed);
+  };
+
+  const handleResetEnvironment = async () => {
+    await resetActiveApiUrl();
+    const defaultUrl = getActiveApiUrl();
+    setCurrentApiUrl(defaultUrl);
+    handleTestConnection(defaultUrl);
+  };
 
   const operatorName = user?.name || user?.fullName || 'Swine Operator';
   const operatorEmail = user?.email || 'operator@pigify.ai';
@@ -111,6 +171,21 @@ export default function UserScreen({ navigation, user, onLogout }) {
           title: 'AI Swine Vet Assistant',
           subtitle: 'Interactive diagnostic consultations',
           action: () => navigation.navigate('Chatbot'),
+        },
+      ],
+    },
+    {
+      title: 'SYSTEM & BACKEND TELEMETRY',
+      items: [
+        {
+          id: 'backend_env',
+          icon: 'server-outline',
+          title: 'Backend Environments',
+          subtitle: `Active: ${currentApiUrl || 'Auto-detecting...'}`,
+          action: () => {
+            setBackendModalVisible(true);
+            handleTestConnection(currentApiUrl);
+          },
         },
       ],
     },
@@ -236,6 +311,166 @@ export default function UserScreen({ navigation, user, onLogout }) {
 
         <Text style={styles.versionText}>Pigify Swine Telemetry • Web-Aligned Theme • SDK 57</Text>
       </ScrollView>
+
+      {/* Backend Environment & Diagnostic Dialog */}
+      <Portal>
+        <Dialog
+          visible={backendModalVisible}
+          onDismiss={() => setBackendModalVisible(false)}
+          style={{ backgroundColor: '#0D1424', borderRadius: 20, borderWidth: 1, borderColor: THEME.borderCard, maxHeight: '90%' }}
+        >
+          <Dialog.Title style={{ color: THEME.textMain, fontWeight: '700', fontSize: 18, paddingBottom: 4 }}>
+            Backend Environments
+          </Dialog.Title>
+          <Dialog.ScrollArea style={{ paddingHorizontal: 0 }}>
+            <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingVertical: 10 }}>
+              {/* Active URL Status Box */}
+              <View style={{ backgroundColor: 'rgba(20, 29, 48, 0.9)', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 14 }}>
+                <Text style={{ fontSize: 11, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginBottom: 4 }}>
+                  ACTIVE TARGET URL
+                </Text>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#38BDF8', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }} numberOfLines={1}>
+                  {currentApiUrl || 'None configured'}
+                </Text>
+
+                {/* Health ping badge */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  {testingBackend ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#F43F5E" style={{ marginRight: 6 }} />
+                      <Text style={{ fontSize: 12, color: THEME.textMuted }}>Testing connection...</Text>
+                    </View>
+                  ) : backendHealth ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <View style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: backendHealth.ok ? '#10B981' : '#EF4444',
+                        marginRight: 6
+                      }} />
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: backendHealth.ok ? '#10B981' : '#EF4444' }}>
+                        {backendHealth.ok ? `Online (${backendHealth.latency}ms)` : 'Unreachable / Offline'}
+                      </Text>
+                      {backendHealth.components && (
+                        <Text style={{ fontSize: 11, color: THEME.textMuted, marginLeft: 8 }}>
+                          [DB: {backendHealth.components.database ? 'OK' : 'Off'} | AI: {backendHealth.components.ai_service ? 'OK' : 'Off'}]
+                        </Text>
+                      )}
+                    </View>
+                  ) : (
+                    <Text style={{ fontSize: 11, color: THEME.textFaint }}>Tap 'Test Connection' below to probe</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Preset Environments */}
+              <Text style={{ fontSize: 11, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginBottom: 8 }}>
+                SELECT ENVIRONMENT PRESET
+              </Text>
+              {getBackendEnvironments().map((env) => {
+                const isSelected = currentApiUrl === env.url;
+                return (
+                  <TouchableOpacity
+                    key={env.id}
+                    onPress={() => handleSelectEnvironment(env.url)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: isSelected ? 'rgba(244, 63, 94, 0.12)' : 'rgba(255,255,255,0.03)',
+                      borderWidth: 1,
+                      borderColor: isSelected ? THEME.primary : 'rgba(255,255,255,0.08)',
+                      padding: 10,
+                      borderRadius: 10,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                      size={18}
+                      color={isSelected ? THEME.primary : THEME.textFaint}
+                      style={{ marginRight: 10 }}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: isSelected ? '#FFFFFF' : THEME.textMain }}>
+                        {env.name}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: THEME.textMuted }} numberOfLines={1}>
+                        {env.url}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* Custom URL Input */}
+              <Text style={{ fontSize: 11, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginTop: 8, marginBottom: 6 }}>
+                CUSTOM BACKEND URL
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
+                <TextInput
+                  value={customUrlInput}
+                  onChangeText={setCustomUrlInput}
+                  placeholder="e.g. http://192.168.8.153:5000"
+                  placeholderTextColor={THEME.textFaint}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(20, 29, 48, 0.85)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.15)',
+                    borderRadius: 8,
+                    paddingHorizontal: 10,
+                    paddingVertical: 8,
+                    color: '#F8FAFC',
+                    fontSize: 12,
+                    marginRight: 8,
+                  }}
+                />
+                <Button
+                  mode="contained"
+                  buttonColor={THEME.primary}
+                  compact
+                  onPress={handleApplyCustomUrl}
+                  disabled={!customUrlInput.trim()}
+                >
+                  Apply
+                </Button>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                <Button
+                  mode="outlined"
+                  textColor="#38BDF8"
+                  compact
+                  loading={testingBackend}
+                  disabled={testingBackend}
+                  onPress={() => handleTestConnection()}
+                  style={{ borderColor: '#38BDF8', flex: 1, marginRight: 6 }}
+                >
+                  Test Connection
+                </Button>
+                <Button
+                  mode="text"
+                  textColor={THEME.textMuted}
+                  compact
+                  onPress={handleResetEnvironment}
+                  style={{ flex: 1, marginLeft: 6 }}
+                >
+                  Reset Auto
+                </Button>
+              </View>
+            </ScrollView>
+          </Dialog.ScrollArea>
+          <Dialog.Actions style={{ paddingHorizontal: 16, paddingBottom: 10 }}>
+            <Button onPress={() => setBackendModalVisible(false)} textColor={THEME.textMain}>
+              Done
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
 
       {/* Logout Confirmation Dialog */}
       <Portal>

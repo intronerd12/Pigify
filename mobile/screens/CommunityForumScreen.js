@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScanService } from '../services/ScanService';
 import { CommunityService } from '../services/CommunityService';
 
@@ -79,6 +80,8 @@ const UserAvatar = ({ url, name, size = 36 }) => {
   );
 };
 
+const FORUM_CACHE_KEY = '@pigify_forum_cached_posts_v1';
+
 export default function CommunityForumScreen({ navigation, user }) {
   const insets = useSafeAreaInsets();
   const [posts, setPosts] = useState([]);
@@ -97,6 +100,21 @@ export default function CommunityForumScreen({ navigation, user }) {
   const [feedError, setFeedError] = useState('');
   const [expandedComments, setExpandedComments] = useState({});
 
+  // Instant display of cached discussions for zero-delay presentation
+  useEffect(() => {
+    AsyncStorage.getItem(FORUM_CACHE_KEY).then((raw) => {
+      if (raw) {
+        try {
+          const cached = JSON.parse(raw);
+          if (Array.isArray(cached) && cached.length > 0) {
+            setPosts(cached);
+            setLoading(false);
+          }
+        } catch {}
+      }
+    }).catch(() => {});
+  }, []);
+
   const selectedScan = useMemo(
     () => scans.find((scan) => String(scan?.id || scan?._id) === String(selectedScanId)) || null,
     [scans, selectedScanId]
@@ -114,7 +132,7 @@ export default function CommunityForumScreen({ navigation, user }) {
   }, [user]);
 
   const loadData = useCallback(async ({ silent = false } = {}) => {
-    if (!silent) setLoading(true);
+    if (!silent && posts.length === 0) setLoading(true);
     if (silent) setRefreshing(true);
 
     const [postsResult, scansResult, notifResult] = await Promise.allSettled([
@@ -124,10 +142,14 @@ export default function CommunityForumScreen({ navigation, user }) {
     ]);
 
     if (postsResult.status === 'fulfilled') {
-      setPosts(Array.isArray(postsResult.value) ? postsResult.value : []);
+      const freshPosts = Array.isArray(postsResult.value) ? postsResult.value : [];
+      setPosts(freshPosts);
       setFeedError('');
+      if (freshPosts.length > 0) {
+        AsyncStorage.setItem(FORUM_CACHE_KEY, JSON.stringify(freshPosts)).catch(() => {});
+      }
     } else {
-      setPosts([]);
+      if (posts.length === 0) setPosts([]);
       setFeedError(postsResult.reason?.message || 'Failed to load community discussions.');
     }
 

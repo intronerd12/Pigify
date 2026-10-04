@@ -25,7 +25,14 @@ import {
   signUpWithSupabase,
   resendVerificationEmail,
 } from '../services/supabaseAuth';
-import { socialLogin } from '../services/api';
+import {
+  socialLogin,
+  getActiveApiUrl,
+  setActiveApiUrl,
+  resetActiveApiUrl,
+  checkBackendHealth,
+  getBackendEnvironments,
+} from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -71,6 +78,52 @@ export default function AuthScreen({ onLogin }) {
   const [verifyEmail, setVerifyEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState('');
+
+  // Backend Environment State
+  const [backendModalVisible, setBackendModalVisible] = useState(false);
+  const [currentApiUrl, setCurrentApiUrl] = useState(getActiveApiUrl());
+  const [customUrlInput, setCustomUrlInput] = useState('');
+  const [testingBackend, setTestingBackend] = useState(false);
+  const [backendHealth, setBackendHealth] = useState(null);
+
+  const handleTestBackend = async (targetUrl) => {
+    setTestingBackend(true);
+    setBackendHealth(null);
+    try {
+      const urlToTest = targetUrl || currentApiUrl || getActiveApiUrl();
+      const res = await checkBackendHealth(urlToTest);
+      setBackendHealth(res);
+    } catch (err) {
+      setBackendHealth({ ok: false, error: err?.message || 'Failed to ping backend' });
+    } finally {
+      setTestingBackend(false);
+    }
+  };
+
+  const handleSelectBackend = async (url) => {
+    await setActiveApiUrl(url, true);
+    setCurrentApiUrl(url);
+    handleTestBackend(url);
+  };
+
+  const handleApplyCustomBackend = async () => {
+    const trimmed = String(customUrlInput || '').trim();
+    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+      Alert.alert('Invalid URL', 'Please enter a valid HTTP or HTTPS URL (e.g. http://192.168.8.153:5000)');
+      return;
+    }
+    await setActiveApiUrl(trimmed, true);
+    setCurrentApiUrl(trimmed);
+    setCustomUrlInput('');
+    handleTestBackend(trimmed);
+  };
+
+  const handleResetBackend = async () => {
+    await resetActiveApiUrl();
+    const defaultUrl = getActiveApiUrl();
+    setCurrentApiUrl(defaultUrl);
+    handleTestBackend(defaultUrl);
+  };
 
   // Native Entry Animations
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -186,17 +239,18 @@ export default function AuthScreen({ onLogin }) {
         if (onLogin) onLogin(user);
       } else {
         const result = await signUpWithSupabase(name, email, password);
-        if (result.needsVerification) {
+        const loggedIn = result?.user || (result?.id || result?._id ? result : null);
+        if (loggedIn) {
+          await AsyncStorage.setItem('user', JSON.stringify(loggedIn));
+          if (onLogin) onLogin(loggedIn);
+        } else if (result?.needsVerification) {
           setNeedsVerification(true);
           setVerifyEmail(result.email || email);
-        } else if (result.user) {
-          await AsyncStorage.setItem('user', JSON.stringify(result.user));
-          if (onLogin) onLogin(result.user);
         } else {
           setIsLogin(true);
           Alert.alert(
             'Registration Successful',
-            'Account created! Please sign in with your credentials.'
+            'Account created! You can now sign in with your credentials.'
           );
         }
       }
@@ -261,12 +315,7 @@ export default function AuthScreen({ onLogin }) {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardView}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-          style={styles.scrollView}
-        >
+        <View style={styles.lockedContainer}>
           {/* Header Brand Section */}
           <View style={styles.headerContent}>
             {/* Live Telemetry Kicker */}
@@ -322,12 +371,13 @@ export default function AuthScreen({ onLogin }) {
                       placeholder="e.g. Dr. Maria Santos"
                       placeholderTextColor={THEME.textFaint}
                       mode="outlined"
+                      dense={true}
                       outlineColor={THEME.borderInput}
                       activeOutlineColor={THEME.borderFocus}
                       textColor={THEME.textMain}
                       left={<TextInput.Icon icon="account-outline" color={THEME.primary} />}
                       style={styles.input}
-                      theme={{ roundness: 14 }}
+                      theme={{ roundness: 12 }}
                       autoCapitalize="words"
                     />
                   </View>
@@ -342,12 +392,13 @@ export default function AuthScreen({ onLogin }) {
                     placeholder="operator@swinefarm.com"
                     placeholderTextColor={THEME.textFaint}
                     mode="outlined"
+                    dense={true}
                     outlineColor={THEME.borderInput}
                     activeOutlineColor={THEME.borderFocus}
                     textColor={THEME.textMain}
                     left={<TextInput.Icon icon="email-outline" color={THEME.primary} />}
                     style={styles.input}
-                    theme={{ roundness: 14 }}
+                    theme={{ roundness: 12 }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
@@ -363,6 +414,7 @@ export default function AuthScreen({ onLogin }) {
                     placeholderTextColor={THEME.textFaint}
                     secureTextEntry={secureTextEntry}
                     mode="outlined"
+                    dense={true}
                     outlineColor={THEME.borderInput}
                     activeOutlineColor={THEME.borderFocus}
                     textColor={THEME.textMain}
@@ -375,7 +427,7 @@ export default function AuthScreen({ onLogin }) {
                       />
                     }
                     style={styles.input}
-                    theme={{ roundness: 14 }}
+                    theme={{ roundness: 12 }}
                   />
                 </View>
 
@@ -410,6 +462,7 @@ export default function AuthScreen({ onLogin }) {
                       placeholderTextColor={THEME.textFaint}
                       secureTextEntry={secureConfirmTextEntry}
                       mode="outlined"
+                      dense={true}
                       outlineColor={THEME.borderInput}
                       activeOutlineColor={THEME.borderFocus}
                       textColor={THEME.textMain}
@@ -422,7 +475,7 @@ export default function AuthScreen({ onLogin }) {
                         />
                       }
                       style={styles.input}
-                      theme={{ roundness: 14 }}
+                      theme={{ roundness: 12 }}
                     />
                   </View>
                 )}
@@ -494,11 +547,36 @@ export default function AuthScreen({ onLogin }) {
 
           {/* Footer Info */}
           <View style={styles.footer}>
+            <TouchableOpacity
+              onPress={() => {
+                setBackendModalVisible(true);
+                handleTestBackend(currentApiUrl);
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                borderWidth: 1,
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                marginBottom: 10,
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="server-outline" size={13} color="#10B981" style={{ marginRight: 6 }} />
+              <Text style={{ fontSize: 11, color: '#94A3B8', fontWeight: '500' }} numberOfLines={1}>
+                Server: {currentApiUrl}
+              </Text>
+              <Ionicons name="chevron-forward" size={12} color="#64748B" style={{ marginLeft: 4 }} />
+            </TouchableOpacity>
+
             <Text style={styles.footerText}>
               Pigify Swine Telemetry & Clinical AI • Connected to Supabase TLS
             </Text>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
 
       {/* Verification Modal */}
@@ -557,6 +635,162 @@ export default function AuthScreen({ onLogin }) {
           </View>
         </View>
       </Modal>
+
+      {/* Backend Environment Modal */}
+      <Modal visible={backendModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { maxHeight: '85%' }]}>
+            <View style={styles.modalIconCircle}>
+              <Ionicons name="server-outline" size={32} color={THEME.primary} />
+            </View>
+            <Text style={styles.modalTitle}>Backend Environments</Text>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={{ width: '100%', marginVertical: 10 }}>
+              {/* Active Target Banner */}
+              <View style={{ backgroundColor: 'rgba(20, 29, 48, 0.9)', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)', marginBottom: 12 }}>
+                <Text style={{ fontSize: 10, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginBottom: 4 }}>
+                  ACTIVE TARGET URL
+                </Text>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: '#38BDF8', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }} numberOfLines={1}>
+                  {currentApiUrl || 'None configured'}
+                </Text>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
+                  {testingBackend ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <ActivityIndicator size="small" color="#F43F5E" style={{ marginRight: 6 }} />
+                      <Text style={{ fontSize: 11, color: THEME.textMuted }}>Testing connection...</Text>
+                    </View>
+                  ) : backendHealth ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <View style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 4,
+                        backgroundColor: backendHealth.ok ? '#10B981' : '#EF4444',
+                        marginRight: 6
+                      }} />
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: backendHealth.ok ? '#10B981' : '#EF4444' }}>
+                        {backendHealth.ok ? `Online (${backendHealth.latency}ms)` : 'Unreachable / Offline'}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={{ fontSize: 11, color: THEME.textFaint }}>Tap 'Test Connection' below to probe</Text>
+                  )}
+                </View>
+              </View>
+
+              {/* Presets */}
+              <Text style={{ fontSize: 10, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginBottom: 8 }}>
+                SELECT PRESET
+              </Text>
+              {getBackendEnvironments().map((env) => {
+                const isSelected = currentApiUrl === env.url;
+                return (
+                  <TouchableOpacity
+                    key={env.id}
+                    onPress={() => handleSelectBackend(env.url)}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: isSelected ? 'rgba(244, 63, 94, 0.12)' : 'rgba(255,255,255,0.03)',
+                      borderWidth: 1,
+                      borderColor: isSelected ? THEME.primary : 'rgba(255,255,255,0.08)',
+                      padding: 10,
+                      borderRadius: 10,
+                      marginBottom: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name={isSelected ? 'radio-button-on' : 'radio-button-off'}
+                      size={18}
+                      color={isSelected ? THEME.primary : THEME.textFaint}
+                      style={{ marginRight: 10 }}
+                    />
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 12, fontWeight: '600', color: isSelected ? '#FFFFFF' : THEME.textMain }}>
+                        {env.name}
+                      </Text>
+                      <Text style={{ fontSize: 10, color: THEME.textMuted }} numberOfLines={1}>
+                        {env.url}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+
+              {/* Custom URL */}
+              <Text style={{ fontSize: 10, fontWeight: '700', color: THEME.textMuted, letterSpacing: 1, marginTop: 6, marginBottom: 6 }}>
+                CUSTOM BACKEND URL
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
+                <TextInput
+                  value={customUrlInput}
+                  onChangeText={setCustomUrlInput}
+                  placeholder="e.g. http://192.168.8.153:5000"
+                  placeholderTextColor={THEME.textFaint}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  style={{
+                    flex: 1,
+                    backgroundColor: 'rgba(20, 29, 48, 0.85)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(255,255,255,0.15)',
+                    borderRadius: 8,
+                    paddingHorizontal: 10,
+                    paddingVertical: 7,
+                    color: '#F8FAFC',
+                    fontSize: 11,
+                    marginRight: 8,
+                  }}
+                />
+                <Button
+                  mode="contained"
+                  buttonColor={THEME.primary}
+                  compact
+                  onPress={handleApplyCustomBackend}
+                  disabled={!customUrlInput.trim()}
+                >
+                  Apply
+                </Button>
+              </View>
+
+              {/* Buttons */}
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
+                <Button
+                  mode="outlined"
+                  textColor="#38BDF8"
+                  compact
+                  loading={testingBackend}
+                  disabled={testingBackend}
+                  onPress={() => handleTestBackend()}
+                  style={{ borderColor: '#38BDF8', flex: 1, marginRight: 6 }}
+                >
+                  Test Connection
+                </Button>
+                <Button
+                  mode="text"
+                  textColor={THEME.textMuted}
+                  compact
+                  onPress={handleResetBackend}
+                  style={{ flex: 1, marginLeft: 6 }}
+                >
+                  Reset Auto
+                </Button>
+              </View>
+            </ScrollView>
+
+            <Button
+              mode="contained"
+              buttonColor={THEME.primary}
+              style={{ marginTop: 10, borderRadius: 12, width: '100%' }}
+              onPress={() => setBackendModalVisible(false)}
+            >
+              Done
+            </Button>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -570,20 +804,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
   },
-  scrollView: {
+  lockedContainer: {
     flex: 1,
-    backgroundColor: 'transparent',
-  },
-  scrollContent: {
-    flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 52 : 36,
-    paddingBottom: 40,
+    paddingTop: Platform.OS === 'ios' ? 48 : 22,
+    paddingBottom: Platform.OS === 'ios' ? 22 : 12,
+    justifyContent: 'space-between',
     backgroundColor: 'transparent',
   },
   headerContent: {
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 6,
   },
   kickerBadge: {
     flexDirection: 'row',
@@ -591,10 +822,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 185, 129, 0.12)',
     borderWidth: 1,
     borderColor: 'rgba(16, 185, 129, 0.28)',
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
     borderRadius: 20,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   kickerDot: {
     width: 6,
@@ -604,44 +835,45 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   kickerText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: '#34D399',
     letterSpacing: 1.1,
   },
   logoBadge: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
-    elevation: 10,
+    width: 54,
+    height: 54,
+    marginBottom: 6,
+    elevation: 8,
     shadowColor: THEME.primary,
     shadowOpacity: 0.35,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   appTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     color: THEME.textMain,
     letterSpacing: 0.5,
   },
   appTagline: {
-    fontSize: 13,
+    fontSize: 12,
     color: THEME.textMuted,
-    marginTop: 4,
+    marginTop: 2,
     fontWeight: '500',
   },
   authCard: {
     backgroundColor: THEME.bgCard,
-    borderRadius: 24,
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: THEME.borderCard,
-    padding: 22,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     position: 'relative',
     shadowColor: '#000000',
     shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
   },
   cornerTL: {
     position: 'absolute',
@@ -688,14 +920,14 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(20, 29, 48, 0.7)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 14,
-    padding: 4,
-    marginBottom: 20,
+    borderRadius: 12,
+    padding: 3,
+    marginBottom: 12,
   },
   tabButton: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 11,
+    paddingVertical: 7,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -705,7 +937,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.12)',
   },
   tabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: THEME.textFaint,
   },
@@ -717,39 +949,39 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   inputWrapper: {
-    marginBottom: 14,
+    marginBottom: 8,
   },
   inputLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '800',
     color: THEME.textMuted,
     letterSpacing: 0.8,
-    marginBottom: 6,
+    marginBottom: 3,
     marginLeft: 2,
   },
   input: {
     backgroundColor: THEME.bgInput,
-    fontSize: 14,
+    fontSize: 13,
   },
   strengthBox: {
-    marginBottom: 14,
+    marginBottom: 8,
     paddingHorizontal: 4,
   },
   strengthHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   strengthLabelText: {
-    fontSize: 11,
+    fontSize: 10,
     color: THEME.textMuted,
   },
   strengthValueText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
   },
   strengthTrack: {
-    height: 4,
+    height: 3,
     borderRadius: 2,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
@@ -765,38 +997,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: THEME.errorBorder,
     borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 8,
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 11,
     color: THEME.error,
-    marginLeft: 8,
+    marginLeft: 6,
     flex: 1,
   },
   forgotBtn: {
     alignSelf: 'flex-end',
-    marginBottom: 16,
-    marginTop: -4,
+    marginBottom: 8,
+    marginTop: -2,
   },
   forgotText: {
-    fontSize: 12,
+    fontSize: 11,
     color: THEME.primaryHover,
     fontWeight: '600',
   },
   submitBtnWrapper: {
-    borderRadius: 14,
+    borderRadius: 12,
     overflow: 'hidden',
-    marginTop: 4,
-    elevation: 6,
+    marginTop: 2,
+    elevation: 5,
     shadowColor: THEME.primary,
     shadowOpacity: 0.45,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   submitGradient: {
-    paddingVertical: 14,
+    paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -807,14 +1039,14 @@ const styles = StyleSheet.create({
   },
   submitBtnText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.4,
   },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginVertical: 18,
+    marginVertical: 8,
   },
   dividerLine: {
     flex: 1,
@@ -822,9 +1054,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
   },
   dividerText: {
-    fontSize: 12,
+    fontSize: 11,
     color: THEME.textFaint,
-    marginHorizontal: 12,
+    marginHorizontal: 10,
   },
   googleBtn: {
     flexDirection: 'row',
@@ -833,24 +1065,24 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(20, 29, 48, 0.85)',
     borderWidth: 1,
     borderColor: THEME.borderInput,
-    borderRadius: 14,
-    paddingVertical: 13,
+    borderRadius: 12,
+    paddingVertical: 10,
   },
   googleBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '600',
     color: THEME.textMain,
   },
   footer: {
-    marginTop: 22,
+    marginTop: 6,
     paddingHorizontal: 10,
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 11,
+    fontSize: 10,
     color: THEME.textFaint,
     textAlign: 'center',
-    lineHeight: 16,
+    lineHeight: 14,
   },
   modalOverlay: {
     flex: 1,

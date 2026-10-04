@@ -181,8 +181,8 @@ export default function HomeScreen({ user, onLogout }) {
 
   const loadData = useCallback(async () => {
     try {
-      const s = await ScanService.getStats({ user });
       const r = await ScanService.getScans({ user });
+      const s = await ScanService.getStats({ user, scans: r });
       if (s) {
         setStats({
           total: s.total || 42,
