@@ -3,11 +3,20 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
-import { Alert, View, StyleSheet, TouchableOpacity, ActivityIndicator, Platform } from 'react-native';
+import { Alert, View, StyleSheet, TouchableOpacity, ActivityIndicator, Platform, LogBox } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SplashScreen from 'expo-splash-screen';
+
+LogBox.ignoreLogs([
+  "Passing an object as the argument to 'navigate' is deprecated. Use 'navigate(name, params, options)' instead.",
+  /Passing an object as the argument to 'navigate' is deprecated/,
+  "InteractionManager has been deprecated and will be removed in a future release. Please refactor long tasks into smaller ones, and use 'requestIdleCallback' instead.",
+  /InteractionManager has been deprecated/,
+  "The <CameraView> component does not support children. This may lead to inconsistent behaviour or crashes. If you want to render content on top of the Camera, consider using absolute positioning.",
+  /The <CameraView> component does not support children/,
+]);
 
 import { clearEnvironmentCaches } from './services/EnvironmentService';
 import { getUserNamespace, sanitizeForKey } from './services/storageScope';

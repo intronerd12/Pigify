@@ -7,7 +7,7 @@ const { isBlockedAccountStatus, normalizeStatus, getAccountStatusMessage } = req
 const fetchProfile = async (userId) => {
   const { data, error } = await supabaseAdmin
     .from('profiles')
-    .select('id, name, avatar, role, status, status_reason, last_login_at')
+    .select('id, name, avatar, role, status, status_reason, email_verified, last_login_at')
     .eq('id', userId)
     .single();
   if (error) return null;
@@ -26,6 +26,7 @@ const buildUserResponse = (profile, email, supabaseToken) => ({
   role: profile.role,
   status: profile.status,
   status_reason: profile.status_reason || '',
+  email_verified: profile.email_verified ?? true,
   supabaseToken,
   token: supabaseToken,
 });
@@ -50,11 +51,23 @@ const supabaseSync = async (req, res) => {
   }
 
   const { id, email, user_metadata } = supabaseUser;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com') || supabaseUser.app_metadata?.provider === 'google';
+  const isEmailVerified = isGmail || Boolean(supabaseUser.email_confirmed_at);
+
+  if (!isEmailVerified) {
+    return res.status(403).json({
+      message: 'Please verify your email address in Supabase before signing in. Check your inbox for the activation link.',
+      needsVerification: true,
+      email: cleanEmail,
+    });
+  }
+
   const name =
     user_metadata?.full_name ||
     user_metadata?.name ||
     req.body?.name ||
-    email.split('@')[0];
+    cleanEmail.split('@')[0];
   const avatar = user_metadata?.avatar_url || user_metadata?.picture || '';
 
   try {
@@ -66,6 +79,7 @@ const supabaseSync = async (req, res) => {
           id,
           name,
           avatar,
+          email_verified: isEmailVerified,
           last_login_at: new Date().toISOString(),
         },
         {
@@ -73,7 +87,7 @@ const supabaseSync = async (req, res) => {
           ignoreDuplicates: false,
         }
       )
-      .select('id, name, avatar, role, status, status_reason, last_login_at')
+      .select('id, name, avatar, role, status, status_reason, email_verified, last_login_at')
       .single();
 
     if (upsertError) {
@@ -222,9 +236,9 @@ const socialLogin = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// @desc    Direct Register (creates Supabase auth user with email_confirm: true)
+// @desc    Register user in Supabase (Gmail accounts auto-confirmed, others require email verification)
 // @route   POST /api/auth/register
-// @access  Public (Temporary bypass for email verification)
+// @access  Public
 // ─────────────────────────────────────────────────────────────────────────────
 const directRegister = async (req, res) => {
   const { name, email, password } = req.body;
@@ -235,13 +249,16 @@ const directRegister = async (req, res) => {
     return res.status(400).json({ message: 'Email and password are required' });
   }
 
+  // Gmail logins are excluded from the email verification requirement
+  const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com');
+
   try {
     let targetUser = null;
 
     const { data: createData, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email: cleanEmail,
       password,
-      email_confirm: true,
+      email_confirm: isGmail,
       user_metadata: {
         full_name: cleanName || cleanEmail.split('@')[0],
       },
@@ -256,7 +273,7 @@ const directRegister = async (req, res) => {
         if (existing) {
           const { data: updated, error: updateErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
             password,
-            email_confirm: true,
+            email_confirm: isGmail,
             user_metadata: { full_name: cleanName || existing.user_metadata?.full_name },
           });
           if (updateErr) throw updateErr;
@@ -289,24 +306,29 @@ const directRegister = async (req, res) => {
           avatar: '',
           role: defaultRole,
           status: 'active',
+          email_verified: isGmail,
           last_login_at: new Date().toISOString(),
         },
         { onConflict: 'id', ignoreDuplicates: false }
       )
-      .select('id, name, avatar, role, status, status_reason')
+      .select('id, name, avatar, role, status, status_reason, email_verified')
       .single();
 
     return res.status(201).json({
       success: true,
-      message: 'Account created with email verification bypassed',
-      user: {
+      needsVerification: !isGmail,
+      message: isGmail
+        ? 'Account registered successfully with Gmail login.'
+        : 'Registration successful! Please check your email for the confirmation link to activate your account before logging in.',
+      user: isGmail ? {
         id: targetUser.id,
         _id: targetUser.id,
         email: cleanEmail,
         name: cleanName || cleanEmail.split('@')[0],
         role: profile?.role || defaultRole,
         status: 'active',
-      },
+        email_verified: true,
+      } : null,
     });
   } catch (error) {
     console.error('Direct register error:', error);
@@ -315,7 +337,7 @@ const directRegister = async (req, res) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// @desc    Auto-confirm an unconfirmed user by email
+// @desc    Auto-confirm an unconfirmed user by email (EXCLUSIVELY for Gmail accounts)
 // @route   POST /api/auth/auto-confirm
 // @access  Public
 // ─────────────────────────────────────────────────────────────────────────────
@@ -323,6 +345,13 @@ const autoConfirmUser = async (req, res) => {
   const cleanEmail = String(req.body?.email || '').trim().toLowerCase();
   if (!cleanEmail) {
     return res.status(400).json({ message: 'Email is required' });
+  }
+
+  const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com');
+  if (!isGmail) {
+    return res.status(403).json({
+      message: 'Email confirmation bypass is strictly prohibited for non-Gmail logins. Please check your inbox for the activation link.',
+    });
   }
 
   try {
@@ -339,9 +368,14 @@ const autoConfirmUser = async (req, res) => {
     });
     if (updateErr) throw updateErr;
 
+    await supabaseAdmin
+      .from('profiles')
+      .update({ email_verified: true })
+      .eq('id', user.id);
+
     return res.status(200).json({
       success: true,
-      message: 'Email confirmation bypassed for user',
+      message: 'Gmail account auto-confirmed in Supabase',
       userId: user.id,
     });
   } catch (err) {

@@ -14,6 +14,7 @@ import {
 import { Button, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -54,6 +55,16 @@ const getGradeColor = (grade) => {
 export default function ScanScreen({ user }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  let tabBarHeight = 0;
+  try {
+    tabBarHeight = useBottomTabBarHeight();
+  } catch {
+    tabBarHeight = 0;
+  }
+  const bottomClearance = Math.max(
+    tabBarHeight > 0 ? tabBarHeight + 36 : insets.bottom + 104,
+    insets.bottom + 104
+  );
 
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
@@ -142,7 +153,7 @@ export default function ScanScreen({ user }) {
         return;
       }
       const res = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: false,
         quality: 0.8,
       });
@@ -321,7 +332,10 @@ export default function ScanScreen({ user }) {
         style={StyleSheet.absoluteFill}
         facing={facing}
         enableTorch={torchEnabled}
-      >
+      />
+
+      {/* Camera UI Overlay positioned on top */}
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
         {/* Top Control Bar */}
         <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
           <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.glassBtn}>
@@ -349,7 +363,7 @@ export default function ScanScreen({ user }) {
         </View>
 
         {/* Central Viewfinder Reticle */}
-        <View style={styles.viewfinderContainer}>
+        <View style={styles.viewfinderContainer} pointerEvents="none">
           <View style={styles.viewfinderBox}>
             {/* Viewfinder Corners */}
             <View style={[styles.corner, styles.cornerTL]} />
@@ -368,15 +382,18 @@ export default function ScanScreen({ user }) {
           <Text style={styles.viewfinderHint}>Align swine skin, rash or lesion in frame</Text>
         </View>
 
-        {/* Bottom Shutter Controls */}
-        <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 20 }]}>
+        {/* Bottom Shutter Controls - Raised above the floating bottom navigation bar */}
+        <View style={[styles.bottomBar, { paddingBottom: bottomClearance }]}>
           <TouchableOpacity
-            style={styles.galleryBtn}
+            style={styles.actionBtnWrap}
             onPress={handlePickGallery}
             disabled={scanning}
+            activeOpacity={0.78}
           >
-            <Ionicons name="images-outline" size={26} color="#FFFFFF" />
-            <Text style={styles.galleryBtnText}>Gallery</Text>
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="images" size={24} color="#FFFFFF" />
+            </View>
+            <Text style={styles.actionBtnText}>Gallery</Text>
           </TouchableOpacity>
 
           {/* Central Capture Trigger */}
@@ -399,15 +416,18 @@ export default function ScanScreen({ user }) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.guideBtn}
+            style={styles.actionBtnWrap}
             onPress={() => navigation.navigate('Guide')}
             disabled={scanning}
+            activeOpacity={0.78}
           >
-            <Ionicons name="book-outline" size={26} color="#FFFFFF" />
-            <Text style={styles.galleryBtnText}>Guide</Text>
+            <View style={styles.actionIconCircle}>
+              <Ionicons name="book" size={24} color="#FFFFFF" />
+            </View>
+            <Text style={styles.actionBtnText}>Guide</Text>
           </TouchableOpacity>
         </View>
-      </CameraView>
+      </View>
     </View>
   );
 }
@@ -561,30 +581,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 30,
+    paddingHorizontal: 28,
+    zIndex: 20,
   },
-  galleryBtn: {
+  actionBtnWrap: {
     alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 64,
   },
-  guideBtn: {
+  actionIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(11, 18, 32, 0.88)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
+    justifyContent: 'center',
     alignItems: 'center',
+    elevation: 6,
+    shadowColor: '#000000',
+    shadowOpacity: 0.6,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
-  galleryBtnText: {
+  actionBtnText: {
     fontSize: 11,
     color: '#FFFFFF',
-    marginTop: 4,
-    fontWeight: '600',
+    marginTop: 6,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textShadowColor: 'rgba(0, 0, 0, 0.85)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   captureBtnOuter: {
     width: 76,
     height: 76,
     borderRadius: 38,
     padding: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    elevation: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    elevation: 10,
     shadowColor: THEME.primary,
-    shadowOpacity: 0.45,
-    shadowRadius: 12,
+    shadowOpacity: 0.65,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
   },
   captureBtnGradient: {
     flex: 1,

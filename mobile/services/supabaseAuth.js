@@ -50,6 +50,16 @@ export async function syncWithBackend(supabaseToken, nameHint = '', emailHint = 
       data = {};
     }
 
+    if (res.status === 403) {
+      if (data?.needsVerification || data?.message?.includes('verify your email')) {
+        const err = new Error(data.message || 'Please verify your email address before signing in.');
+        err.needsVerification = true;
+        err.email = emailHint;
+        throw err;
+      }
+      throw new Error(data?.message || 'Account access restricted.');
+    }
+
     if (res.ok && data?.id) {
       return {
         ...data,
@@ -58,6 +68,7 @@ export async function syncWithBackend(supabaseToken, nameHint = '', emailHint = 
       };
     }
   } catch (err) {
+    if (err?.needsVerification) throw err;
     console.warn('[supabaseAuth] Backend sync deferred or timed out:', err?.message || err);
   }
 
@@ -77,10 +88,12 @@ export async function syncWithBackend(supabaseToken, nameHint = '', emailHint = 
 }
 
 /**
- * Sign in via Supabase Auth (Exact same client and credentials as Web AuthPro.jsx)
+ * Sign in via Supabase Auth.
+ * Enforces email verification: unverified non-Gmail users cannot log in.
  */
 export async function signInWithSupabase(email, password) {
   const cleanEmail = String(email || '').trim().toLowerCase();
+  const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com');
 
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -91,33 +104,36 @@ export async function signInWithSupabase(email, password) {
     if (error) {
       const msg = (error.message || '').toLowerCase();
       if (msg.includes('email not confirmed')) {
-        // Attempt instant auto-confirm bypass via backend
-        try {
-          const autoConfirmUrl = buildApiUrl('/api/auth/auto-confirm');
-          const autoRes = await fetchWithTimeout(
-            autoConfirmUrl,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-              body: JSON.stringify({ email: cleanEmail }),
-            },
-            4000
-          );
-          if (autoRes.ok) {
-            const retryRes = await supabase.auth.signInWithPassword({
-              email: cleanEmail,
-              password,
-            });
-            if (retryRes.data?.session) {
-              const nameHint = retryRes.data.user?.user_metadata?.full_name || cleanEmail.split('@')[0];
-              return await syncWithBackend(retryRes.data.session.access_token, nameHint, cleanEmail);
+        // Exclude Gmail from verification: attempt auto-confirm
+        if (isGmail) {
+          try {
+            const autoConfirmUrl = buildApiUrl('/api/auth/auto-confirm');
+            const autoRes = await fetchWithTimeout(
+              autoConfirmUrl,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+                body: JSON.stringify({ email: cleanEmail }),
+              },
+              4000
+            );
+            if (autoRes.ok) {
+              const retryRes = await supabase.auth.signInWithPassword({
+                email: cleanEmail,
+                password,
+              });
+              if (retryRes.data?.session) {
+                const nameHint = retryRes.data.user?.user_metadata?.full_name || cleanEmail.split('@')[0];
+                return await syncWithBackend(retryRes.data.session.access_token, nameHint, cleanEmail);
+              }
             }
+          } catch (autoErr) {
+            console.warn('[supabaseAuth] Gmail auto-confirm notice:', autoErr?.message);
           }
-        } catch (autoErr) {
-          console.warn('[supabaseAuth] Auto-confirm error:', autoErr?.message);
         }
 
-        const err = new Error('Please confirm your email before signing in. Check your inbox.');
+        // For non-Gmail accounts: Email verification is required in database Supabase!
+        const err = new Error('Please verify your email address before signing in. Check your inbox for the confirmation link.');
         err.needsVerification = true;
         err.email = cleanEmail;
         throw err;
@@ -130,6 +146,14 @@ export async function signInWithSupabase(email, password) {
 
     if (!data?.session) {
       throw new Error('Login failed — no session returned. Please try again.');
+    }
+
+    // Verify confirmation status for non-Gmail users
+    if (!isGmail && !data.user?.email_confirmed_at) {
+      const err = new Error('Please verify your email address before signing in. Check your inbox for the confirmation link.');
+      err.needsVerification = true;
+      err.email = cleanEmail;
+      throw err;
     }
 
     const nameHint = data.user?.user_metadata?.full_name || cleanEmail.split('@')[0];
@@ -145,49 +169,52 @@ export async function signInWithSupabase(email, password) {
 }
 
 /**
- * Register via Supabase Auth with email verification bypassed
- * Creates user in Supabase with email_confirm: true and logs in immediately
+ * Register via Supabase Auth.
+ * Gmail accounts are excluded and auto-confirmed.
+ * Non-Gmail accounts require email verification before being allowed to log in.
  */
 export async function signUpWithSupabase(name, email, password) {
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanName = String(name || '').trim();
+  const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com');
 
-  // 1. Direct register through backend (creates user with email_confirm: true in Supabase Auth)
-  try {
-    const regUrl = buildApiUrl('/api/auth/register');
-    const resp = await fetchWithTimeout(
-      regUrl,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ name: cleanName, email: cleanEmail, password }),
-      },
-      6000
-    );
+  if (isGmail) {
+    // 1. Gmail accounts: register with instant email verification bypass
+    try {
+      const regUrl = buildApiUrl('/api/auth/register');
+      const resp = await fetchWithTimeout(
+        regUrl,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ name: cleanName, email: cleanEmail, password }),
+        },
+        6000
+      );
 
-    const regData = await resp.json().catch(() => ({}));
-    if (resp.ok && regData?.success) {
-      // User registered with instant email confirmation! Sign in immediately:
-      const signedIn = await signInWithSupabase(cleanEmail, password);
-      return {
-        user: signedIn,
-        needsVerification: false,
-      };
-    } else if (resp.status === 400 && regData?.message) {
-      const msg = regData.message.toLowerCase();
-      if (msg.includes('already registered') || msg.includes('already exists')) {
-        throw new Error('An account with this email already exists. Please sign in instead.');
+      const regData = await resp.json().catch(() => ({}));
+      if (resp.ok && regData?.success) {
+        const signedIn = await signInWithSupabase(cleanEmail, password);
+        return {
+          user: signedIn,
+          needsVerification: false,
+        };
+      } else if (resp.status === 400 && regData?.message) {
+        const msg = regData.message.toLowerCase();
+        if (msg.includes('already registered') || msg.includes('already exists')) {
+          throw new Error('An account with this email already exists. Please sign in instead.');
+        }
+        throw new Error(regData.message);
       }
-      throw new Error(regData.message);
+    } catch (backendRegErr) {
+      if (backendRegErr.message?.includes('already exists') || backendRegErr.message?.includes('already registered')) {
+        throw backendRegErr;
+      }
+      console.warn('[supabaseAuth] Gmail direct register notice:', backendRegErr?.message);
     }
-  } catch (backendRegErr) {
-    if (backendRegErr.message?.includes('already exists') || backendRegErr.message?.includes('already registered')) {
-      throw backendRegErr;
-    }
-    console.warn('[supabaseAuth] Backend direct register fallback:', backendRegErr?.message);
   }
 
-  // 2. Fallback to client-side Supabase signUp
+  // 2. Non-Gmail accounts: Register in Supabase Auth requiring email confirmation.
   try {
     const { data, error } = await supabase.auth.signUp({
       email: cleanEmail,
@@ -207,47 +234,11 @@ export async function signUpWithSupabase(name, email, password) {
       throw new Error(error.message || 'Registration failed. Please try again.');
     }
 
-    // Try auto-confirming if session wasn't issued
-    if (data?.user && !data?.session) {
-      try {
-        const autoConfirmUrl = buildApiUrl('/api/auth/auto-confirm');
-        const autoRes = await fetchWithTimeout(
-          autoConfirmUrl,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: cleanEmail }),
-          },
-          3000
-        );
-        if (autoRes.ok) {
-          const autoLogin = await signInWithSupabase(cleanEmail, password);
-          return {
-            user: autoLogin,
-            needsVerification: false,
-          };
-        }
-      } catch {}
-
-      return {
-        needsVerification: true,
-        email: cleanEmail,
-        message: 'Account created! Please check your email for the confirmation link.',
-      };
-    }
-
-    if (data?.session) {
-      const synced = await syncWithBackend(data.session.access_token, cleanName, cleanEmail);
-      return {
-        user: synced,
-        needsVerification: false,
-      };
-    }
-
+    // Non-Gmail account requires email confirmation
     return {
       needsVerification: true,
       email: cleanEmail,
-      message: 'Registration successful. Please verify your email.',
+      message: 'Account created! Please check your email for the confirmation link to activate your account before logging in.',
     };
   } catch (err) {
     if (err.message && (err.message.includes('fetch failed') || err.message.includes('Network request failed'))) {

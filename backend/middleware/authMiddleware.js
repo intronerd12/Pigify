@@ -24,10 +24,22 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Not authorized, invalid or expired token' });
     }
 
+    const cleanEmail = String(supabaseUser.email || '').trim().toLowerCase();
+    const isGmail = cleanEmail.endsWith('@gmail.com') || cleanEmail.endsWith('@googlemail.com') || supabaseUser.app_metadata?.provider === 'google';
+    const isEmailVerified = isGmail || Boolean(supabaseUser.email_confirmed_at);
+
+    if (!isEmailVerified) {
+      return res.status(403).json({
+        message: 'Please verify your email address before accessing this service. Check your inbox for the activation link.',
+        needsVerification: true,
+        email: cleanEmail,
+      });
+    }
+
     // Fetch profile from Supabase profiles table
     let { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
-      .select('id, name, avatar, role, status, status_reason, last_login_at')
+      .select('id, name, avatar, role, status, status_reason, email_verified, last_login_at')
       .eq('id', supabaseUser.id)
       .single();
 
@@ -66,6 +78,7 @@ const protect = async (req, res, next) => {
       role: profile.role,
       status: profile.status,
       status_reason: profile.status_reason,
+      email_verified: Boolean(profile.email_verified ?? isEmailVerified),
       last_login_at: profile.last_login_at,
     };
 

@@ -78,6 +78,7 @@ export default function AuthScreen({ onLogin }) {
   const [verifyEmail, setVerifyEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   // Backend Environment State
   const [backendModalVisible, setBackendModalVisible] = useState(false);
@@ -164,6 +165,54 @@ export default function AuthScreen({ onLogin }) {
     pulseLoop.start();
     return () => pulseLoop.stop();
   }, [pulseAnim]);
+
+  // Button interactive press & loading pulse animations
+  const btnScaleAnim = useRef(new Animated.Value(1)).current;
+  const btnPulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    let loop;
+    if (loading) {
+      loop = Animated.loop(
+        Animated.sequence([
+          Animated.timing(btnPulseAnim, {
+            toValue: 0.94,
+            duration: 650,
+            useNativeDriver: true,
+          }),
+          Animated.timing(btnPulseAnim, {
+            toValue: 1,
+            duration: 650,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      loop.start();
+    } else {
+      btnPulseAnim.setValue(1);
+    }
+    return () => {
+      if (loop) loop.stop();
+    };
+  }, [loading, btnPulseAnim]);
+
+  const handlePressIn = () => {
+    if (!loading && !googleLoading) {
+      Animated.spring(btnScaleAnim, {
+        toValue: 0.96,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(btnScaleAnim, {
+      toValue: 1,
+      friction: 4,
+      tension: 50,
+      useNativeDriver: true,
+    }).start();
+  };
 
   // Password Strength
   const pwdStrength = useMemo(() => {
@@ -282,7 +331,7 @@ export default function AuthScreen({ onLogin }) {
   };
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     setError('');
     try {
       const fallbackPayload = {
@@ -300,7 +349,7 @@ export default function AuthScreen({ onLogin }) {
     } catch (err) {
       setError(err?.message || 'Google sign-in unavailable on this build.');
     } finally {
-      setLoading(false);
+      setGoogleLoading(false);
     }
   };
 
@@ -499,30 +548,63 @@ export default function AuthScreen({ onLogin }) {
                 )}
 
                 {/* Main Submit Action Button */}
-                <TouchableOpacity
-                  activeOpacity={0.88}
-                  onPress={handleSubmit}
-                  disabled={loading}
-                  style={styles.submitBtnWrapper}
+                <Animated.View
+                  style={[
+                    styles.submitBtnWrapper,
+                    {
+                      transform: [{ scale: Animated.multiply(btnScaleAnim, loading ? btnPulseAnim : 1) }],
+                    },
+                    loading && styles.submitBtnWrapperLoading,
+                  ]}
                 >
-                  <LinearGradient
-                    colors={[THEME.primary, THEME.primaryDark]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.submitGradient}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={handleSubmit}
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    disabled={loading || googleLoading}
+                    style={styles.submitTouchable}
                   >
-                    {loading ? (
-                      <ActivityIndicator size="small" color="#FFFFFF" />
-                    ) : (
-                      <View style={styles.submitBtnRow}>
-                        <Text style={styles.submitBtnText}>
-                          {isLogin ? 'Sign In to Portal' : 'Create Swine Account'}
-                        </Text>
-                        <Ionicons name="arrow-forward" size={18} color="#FFFFFF" style={{ marginLeft: 8 }} />
-                      </View>
-                    )}
-                  </LinearGradient>
-                </TouchableOpacity>
+                    <LinearGradient
+                      colors={
+                        loading
+                          ? ['#F43F5E', '#BE123C', '#881337']
+                          : [THEME.primary, THEME.primaryDark]
+                      }
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 0 }}
+                      style={styles.submitGradient}
+                    >
+                      {loading ? (
+                        <View style={styles.submitLoadingRow}>
+                          <View style={styles.spinnerContainer}>
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                          </View>
+                          <View style={styles.loadingTextCol}>
+                            <Text style={styles.submitBtnTextLoading}>
+                              {isLogin ? 'Authenticating Swine Portal...' : 'Creating Swine Account...'}
+                            </Text>
+                            <Text style={styles.submitBtnSubLoading}>
+                              Secure Biosecurity Gateway • TLS
+                            </Text>
+                          </View>
+                        </View>
+                      ) : (
+                        <View style={styles.submitBtnRow}>
+                          <Text style={styles.submitBtnText}>
+                            {isLogin ? 'Sign In to Portal' : 'Create Swine Account'}
+                          </Text>
+                          <Ionicons
+                            name="arrow-forward"
+                            size={18}
+                            color="#FFFFFF"
+                            style={{ marginLeft: 8 }}
+                          />
+                        </View>
+                      )}
+                    </LinearGradient>
+                  </TouchableOpacity>
+                </Animated.View>
 
                 {/* Divider */}
                 <View style={styles.dividerRow}>
@@ -533,13 +615,22 @@ export default function AuthScreen({ onLogin }) {
 
                 {/* Google Sign In */}
                 <TouchableOpacity
-                  style={styles.googleBtn}
+                  style={[styles.googleBtn, (loading || googleLoading) && { opacity: 0.7 }]}
                   onPress={handleGoogleSignIn}
-                  disabled={loading}
+                  disabled={loading || googleLoading}
                   activeOpacity={0.8}
                 >
-                  <Ionicons name="logo-google" size={18} color="#DB4437" style={{ marginRight: 10 }} />
-                  <Text style={styles.googleBtnText}>Continue with Google</Text>
+                  {googleLoading ? (
+                    <View style={styles.submitBtnRow}>
+                      <ActivityIndicator size="small" color="#DB4437" style={{ marginRight: 8 }} />
+                      <Text style={styles.googleBtnText}>Connecting Google...</Text>
+                    </View>
+                  ) : (
+                    <View style={styles.submitBtnRow}>
+                      <Ionicons name="logo-google" size={18} color="#DB4437" style={{ marginRight: 10 }} />
+                      <Text style={styles.googleBtnText}>Continue with Google</Text>
+                    </View>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -1018,17 +1109,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   submitBtnWrapper: {
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginTop: 2,
-    elevation: 5,
+    borderRadius: 14,
+    marginTop: 4,
+    elevation: 6,
     shadowColor: THEME.primary,
     shadowOpacity: 0.45,
     shadowRadius: 10,
     shadowOffset: { width: 0, height: 4 },
   },
+  submitBtnWrapperLoading: {
+    shadowOpacity: 0.8,
+    shadowRadius: 16,
+    elevation: 9,
+  },
+  submitTouchable: {
+    borderRadius: 14,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.16)',
+  },
   submitGradient: {
-    paddingVertical: 11,
+    height: 52,
+    paddingHorizontal: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -1042,6 +1144,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     letterSpacing: 0.4,
+  },
+  submitLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  spinnerContainer: {
+    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingTextCol: {
+    justifyContent: 'center',
+  },
+  submitBtnTextLoading: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  submitBtnSubLoading: {
+    color: 'rgba(255, 255, 255, 0.78)',
+    fontSize: 9.5,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    marginTop: 1,
   },
   dividerRow: {
     flexDirection: 'row',
