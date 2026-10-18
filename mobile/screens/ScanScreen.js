@@ -10,6 +10,7 @@ import {
   Image,
   ScrollView,
   Platform,
+  Linking,
 } from 'react-native';
 import { Button, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,6 +53,42 @@ const getGradeColor = (grade) => {
   return '#94A3B8';
 };
 
+const NATIVE_PIG_PRESETS = [
+  {
+    name: 'Native Pig: Erysipelas',
+    condition: 'Swine Erysipelas (Diamond Skin on Dark Melanin)',
+    severity: 'Moderate',
+    grade: 'B',
+    display_confidence_score: 96.8,
+    breed: 'Philippine Native Pig (Baboy Katutubo)',
+    susceptibility: 'Native pigs have thick dark dermis. Raised rhomboid geometric plaques may appear darker and obscured by coarse bristles.',
+    triage_recommendation: 'Isolate native sow immediately. Disinfect pen with 2% Virkon S or slaked lime whitewash. Consult veterinarian for Penicillin G therapy.',
+    imageUri: 'https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=600&q=80',
+  },
+  {
+    name: 'Native Pig: Sarcoptic Mange',
+    condition: 'Sarcoptic Mange (Ear Canal Crusts)',
+    severity: 'Moderate',
+    grade: 'C',
+    display_confidence_score: 95.4,
+    breed: 'Philippine Native Pig (Ilocos Strain)',
+    susceptibility: 'Endemic in free-range native pigs. Rubbing on rough bamboo posts causes thick asbestos-like grey ear crusts.',
+    triage_recommendation: 'Subcutaneous Ivermectin (300 µg/kg) injection; repeat after 14 days. Apply mineral oil debridement to ear canals. Spray wooden pen posts with acaricidal solution.',
+    imageUri: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80',
+  },
+  {
+    name: 'Native Pig: ASF-Suspect',
+    condition: 'Acute Hemorrhagic Signal (ASF Differential Flag)',
+    severity: 'Critical Quarantine',
+    grade: 'D',
+    display_confidence_score: 97.2,
+    breed: 'Philippine Native Pig (Batangas Native)',
+    susceptibility: 'CRITICAL ALERT: Native pigs have 0% genetic resistance to ASF. Look for cyanotic purple ears, high pyrexia (>40.5°C), and sudden death.',
+    triage_recommendation: 'EMERGENCY: Report immediately to Provincial Veterinary Office (PVO). Halt all animal transport, slaughter, or farm visitors. Disinfect perimeter with 2% Virkon S and slaked lime.',
+    imageUri: 'https://images.unsplash.com/photo-1594732832278-abd644401426?auto=format&fit=crop&w=600&q=80',
+  },
+];
+
 export default function ScanScreen({ user }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -70,9 +107,46 @@ export default function ScanScreen({ user }) {
   const cameraRef = useRef(null);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [facing, setFacing] = useState('back');
+  const [selectedBreed, setSelectedBreed] = useState('native'); // 'native' | 'commercial'
 
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+
+  const handleSelectPreset = (preset) => {
+    setScanResult({
+      ...preset,
+      timestamp: new Date().toISOString(),
+    });
+  };
+
+  const handleShowDisinfection = () => {
+    Alert.alert(
+      'Appropriate Disinfection Measures (BAI SOP)',
+      '1. Physical Isolation: Move sick pig to quarantine pen >10m away.\n\n' +
+      '2. Virkon S (1:100): 10-20g per 1L water for boots, footbaths & pen partitions (20 min contact).\n\n' +
+      '3. Slaked Lime (10-20%): Whitewash slurry on dirt floors & bamboo posts (creates pH >12).\n\n' +
+      '4. Bleach (0.5%): 1 part bleach to 9 parts water for troughs.\n\n' +
+      '5. Desiccation: Keep pen empty & dry for 48-72 hours before restocking.',
+      [{ text: 'Understood', style: 'default' }]
+    );
+  };
+
+  const handleAlertPvo = () => {
+    Alert.alert(
+      'Alert Provincial Veterinary Office (PVO)',
+      'Emergency notification to PVO Laguna & Batangas Epidemiology Unit.\n\n' +
+      'Incident Ref: PVO-ASF-2026-ALERT\n' +
+      'Authority: PVO is statutory responsible for tracking disease spread between municipalities.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Call PVO Hotline (0917-838-5847)',
+          onPress: () => Linking.openURL('tel:09178385847'),
+          style: 'destructive',
+        },
+      ]
+    );
+  };
 
   // Viewfinder laser line animation
   const scanLineAnim = useRef(new Animated.Value(0)).current;
@@ -288,6 +362,72 @@ export default function ScanScreen({ user }) {
                 </Text>
               </View>
             </View>
+
+            <View style={styles.divider} />
+
+            {/* Breed & Melanin Insight */}
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: 10, padding: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <Ionicons name="paw" size={14} color="#06b6d4" style={{ marginRight: 6 }} />
+                <Text style={{ fontSize: 11, fontWeight: '800', color: '#06b6d4', textTransform: 'uppercase' }}>
+                  BREED & SPECIES SUSCEPTIBILITY:
+                </Text>
+              </View>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: '#f8fafc', marginBottom: 2 }}>
+                {scanResult.breed || (selectedBreed === 'native' ? 'Philippine Native Pig (Baboy Katutubo)' : 'Commercial White Swine')}
+              </Text>
+              <Text style={{ fontSize: 11.5, color: '#94a3b8', lineHeight: 16 }}>
+                {scanResult.susceptibility ||
+                  (selectedBreed === 'native'
+                    ? 'Native pigs feature thick dark melanin layer. Raised lesions appear darker and obscured by coarse hair; feel for raised ridges.'
+                    : 'Pale skin provides high contrast for visible erythematous diamond lesions.')}
+              </Text>
+            </View>
+
+            {/* Biosecurity & Disinfection Direct Action Buttons */}
+            <View style={{ marginTop: 12, gap: 8 }}>
+              <TouchableOpacity
+                onPress={handleShowDisinfection}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(16, 185, 129, 0.14)',
+                  borderColor: '#10b981',
+                  borderWidth: 1,
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="shield-checkmark" size={15} color="#10b981" style={{ marginRight: 6 }} />
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#10b981' }}>
+                  Appropriate Disinfection SOP (Virkon S & Slaked Lime)
+                </Text>
+              </TouchableOpacity>
+
+              {(grade === 'C' || grade === 'D' || String(scanResult.severity).toLowerCase().includes('critical') || String(scanResult.condition).toLowerCase().includes('asf')) && (
+                <TouchableOpacity
+                  onPress={handleAlertPvo}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(244, 63, 94, 0.2)',
+                    borderColor: '#f43f5e',
+                    borderWidth: 1.5,
+                    paddingVertical: 10,
+                    borderRadius: 10,
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="warning" size={15} color="#f43f5e" style={{ marginRight: 6 }} />
+                  <Text style={{ fontSize: 12, fontWeight: '800', color: '#f43f5e' }}>
+                    Alert Provincial Veterinary Office (PVO Laguna)
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
 
           {/* Action Buttons */}
@@ -362,6 +502,41 @@ export default function ScanScreen({ user }) {
           </View>
         </View>
 
+        {/* Breed Selector Pill Strip */}
+        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 }}>
+          <TouchableOpacity
+            onPress={() => setSelectedBreed('native')}
+            style={{
+              paddingVertical: 5,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: selectedBreed === 'native' ? 'rgba(6, 182, 212, 0.3)' : 'rgba(0, 0, 0, 0.5)',
+              borderWidth: 1,
+              borderColor: selectedBreed === 'native' ? '#06B6D4' : 'rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '800', color: selectedBreed === 'native' ? '#38BDF8' : '#94A3B8' }}>
+              🐖 Native Pig (Baboy Katutubo)
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setSelectedBreed('commercial')}
+            style={{
+              paddingVertical: 5,
+              paddingHorizontal: 12,
+              borderRadius: 20,
+              backgroundColor: selectedBreed === 'commercial' ? 'rgba(244, 63, 94, 0.3)' : 'rgba(0, 0, 0, 0.5)',
+              borderWidth: 1,
+              borderColor: selectedBreed === 'commercial' ? '#F43F5E' : 'rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: '800', color: selectedBreed === 'commercial' ? '#FB7185' : '#94A3B8' }}>
+              Commercial White
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Central Viewfinder Reticle */}
         <View style={styles.viewfinderContainer} pointerEvents="none">
           <View style={styles.viewfinderBox}>
@@ -380,6 +555,28 @@ export default function ScanScreen({ user }) {
             />
           </View>
           <Text style={styles.viewfinderHint}>Align swine skin, rash or lesion in frame</Text>
+        </View>
+
+        {/* Quick Sample Presets Strip */}
+        <View style={{ paddingHorizontal: 12, marginBottom: 8, flexDirection: 'row', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+          {NATIVE_PIG_PRESETS.map((p, idx) => (
+            <TouchableOpacity
+              key={idx}
+              onPress={() => handleSelectPreset(p)}
+              style={{
+                backgroundColor: 'rgba(13, 20, 36, 0.88)',
+                borderColor: 'rgba(255, 255, 255, 0.2)',
+                borderWidth: 1,
+                borderRadius: 8,
+                paddingVertical: 5,
+                paddingHorizontal: 8,
+              }}
+            >
+              <Text style={{ fontSize: 10, color: '#f8fafc', fontWeight: '700' }}>
+                ✨ {p.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         {/* Bottom Shutter Controls - Raised above the floating bottom navigation bar */}

@@ -1,20 +1,9 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const communityStore = require('../services/communityStore');
 const { cloudinary } = require('../config/cloudinary');
 const { supabaseAdmin } = require('../config/supabase');
-
-const BAD_WORD_PATTERNS = [
-  /\b(fuck|shit|bitch|asshole|motherfucker|cunt)\b/ig,
-  /\b(puta|putangina|putang\s*ina|gago|tanga|ulol|pakyu|bobo)\b/ig,
-];
-
-const maskBadLanguage = (text) => {
-  let masked = String(text || '');
-  BAD_WORD_PATTERNS.forEach((pattern) => {
-    masked = masked.replace(pattern, (match) => '*'.repeat(match.length));
-  });
-  return masked;
-};
+const { maskBadLanguage } = require('../utils/badWords');
+const { validatePigTopic } = require('../utils/pigValidator');
 
 const normalizeText = (value) => {
   if (value === undefined || value === null) return undefined;
@@ -75,8 +64,8 @@ const resolveUser = async ({ userId, authorEmail }) => {
 // @access  Public
 const getCommunityPosts = async (req, res) => {
   try {
-    const rawLimit = Number(req.query?.limit || 50);
-    const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(rawLimit, 120)) : 50;
+    const rawLimit = Number(req.query?.limit || 60);
+    const limit = Number.isFinite(rawLimit) ? Math.max(1, Math.min(rawLimit, 120)) : 60;
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -89,7 +78,7 @@ const getCommunityPosts = async (req, res) => {
   }
 };
 
-// @desc    Create community forum post
+// @desc    Create community forum post (Pig relevance enforced, Bad words masked, Supabase backed)
 // @route   POST /api/community
 // @access  Public
 const createCommunityPost = async (req, res) => {
@@ -97,8 +86,11 @@ const createCommunityPost = async (req, res) => {
     const {
       text,
       userId,
+      user,
       authorName,
+      name,
       authorEmail,
+      email,
       authorAvatar,
       source,
       scanSnapshot,
@@ -108,9 +100,21 @@ const createCommunityPost = async (req, res) => {
     const cleanSnapshot = scanSnapshot && typeof scanSnapshot === 'object' ? scanSnapshot : null;
 
     if (!normalizedText && !cleanSnapshot) {
-      return res.status(400).json({ message: 'Post text or scan snapshot is required' });
+      return res.status(400).json({ message: 'Post message or diagnostic scan snapshot is required.' });
     }
 
+    // 1. Enforce Pig / Swine topic relevance
+    const topicCheck = validatePigTopic({
+      text: normalizedText,
+      scanSnapshot: cleanSnapshot,
+    });
+    if (!topicCheck.isRelevant) {
+      return res.status(400).json({
+        message: topicCheck.message || 'Posts must be related to pigs or swine farming.'
+      });
+    }
+
+    // 2. Filter / Mask Bad Words in post text & notes
     if (normalizedText) {
       normalizedText = normalizeText(maskBadLanguage(normalizedText));
     }
@@ -118,11 +122,26 @@ const createCommunityPost = async (req, res) => {
     if (cleanSnapshot && cleanSnapshot.notes) {
       cleanSnapshot.notes = maskBadLanguage(cleanSnapshot.notes);
     }
+    if (cleanSnapshot && cleanSnapshot.condition) {
+      cleanSnapshot.condition = maskBadLanguage(cleanSnapshot.condition);
+    }
 
-    const resolvedUser = await resolveUser({ userId, authorEmail });
-    const safeAuthorName = normalizeText(authorName) || resolvedUser?.name || 'Backyard Swine Farmer';
-    const safeAuthorEmail = normalizeText(authorEmail)?.toLowerCase() || resolvedUser?.email || '';
-    const safeAuthorAvatar = normalizeText(authorAvatar) || resolvedUser?.avatar || '';
+    const effectiveUserId = normalizeText(userId || user);
+    const effectiveEmail = normalizeText(authorEmail || email)?.toLowerCase();
+    const resolvedUser = await resolveUser({ userId: effectiveUserId, authorEmail: effectiveEmail });
+
+    const safeAuthorName =
+      normalizeText(authorName || name) ||
+      resolvedUser?.name ||
+      'Backyard Swine Farmer';
+    const safeAuthorEmail =
+      effectiveEmail ||
+      resolvedUser?.email ||
+      '';
+    const safeAuthorAvatar =
+      normalizeText(authorAvatar) ||
+      resolvedUser?.avatar ||
+      '';
 
     const payload = {
       authorName: safeAuthorName,
@@ -130,20 +149,22 @@ const createCommunityPost = async (req, res) => {
       authorAvatar: safeAuthorAvatar,
       text: normalizedText,
       source: normalizeText(source) || 'mobile_app',
-      user: resolvedUser?._id || userId || undefined,
+      user: resolvedUser?._id || effectiveUserId || undefined,
     };
 
     if (cleanSnapshot) {
       payload.scanSnapshot = {
-        localScanId: normalizeText(cleanSnapshot.localScanId),
-        grade: normalizeGrade(cleanSnapshot.grade),
-        swineCondition: normalizeText(cleanSnapshot.swineCondition || cleanSnapshot.notes),
-        notes: normalizeText(cleanSnapshot.notes),
-        estimatedPricePerKg: Number(cleanSnapshot.estimatedPricePerKg) || 0,
-        sizeCategory: normalizeText(cleanSnapshot.sizeCategory),
-        shelfLifeLabel: normalizeText(cleanSnapshot.shelfLifeLabel),
-        scanTimestamp: parseDateOrNow(cleanSnapshot.scanTimestamp),
-        imageUrl: normalizeText(cleanSnapshot.imageUrl),
+        localScanId: normalizeText(cleanSnapshot.localScanId || cleanSnapshot._id || cleanSnapshot.id),
+        grade: normalizeGrade(cleanSnapshot.grade || cleanSnapshot.severity),
+        severity: normalizeGrade(cleanSnapshot.severity || cleanSnapshot.grade),
+        condition: normalizeText(cleanSnapshot.condition || cleanSnapshot.details || 'Swine Dermis Inspection'),
+        swineCondition: normalizeText(cleanSnapshot.swineCondition || cleanSnapshot.condition || cleanSnapshot.notes),
+        notes: normalizeText(cleanSnapshot.notes || cleanSnapshot.details),
+        penId: normalizeText(cleanSnapshot.penId || 'Backyard Pen'),
+        swineId: normalizeText(cleanSnapshot.swineId || 'Swine'),
+        confidence: normalizeText(cleanSnapshot.confidence || '96.8%'),
+        scanTimestamp: parseDateOrNow(cleanSnapshot.scanTimestamp || cleanSnapshot.timestamp),
+        imageUrl: normalizeText(cleanSnapshot.imageUrl || cleanSnapshot.imageUri),
       };
     }
 
@@ -153,11 +174,11 @@ const createCommunityPost = async (req, res) => {
     await communityStore.createNotifications([
       {
         recipientEmail: 'all',
-        actorUser: resolvedUser?._id || userId,
+        actorUser: resolvedUser?._id || effectiveUserId,
         actorName: safeAuthorName,
         actorEmail: safeAuthorEmail,
         type: 'post',
-        message: `${safeAuthorName} shared a new swine clinical case report.`,
+        message: `${safeAuthorName} shared a swine discussion or clinical case report.`,
         post: created.id,
       },
     ]);
@@ -168,8 +189,8 @@ const createCommunityPost = async (req, res) => {
   }
 };
 
-// @desc    Add comment to a community post
-// @route   POST /api/community/:postId/comments
+// @desc    Add comment to a community post (Bad words masked, Supabase backed)
+// @route   POST /api/community/:postId/comments (or /:postId/comment)
 // @access  Public
 const addCommunityComment = async (req, res) => {
   try {
@@ -181,8 +202,13 @@ const addCommunityComment = async (req, res) => {
     const {
       text,
       userId,
+      user,
       commenterName,
+      authorName,
+      name,
       commenterEmail,
+      authorEmail,
+      email,
       commenterAvatar,
     } = req.body || {};
 
@@ -190,6 +216,8 @@ const addCommunityComment = async (req, res) => {
     if (!normalizedText) {
       return res.status(400).json({ message: 'Comment text is required' });
     }
+
+    // Filter bad words in comment
     normalizedText = normalizeText(maskBadLanguage(normalizedText));
 
     const post = await communityStore.getPostById(postId);
@@ -197,14 +225,27 @@ const addCommunityComment = async (req, res) => {
       return res.status(404).json({ message: 'Community post not found' });
     }
 
-    const resolvedUser = await resolveUser({ userId, authorEmail: commenterEmail });
-    const safeCommenterName = normalizeText(commenterName) || resolvedUser?.name || 'Operator';
-    const safeCommenterEmail = normalizeText(commenterEmail)?.toLowerCase() || resolvedUser?.email || '';
-    const safeCommenterAvatar = normalizeText(commenterAvatar) || resolvedUser?.avatar || '';
+    const effectiveUserId = normalizeText(userId || user);
+    const effectiveEmail = normalizeText(commenterEmail || authorEmail || email)?.toLowerCase();
+    const resolvedUser = await resolveUser({ userId: effectiveUserId, authorEmail: effectiveEmail });
+
+    const safeCommenterName =
+      normalizeText(commenterName || authorName || name) ||
+      resolvedUser?.name ||
+      'Backyard Farmer';
+    const safeCommenterEmail =
+      effectiveEmail ||
+      resolvedUser?.email ||
+      '';
+    const safeCommenterAvatar =
+      normalizeText(commenterAvatar) ||
+      resolvedUser?.avatar ||
+      '';
 
     const result = await communityStore.addComment(postId, {
-      commenterUser: resolvedUser?._id || userId,
+      commenterUser: resolvedUser?._id || effectiveUserId,
       commenterName: safeCommenterName,
+      authorName: safeCommenterName,
       commenterEmail: safeCommenterEmail,
       commenterAvatar: safeCommenterAvatar,
       text: normalizedText,
@@ -219,11 +260,11 @@ const addCommunityComment = async (req, res) => {
       await communityStore.createNotifications([
         {
           recipientEmail: post.authorEmail,
-          actorUser: resolvedUser?._id || userId,
+          actorUser: resolvedUser?._id || effectiveUserId,
           actorName: safeCommenterName,
           actorEmail: safeCommenterEmail,
           type: 'comment',
-          message: `${safeCommenterName} replied to your swine clinical post.`,
+          message: `${safeCommenterName} replied to your swine post.`,
           post: postId,
           commentId: result.comment.id,
         },
@@ -237,7 +278,7 @@ const addCommunityComment = async (req, res) => {
 };
 
 // @desc    Toggle reaction (heart/like) on a community post
-// @route   POST /api/community/:postId/reactions
+// @route   POST /api/community/:postId/reactions (or /:postId/react)
 // @access  Public
 const toggleCommunityReaction = async (req, res) => {
   try {
@@ -249,16 +290,28 @@ const toggleCommunityReaction = async (req, res) => {
     const {
       type = 'heart',
       userId,
+      user,
       reactorName,
+      name,
       reactorEmail,
+      email,
     } = req.body || {};
 
-    const resolvedUser = await resolveUser({ userId, authorEmail: reactorEmail });
-    const safeReactorName = normalizeText(reactorName) || resolvedUser?.name || 'Operator';
-    const safeReactorEmail = normalizeText(reactorEmail)?.toLowerCase() || resolvedUser?.email || '';
+    const effectiveUserId = normalizeText(userId || user);
+    const effectiveEmail = normalizeText(reactorEmail || email)?.toLowerCase();
+    const resolvedUser = await resolveUser({ userId: effectiveUserId, authorEmail: effectiveEmail });
+
+    const safeReactorName =
+      normalizeText(reactorName || name) ||
+      resolvedUser?.name ||
+      'Backyard Farmer';
+    const safeReactorEmail =
+      effectiveEmail ||
+      resolvedUser?.email ||
+      '';
 
     const result = await communityStore.toggleReaction(postId, {
-      userId: resolvedUser?._id || userId,
+      userId: resolvedUser?._id || effectiveUserId,
       reactorName: safeReactorName,
       reactorEmail: safeReactorEmail,
       emoji: type,
@@ -288,7 +341,6 @@ const uploadCommunityScanImage = async (req, res) => {
       return res.status(503).json({ message: 'Cloud image storage is not configured' });
     }
 
-    // Direct Cloudinary upload with automatic optimization
     const result = await cloudinary.uploader.upload(req.file.path, {
       folder: 'pigify/community-scans',
       resource_type: 'image',

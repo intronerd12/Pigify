@@ -39,6 +39,8 @@ const AiAnalysis = lazyWithRetry(() => import('./pages/AiAnalysis'))
 const SortingGrading = lazyWithRetry(() => import('./pages/SortingGrading'))
 const Environment = lazyWithRetry(() => import('./pages/Environment'))
 const CommunityForum = lazyWithRetry(() => import('./pages/CommunityForum'))
+const DiseaseMap = lazyWithRetry(() => import('./pages/DiseaseMap'))
+const UserProfile = lazyWithRetry(() => import('./pages/UserProfile'))
 
 // Admin Pages (Lazy-loaded with retry)
 const AdminLayout = lazyWithRetry(() => import('./components/admin/AdminLayout'))
@@ -72,7 +74,7 @@ function App() {
         return
       }
 
-      if (!parsedUser?.token) return
+      if (!parsedUser?.token || parsedUser?.token?.startsWith('demo-')) return
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/session`, {
@@ -138,7 +140,10 @@ function App() {
               <Route path="/ai-analysis" element={<AiAnalysis />} />
               <Route path="/sorting-grading" element={<SortingGrading />} />
               <Route path="/environment" element={<Environment />} />
+              <Route path="/disease-map" element={<DiseaseMap />} />
               <Route path="/community" element={<CommunityForum />} />
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/settings" element={<Navigate to="/profile" replace />} />
               <Route path="/user-features" element={<Navigate to="/community" replace />} />
               <Route path="/marketplace" element={<Navigate to="/community" replace />} />
               <Route path="/user-admin" element={<Navigate to="/community" replace />} />

@@ -12,8 +12,10 @@ const prefetchUserTabChunks = () => {
     import('../pages/AiAnalysis').catch(() => {});
     import('../pages/SortingGrading').catch(() => {});
     import('../pages/Overview').catch(() => {});
+    import('../pages/DiseaseMap').catch(() => {});
     import('../pages/Environment').catch(() => {});
     import('../pages/CommunityForum').catch(() => {});
+    import('../pages/UserProfile').catch(() => {});
   });
 };
 

@@ -207,6 +207,178 @@ const CLINICAL_GUIDES = {
       'Keep comprehensive digital clinical records of all vaccinations and medical interventions.',
     ],
   },
+  asf: {
+    id: 'asf',
+    name: 'African Swine Fever (ASF)',
+    tagline: 'Acute Hemorrhagic Epizootic • High-Mortality Viral Disease',
+    pathogen: 'African Swine Fever Virus (Asfarviridae)',
+    severity: 'Critical Emergency',
+    severityColor: '#f43f5e',
+    badge: 'BAI Red Alert & PVO Mandate',
+    icon: 'flame',
+    overview:
+      'High-threat viral disease causing near 100% mortality in both commercial and Philippine Native Pigs. Characterized by high pyrexia (40.5-42°C), cyanotic purple blotches on ears, snout, and abdomen, anorexia, bloody diarrhea, and rapid mortality within 2-7 days. Incurable and antibiotic-resistant.',
+    quickStats: [
+      { label: 'Etiology', val: 'DNA Asfarvirus' },
+      { label: 'Incubation', val: '3 - 15 Days' },
+      { label: 'Mortality', val: 'Up to 100% in all pigs' },
+      { label: 'Treatment', val: 'No Vaccine / No Cure' },
+    ],
+    pathologicalSigns: [
+      {
+        title: 'Severe High Pyrexia (>40.5°C)',
+        desc: 'Extreme spiking fever, animals huddled/piling together, profound lethargy, and refusal to feed.',
+      },
+      {
+        title: 'Cyanotic Cutaneous Discoloration',
+        desc: 'Dark purple/red patches on ear tips, snout, tail, and ventral abdomen. On Native Pigs, inspect inner ear flaps and eyes as dark skin masks red blushing.',
+      },
+      {
+        title: 'Mass Sudden Mortality',
+        desc: 'Rapid death of multiple age groups within 24 to 72 hours; severe splenomegaly (enlarged dark friable spleen) and internal hemorrhages.',
+      },
+    ],
+    interventionProtocol: [
+      'IMMEDIATE PVO REPORTING: Notify Provincial Veterinary Office (PVO) and Municipal Agriculture Office immediately.',
+      'TOTAL MOVEMENT FREEZE: Prohibit any live pig sales, slaughter, or movement within 1 km radius (Red Zone).',
+      'CHEMICAL VIRUCIDAL DISINFECTION: Apply 2% Virkon S (10-20g/L), 2% Citric acid, or hydrated slaked lime whitewash across pens.',
+      'DO NOT DISCARD DEAD PIGS IN RIVERS: Await official veterinary disposal or bury under 2 meters depth with lime.',
+    ],
+    preventionMeasures: [
+      'Zero swill feeding (kanin-baboy); swill must be boiled vigorously for at least 60 continuous minutes.',
+      'Install disinfectant footbaths and tire spray dips at farm entry gates changed every 48 hours.',
+      'Enforce 1-7-10 km zoning quarantine rings per Department of Agriculture AO No. 22.',
+    ],
+  },
+  native_pigs: {
+    id: 'native_pigs',
+    name: 'Philippine Native Pigs',
+    tagline: 'Baboy Katutubo • Melanin Traits & Disease Presentation',
+    pathogen: 'Sus scrofa domesticus (Philippine Native Breed)',
+    severity: 'Breed Profile',
+    severityColor: '#06b6d4',
+    badge: 'Native Pig Protocol',
+    icon: 'paw',
+    overview:
+      'Philippine Native Pigs (Baboy Katutubo / Black Pig - Ilocos, Batangas, Kalinga strains) feature thick, melanin-rich dermal layers and high climatic tolerance. However, native pigs have ZERO genetic immunity to African Swine Fever. Due to dark skin pigmentation, clinical erythema and diamond skin lesions are obscured and appear as darker hyperkeratotic crusts.',
+    quickStats: [
+      { label: 'Coat Color', val: 'Black / Dark Slate' },
+      { label: 'Skin Dermis', val: 'Thick Melanin Layer' },
+      { label: 'ASF Resistance', val: '0% (100% Mortal)' },
+      { label: 'Housing', val: 'Backyard Rustic Pens' },
+    ],
+    pathologicalSigns: [
+      {
+        title: 'Obscured Dermal Lesions',
+        desc: 'Red diamond plaques and petechial hemorrhages are less visible through black epidermis; physical palpation for raised ridges is essential.',
+      },
+      {
+        title: 'Chronic Sarcoptic Mange Endemism',
+        desc: 'Frequent scratching against rustic bamboo and coconut post partitions causes thick asbestos-like grey ear crusts.',
+      },
+      {
+        title: 'Respiratory & Vector Exposure',
+        desc: 'Backyard tethering and unsealed pens expose native pigs to sylvatic tick vectors (Ornithodoros) and wild boars.',
+      },
+    ],
+    interventionProtocol: [
+      'Calibrate diagnostic cameras for contrast normalization over dark pigmented pig hide.',
+      'Smooth rustic wooden and bamboo partitions to reduce skin micro-trauma and mange mite entry.',
+      'Administer macrocyclic lactones (Ivermectin 300 µg/kg) twice a year for endemic backyard mange control.',
+      'Apply slaked lime whitewash over dirt floors to neutralize parasites and bacterial pathogens.',
+    ],
+    preventionMeasures: [
+      'Construct a double-fence perimeter buffer to prevent interaction with free-ranging animals or wild boars.',
+      'Separate suckling native piglets from older sows during feeding to prevent trampling abrasions.',
+      'Coordinate with the Provincial Veterinary Office for native pig registry and biosecurity certification.',
+    ],
+  },
+  disinfection: {
+    id: 'disinfection',
+    name: 'Disinfection Measures',
+    tagline: 'Chemical Virucides & Sick Pig Isolation Protocol',
+    pathogen: 'SOP Disinfection & Biosecurity Protocol',
+    severity: 'Mandatory Practice',
+    severityColor: '#10b981',
+    badge: 'SOP Standard',
+    icon: 'shield-checkmark',
+    overview:
+      'Standard Operating Procedure (SOP) for disinfecting pens and managing sick swine in Philippine backyard farms. Chemical virucides must be chosen correctly: Potassium peroxymonosulfate (Virkon S), Hydrated Slaked Lime, Bleach (0.5% available chlorine), and Glutaraldehyde.',
+    quickStats: [
+      { label: 'Footbath Virucide', val: 'Virkon S (1:100)' },
+      { label: 'Floor Slurry', val: 'Slaked Lime (10-20%)' },
+      { label: 'Contact Time', val: '15 - 30 Minutes' },
+      { label: 'Pen Downtime', val: '48 - 72 Hours Dry' },
+    ],
+    pathologicalSigns: [
+      {
+        title: 'Step 1: Immediate Sick Pig Isolation',
+        desc: 'Move sick pig to quarantine pen >10m away. Use dedicated boots and separate feed buckets.',
+      },
+      {
+        title: 'Step 2: 4-Stage Pen Decontamination',
+        desc: 'Dry scrape all manure first (organic matter deactivates chemical disinfectants) -> Detergent wash -> Apply chemical virucide at 300-400 mL/m² -> Let dry for 72 hours.',
+      },
+      {
+        title: 'Step 3: Slaked Lime Perimeter Barrier',
+        desc: 'Spread dry hydrated slaked lime powder or 20% whitewash slurry along walkways and pen borders (pH >12 destroys viruses).',
+      },
+    ],
+    interventionProtocol: [
+      'Virkon S (1-2%): 10g-20g per 1 Liter of water. Preferred for footbaths, partition walls, and boots.',
+      'Sodium Hypochlorite (0.5% Bleach): 1 part bleach to 9 parts water for clean plastic drinkers and concrete troughs.',
+      'Citric Acid (2%): 20g per 1 Liter water; rapidly inactivates ASF virions on vehicle tires and footwear.',
+      'Chlorinate water tanks at 3-5 ppm free chlorine to prevent communal waterborne transmission.',
+    ],
+    preventionMeasures: [
+      'Replace disinfectant in pen entrance footbaths every 48 hours (sunlight degrades active chlorine and peroxides).',
+      'Sanitize all delivery tricycles and feed sacks before entering farm premises.',
+      'Never allow visitors or livestock traders inside the pen area without boot changes.',
+    ],
+  },
+  reporting_roles: {
+    id: 'reporting_roles',
+    name: 'Who Checks & Reports ASF?',
+    tagline: 'BAI & PVO Chain of Reporting & Contagion Verification',
+    pathogen: 'Official Governance & Epidemiology Protocol',
+    severity: 'Government Protocol',
+    severityColor: '#38bdf8',
+    badge: 'BAI & PVO Hierarchy',
+    icon: 'people',
+    overview:
+      'Official statutory chain of responsibility under the Department of Agriculture (DA) and BAI BABay ASF program. The Provincial Veterinary Office (PVO) is the statutory body responsible for on-ground checking and reporting whether ASF is contagious and spreading between municipalities.',
+    quickStats: [
+      { label: 'First Observer', val: 'Backyard Farmer' },
+      { label: 'Ground Security', val: 'Barangay Officer (BBO)' },
+      { label: 'LGU Verification', val: 'Municipal Vet (MAO)' },
+      { label: 'Spread Tracking', val: 'Provincial Vet (PVO)' },
+    ],
+    pathologicalSigns: [
+      {
+        title: 'Tier 1: Backyard Farmer (First Observer)',
+        desc: 'Daily observation with Pigify scanner; isolates sick pig, freezes sales, logs alert within 2 hours.',
+      },
+      {
+        title: 'Tier 2: Barangay Biosecurity Officer (BBO)',
+        desc: 'Verifies perimeter cordon; ensures dead pigs are not dumped in rivers; reports to MAO within 4 hours.',
+      },
+      {
+        title: 'Tier 3: Municipal Agriculture Office (MAO)',
+        desc: 'Inspects surrounding pens within 500m; issues municipal transport freeze; escalates to PVO within 12 hours.',
+      },
+    ],
+    interventionProtocol: [
+      'Tier 4: PROVINCIAL VETERINARY OFFICE (PVO): Primary statutory agency responsible for checking contagion spread, deploying rapid PCR test teams, collecting blood samples, and establishing 1-7-10 km quarantine zones.',
+      'Tier 5: BUREAU OF ANIMAL INDUSTRY (BAI): Molecular RT-PCR confirmation, National ASF zoning updates, and national indemnification funds.',
+      'PVO Laguna Hotline: (049) 501-1823 / 0917-838-5847 &bull; PVO Batangas: (043) 723-1498.',
+      'BAI National Task Force Emergency: (02) 8528-2240 / 0917-838-5847.',
+    ],
+    preventionMeasures: [
+      'Comply with all BAI inter-town quarantine checkpoints and vehicle disinfections.',
+      'Always secure a Veterinary Health Certificate (VHC) and Shipping Permit before transporting pigs.',
+      'Participate in the BABay ASF barangay biosecurity surveillance program.',
+    ],
+  },
 };
 
 export default function GuideScreen() {

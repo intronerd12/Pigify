@@ -37,13 +37,13 @@ router.post('/', createCommunityPost);
 // @route   POST /api/community/upload-scan-image
 router.post('/upload-scan-image', upload.single('image'), uploadCommunityScanImage);
 
-// @desc    Add comment to post
-// @route   POST /api/community/:postId/comments
+// @desc    Add comment to post (supports both :postId/comments and :postId/comment)
 router.post('/:postId/comments', addCommunityComment);
+router.post('/:postId/comment', addCommunityComment);
 
-// @desc    Toggle reaction (heart/like)
-// @route   POST /api/community/:postId/reactions
+// @desc    Toggle reaction (supports both :postId/reactions and :postId/react)
 router.post('/:postId/reactions', toggleCommunityReaction);
+router.post('/:postId/react', toggleCommunityReaction);
 
 router.delete('/:postId', deleteCommunityPost);
 router.post('/:postId/delete', deleteCommunityPost);

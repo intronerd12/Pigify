@@ -354,6 +354,68 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
             </Text>
           )}
         </Surface>
+
+        {/* BAI 1-7-10 KM ASF Disease Surveillance & PVO Zoning */}
+        <Surface style={styles.sectionCard} elevation={0}>
+          <View style={styles.cardHeaderRow}>
+            <Ionicons name="radio" size={18} color="#f43f5e" />
+            <Text style={styles.cardSectionTitle}>BAI 1-7-10 KM ASF Surveillance & PVO Buffer</Text>
+          </View>
+
+          <View style={styles.zoningContainer}>
+            <View style={styles.zoneRow}>
+              <View style={[styles.zoneDot, { backgroundColor: '#f43f5e' }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.zoneTitle}>RED ZONE (0 - 1 KM INFECTED)</Text>
+                <Text style={styles.zoneDesc}>Total movement lockdown; mandatory depopulation and perimeter disinfection.</Text>
+              </View>
+            </View>
+
+            <View style={styles.zoneRow}>
+              <View style={[styles.zoneDot, { backgroundColor: '#ec4899' }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.zoneTitle}>PINK ZONE (1 - 7 KM BUFFER)</Text>
+                <Text style={styles.zoneDesc}>Weekly clinical inspection by Municipal Agriculture Office; daily footbath cycling.</Text>
+              </View>
+            </View>
+
+            <View style={styles.zoneRow}>
+              <View style={[styles.zoneDot, { backgroundColor: '#f59e0b' }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.zoneTitle}>YELLOW ZONE (7 - 10 KM SURVEILLANCE)</Text>
+                <Text style={styles.zoneDesc}>Blood PCR surveillance; live pig transit requires Veterinary Health Certificate.</Text>
+              </View>
+            </View>
+
+            <View style={styles.zoneRow}>
+              <View style={[styles.zoneDot, { backgroundColor: '#10b981' }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.zoneTitle}>GREEN ZONE (PROTECTED / FREE)</Text>
+                <Text style={styles.zoneDesc}>Baseline biosecurity maintained; regular 48-hour footbath replacement.</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Nearest PVO Office Card */}
+          <View style={styles.pvoCard}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Ionicons name="business" size={16} color="#38bdf8" style={{ marginRight: 6 }} />
+              <Text style={styles.pvoTitle}>Nearest Statutory Authority:</Text>
+            </View>
+            <Text style={styles.pvoName}>Provincial Veterinary Office - Laguna (PVO Laguna)</Text>
+            <Text style={styles.pvoLocation}>Provincial Capitol Compound, Santa Cruz, Laguna &bull; 6.2 km</Text>
+            <Text style={styles.pvoRole}>Responsible for checking and reporting whether ASF is contagious and spreading across municipalities.</Text>
+
+            <TouchableOpacity
+              onPress={() => Linking.openURL('tel:09178385847')}
+              style={styles.pvoCallBtn}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="call" size={14} color="#FFFFFF" style={{ marginRight: 6 }} />
+              <Text style={styles.pvoCallBtnText}>Call PVO Emergency Hotline (0917-838-5847)</Text>
+            </TouchableOpacity>
+          </View>
+        </Surface>
       </ScrollView>
     </View>
   );
@@ -628,5 +690,84 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     paddingVertical: 8,
+  },
+  zoningContainer: {
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 14,
+  },
+  zoneRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  zoneDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginTop: 4,
+  },
+  zoneTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#f8fafc',
+    letterSpacing: 0.4,
+    marginBottom: 2,
+  },
+  zoneDesc: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    lineHeight: 16,
+  },
+  pvoCard: {
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 4,
+  },
+  pvoTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#38bdf8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  pvoName: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#f8fafc',
+    marginBottom: 2,
+  },
+  pvoLocation: {
+    fontSize: 11.5,
+    color: '#cbd5e1',
+    marginBottom: 6,
+  },
+  pvoRole: {
+    fontSize: 11.5,
+    color: '#94a3b8',
+    lineHeight: 16,
+    marginBottom: 12,
+  },
+  pvoCallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0284c7',
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  pvoCallBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

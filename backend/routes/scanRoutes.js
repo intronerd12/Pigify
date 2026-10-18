@@ -6,6 +6,12 @@ const axios = require('axios');
 const FormData = require('form-data');
 const fs = require('fs');
 const { getScans, createScan, deleteScanByLocalScanId, deleteAllScansForUser, getScanStats, getScanAnalytics } = require('../controllers/scanController');
+const {
+  dispatchPvoAlert,
+  getPvoAlerts,
+  getSurveillanceMapData,
+  evaluateDifferentialTriage,
+} = require('../controllers/diseaseController');
 const { ensureAiServiceRunning } = require('../services/aiServiceManager');
 const { cloudinary } = require('../config/cloudinary');
 
@@ -25,6 +31,23 @@ router.post('/', createScan);
 // @desc    Delete all scans for the current user
 // @route   DELETE /api/scan
 router.delete('/', deleteAllScansForUser);
+
+// ─── PVO & Disease Surveillance Endpoints ─────────────────────────────────────
+// @desc    Dispatch alert to Provincial Veterinary Office (PVO)
+// @route   POST /api/scan/pvo-alert
+router.post('/pvo-alert', dispatchPvoAlert);
+
+// @desc    Get all PVO alerts
+// @route   GET /api/scan/pvo-alerts
+router.get('/pvo-alerts', getPvoAlerts);
+
+// @desc    Get disease surveillance map data (farms, BAI zoning rings, PVO hubs)
+// @route   GET /api/scan/surveillance-map
+router.get('/surveillance-map', getSurveillanceMapData);
+
+// @desc    Evaluate multi-symptom differential illness triage
+// @route   POST /api/scan/differential-triage
+router.post('/differential-triage', evaluateDifferentialTriage);
 
 // @desc    Delete a scan by local scan id
 // @route   DELETE /api/scan/:localScanId

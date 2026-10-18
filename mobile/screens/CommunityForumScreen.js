@@ -34,17 +34,107 @@ const THEME = {
   textMuted: '#64748B',
 };
 
-const BAD_WORD_PATTERNS = [
-  /\b(fuck|shit|bitch|asshole|motherfucker|cunt)\b/gi,
-  /\b(puta|putangina|putang\s*ina|gago|tanga|ulol|pakyu|bobo)\b/gi,
+const TAGALOG_AND_ENGLISH_BAD_PHRASES = [
+  'putang inang yan', 'putanginang yan', 'putang inang', 'putanginang',
+  'putang ina mo', 'putangina mo', 'putanginamo', 'putang ina', 'putangina',
+  'tang inang yan', 'tanginang yan', 'tang inang', 'tanginang',
+  'tang ina mo', 'tangina mo', 'tanginamo', 'tang ina', 'tangina',
+  'king inang yan', 'kinginang yan', 'king inang', 'kinginang',
+  'king ina mo', 'kingina mo', 'kinginamo', 'kinangina', 'king ina', 'kingina',
+  'pota inang yan', 'potanginang yan', 'pota inang', 'potanginang',
+  'pota ina mo', 'potaena mo', 'potangina mo', 'potanginamo', 'potaena', 'potangina', 'pota ina',
+  'pucha inang', 'puchangina', 'pucha',
+  'punyeta ka', 'punyetaka', 'punyeta mo', 'punyetang', 'punyeta',
+  'ina mo', 'inamo', 'ina ka', 'inaka', 'ina nyo', 'inanyo', 'ina niyo', 'inaniyo', 'ina niya', 'inaniya',
+  'tarantado ka', 'tarantadoka', 'tarantada ka', 'tarantadaka', 'tarantado', 'tarantada',
+  'gago ka', 'gagoka', 'gaga ka', 'gagaka', 'kagaguhan', 'gago', 'gaga',
+  'bobo ka', 'boboka', 'kabobohan', 'bobo', 'bobohan',
+  'tanga ka', 'tangaka', 'katangahan', 'tanga', 'tangahan',
+  'ulol ka', 'ulolka', 'ulul ka', 'ululka', 'kaululan', 'ulul', 'ulol',
+  'pakyu ka', 'pakyuka', 'pakyu', 'fakyu', 'fckyu',
+  'hinayupak ka', 'hinayupakka', 'hinayupak', 'hayupak ka', 'hayupak', 'hayop ka',
+  'kupal ka', 'kupalka', 'kupal',
+  'ogag ka', 'ogag', 'gunggong', 'engot', 'inutil', 'hangal',
+  'lintik ka', 'lintik', 'leche ka', 'leche', 'letse ka', 'letse', 'hudas',
+  'yawa ka', 'yawa', 'peste ka', 'peste', 'pesteng', 'buwisit', 'bwisit',
+  'kantot', 'kantutan', 'k@ntot', 'kinantot', 'iyot', 'iyutan',
+  'pokpok', 'bayag', 'tamod', 'jakol', 'j@kol', 'tsupa', 'chupa',
+  'pepe', 'kiki', 'tite', 'burat', 'puke', 'puki', 'pekpek', 'puday',
+  'motherfucker', 'mother fucker', 'son of a bitch',
+  'fuck you', 'fuck off', 'fucking', 'fucker', 'fuckers', 'fucked', 'fuckhead', 'fck', 'fuk', 'fuck',
+  'bullshit', 'shitty', 'shit',
+  'bitch', 'bitches', 'bitching',
+  'asshole', 'assholes', 'bastard', 'bastards', 'cunt', 'cunts',
+  'dick', 'dicks', 'pussy', 'pussies', 'cock', 'cocks', 'whore', 'whores', 'slut', 'sluts',
+  'damn'
+];
+
+const SORTED_FORUM_BAD_PHRASES = [...TAGALOG_AND_ENGLISH_BAD_PHRASES].sort((a, b) => b.length - a.length);
+
+const FORUM_PHRASE_REGEXES = SORTED_FORUM_BAD_PHRASES.map((phrase) => {
+  const words = phrase.split(/\s+/);
+  const regexPattern = words
+    .map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('\\s+');
+  return new RegExp('(\\b|\\W|^)' + regexPattern + '(\\b|\\W|$)', 'gi');
+});
+
+const OBFUSCATED_PATTERNS = [
+  /(\b|\W|^)f[\*\@\#\$]ck(\b|\W|$)/gi,
+  /(\b|\W|^)sh[\*\@\#\$\!]t(\b|\W|$)/gi,
+  /(\b|\W|^)b[\*\@\#\$\!]tch(\b|\W|$)/gi,
+  /(\b|\W|^)p[\*\@\#\$]t[a|@]?(?:ng)?(?:ina)?(?:mo)?(\b|\W|$)/gi,
+  /(\b|\W|^)t[\*\@\#\$]ng(?:ina)?(?:mo)?(\b|\W|$)/gi,
+  /(\b|\W|^)g[\*\@\#\$]g[o|a]?(\b|\W|$)/gi,
+  /(\b|\W|^)b[\*\@\#\$]b[o|0]?(\b|\W|$)/gi,
+  /(\b|\W|^)in[\*\@\#\$]m[o|0]?(\b|\W|$)/gi,
 ];
 
 const maskBadLanguage = (text) => {
-  let masked = String(text || '');
-  BAD_WORD_PATTERNS.forEach((pattern) => {
-    masked = masked.replace(pattern, (match) => '*'.repeat(match.length));
-  });
+  if (!text) return '';
+  let masked = String(text);
+
+  for (const regex of FORUM_PHRASE_REGEXES) {
+    regex.lastIndex = 0;
+    masked = masked.replace(regex, (match, p1, p2) => {
+      const phrase = match.slice(p1.length, match.length - p2.length);
+      const censored = phrase.replace(/[^\s]/g, '*');
+      return p1 + censored + p2;
+    });
+  }
+
+  for (const regex of OBFUSCATED_PATTERNS) {
+    regex.lastIndex = 0;
+    masked = masked.replace(regex, (match, p1, p2) => {
+      const phrase = match.slice(p1.length, match.length - p2.length);
+      const censored = phrase.replace(/[^\s]/g, '*');
+      return p1 + censored + p2;
+    });
+  }
+
   return masked;
+};
+
+const PIG_KEYWORDS = [
+  'pig', 'pigs', 'piglet', 'piglets', 'swine', 'swines', 'hog', 'hogs', 'porcine',
+  'sow', 'sows', 'boar', 'boars', 'gilt', 'gilts', 'shoat', 'pork', 'weaner',
+  'grower', 'finisher', 'litter', 'farrow', 'farrowing', 'gestation', 'piggery',
+  'baboy', 'biik', 'inahin', 'barako', 'lechon', 'litson', 'pagbababuyan',
+  'asf', 'african swine fever', 'erysipelas', 'pdns', 'prrs', 'ped', 'pedv',
+  'swine flu', 'hog cholera', 'snout', 'trotter', 'trotters', 'skin lesion',
+  'cyanosis', 'diamond skin', 'scour', 'scours', 'pig pen', 'pig pens', 'pig sty',
+  'biosecurity', 'sakit ng baboy', 'pulang pantal', 'kulungan ng baboy', 'alagang baboy',
+  'pakain sa baboy', 'bakuna sa baboy', 'purgang baboy', 'vitamins ng baboy'
+];
+
+const isPigRelatedText = (text, hasScan = false) => {
+  if (hasScan) return true;
+  if (!text) return false;
+  const lower = String(text).toLowerCase();
+  return PIG_KEYWORDS.some((kw) => {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(^|\\W)${escaped}($|\\W)`, 'i').test(lower);
+  });
 };
 
 const formatDate = (value) => {
@@ -202,6 +292,11 @@ export default function CommunityForumScreen({ navigation, user }) {
 
     if (!cleanText && !selectedScan) {
       setFormError('Please add an observation note or attach a swine clinical scan.');
+      return;
+    }
+
+    if (!selectedScan && !isPigRelatedText(cleanText)) {
+      setFormError('Posts must be about pigs or swine farming (e.g. swine health, symptoms, ASF biosecurity, feeding, or pig care).');
       return;
     }
 
@@ -397,12 +492,12 @@ export default function CommunityForumScreen({ navigation, user }) {
             {comments.map((comment, cIdx) => (
               <View key={cIdx} style={styles.commentItem}>
                 <UserAvatar
-                  url={comment.authorAvatar}
-                  name={comment.authorName || 'Operator'}
+                  url={comment.authorAvatar || comment.commenterAvatar}
+                  name={comment.commenterName || comment.authorName || 'Farmer'}
                   size={26}
                 />
                 <View style={styles.commentBubble}>
-                  <Text style={styles.commentAuthor}>{comment.authorName || 'Operator'}</Text>
+                  <Text style={styles.commentAuthor}>{comment.commenterName || comment.authorName || 'Backyard Farmer'}</Text>
                   <Text style={styles.commentText}>{comment.text}</Text>
                 </View>
               </View>

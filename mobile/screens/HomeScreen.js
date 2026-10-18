@@ -98,6 +98,25 @@ const SWINE_MODULES = [
     color: '#EC4899',
     screen: 'CommunityForum',
   },
+  {
+    id: 'surveillance',
+    title: 'ASF Map & PVO Zoning',
+    desc: 'BAI 1-7-10 km buffer zones, PVO emergency contacts & tracking.',
+    tag: 'GIS BIOSECURITY',
+    icon: 'map-outline',
+    color: '#F43F5E',
+    screen: 'MappingEnvironment',
+  },
+  {
+    id: 'native_guide',
+    title: 'Native Pigs & Disinfection',
+    desc: 'Philippine Native Pig traits, Virkon S & slaked lime SOP, PVO roles.',
+    tag: 'SOP PROTOCOL',
+    icon: 'shield-checkmark-outline',
+    color: '#06B6D4',
+    screen: 'Guide',
+    params: { initialTab: 'native_pigs' },
+  },
 ];
 
 const getGradeColor = (grade) => {
@@ -506,7 +525,7 @@ export default function HomeScreen({ user, onLogout }) {
               <TouchableOpacity
                 key={mod.id}
                 style={styles.moduleCard}
-                onPress={() => navigation.navigate(mod.screen)}
+                onPress={() => navigation.navigate(mod.screen, mod.params)}
                 activeOpacity={0.8}
               >
                 <View style={styles.moduleTopRow}>

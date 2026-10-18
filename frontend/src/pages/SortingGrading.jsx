@@ -46,14 +46,107 @@ const parseUserMeta = () => {
   }
 }
 
+const BENCHMARK_STUDY_SCANS = [
+  {
+    id: 'case-01',
+    localScanId: 'case-01',
+    penId: 'Pen B-04',
+    swineId: 'Boar #12',
+    condition: 'Diamond Skin Disease (Erysipelas)',
+    severity: 'Moderate',
+    grade: 'B',
+    confidence: '97.4%',
+    affectedArea: '14.0%',
+    breedLabel: 'Commercial White (Landrace)',
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    recommendation: 'Isolate swine in pen B-04 immediately. Administer prescribed Penicillin G (20,000 IU/kg) therapy and disinfect pen feeding trough.',
+    imageUrl: '/landing/swine-scan-subject.jpg',
+  },
+  {
+    id: 'case-02',
+    localScanId: 'case-02',
+    penId: 'Nursery A-02',
+    swineId: 'Piglet #08',
+    condition: 'Mild Dermatitis / Erythema',
+    severity: 'Mild',
+    grade: 'A',
+    confidence: '95.2%',
+    affectedArea: '6.0%',
+    breedLabel: 'Commercial White (Yorkshire)',
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    recommendation: 'Clean bedding and monitor pen humidity. Check for rough pen floor abrasions. Re-scan in 48 hours.',
+    imageUrl: '/landing/swine-biosecurity-pen.jpg',
+  },
+  {
+    id: 'case-03',
+    localScanId: 'case-03',
+    penId: 'Pen C-01',
+    swineId: 'Sow #05',
+    condition: 'Healthy Skin Tissue (No Lesions)',
+    severity: 'Normal',
+    grade: 'A',
+    confidence: '98.6%',
+    affectedArea: '0%',
+    breedLabel: 'Commercial White (Landrace)',
+    timestamp: new Date(Date.now() - 3600000 * 12).toISOString(),
+    recommendation: 'Skin surface clear. Continue standard backyard biosecurity hygiene and pen nutrition schedule.',
+    imageUrl: '/landing/swine-health-scan.jpg',
+  },
+  {
+    id: 'case-04',
+    localScanId: 'case-04',
+    penId: 'Pen E-02 (Isolation)',
+    swineId: 'Native Sow #03',
+    condition: 'Sarcoptic Mange / Ear Canal Crusts',
+    severity: 'Severe',
+    grade: 'C',
+    confidence: '96.8%',
+    affectedArea: '18.5%',
+    breedLabel: 'Philippine Native Pig (Baboy Katutubo)',
+    timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
+    recommendation: 'Administer injectable ivermectin or Amitraz spray to inner ear folds. Quarantine sow from breeding pens for 21 days.',
+    imageUrl: '/landing/swine-biosecurity-pen.jpg',
+  },
+  {
+    id: 'case-05',
+    localScanId: 'case-05',
+    penId: 'Pen Grow-02',
+    swineId: 'Weaner #07',
+    condition: 'Swine Pox (Suipoxvirus)',
+    severity: 'Moderate',
+    grade: 'C',
+    confidence: '94.2%',
+    affectedArea: '9.2%',
+    breedLabel: 'Crossbreed (Duroc x Landrace)',
+    timestamp: new Date(Date.now() - 3600000 * 36).toISOString(),
+    recommendation: 'Initiate biting lice vector eradication across litter. Apply topical iodine to unruptured pustules.',
+    imageUrl: '/landing/swine-scan-subject.jpg',
+  },
+  {
+    id: 'case-06',
+    localScanId: 'case-06',
+    penId: 'Pen Nursery-03',
+    swineId: 'Piglet #14',
+    condition: 'Exudative Epidermitis (Greasy Pig Disease)',
+    severity: 'Severe',
+    grade: 'D',
+    confidence: '96.8%',
+    affectedArea: '18.5%',
+    breedLabel: 'Commercial White (Yorkshire)',
+    timestamp: new Date(Date.now() - 3600000 * 48).toISOString(),
+    recommendation: 'Immediate pen isolation required. Clean affected skin with warm antiseptic soap and sanitize pen flooring.',
+    imageUrl: '/landing/swine-health-scan.jpg',
+  },
+];
+
 const parseHistory = () => {
   try {
     const raw = localStorage.getItem(HISTORY_STORAGE_KEY)
-    if (!raw) return []
+    if (!raw) return BENCHMARK_STUDY_SCANS
     const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : BENCHMARK_STUDY_SCANS
   } catch {
-    return []
+    return BENCHMARK_STUDY_SCANS
   }
 }
 
@@ -274,14 +367,14 @@ function SortingGrading() {
                 <p style={{ fontSize: '0.85rem', maxWidth: '360px', margin: '0 auto 18px auto' }}>
                   No scans match your current filter criteria. Run an AI scan to record a new swine health inspection.
                 </p>
-                <a
-                  href="/ai-analysis"
+                <Link
+                  to="/ai-analysis"
                   className="lp-btn-primary"
                   style={{ display: 'inline-flex', padding: '10px 18px', fontSize: '0.88rem' }}
                 >
                   <ScanLine size={15} />
                   <span>Launch AI Scanner</span>
-                </a>
+                </Link>
               </div>
             ) : (
               <>
@@ -595,9 +688,9 @@ function SortingGrading() {
         <div className="container-pro lp-footer-bottom" style={{ borderTop: 'none', paddingTop: '16px' }}>
           <span>(c) {new Date().getFullYear()} {BRAND_NAME}. {BRAND_TAGLINE}.</span>
           <div className="lp-footer-legal">
-            <a href="/about">About Study</a>
-            <a href="/how-it-works">Triage Criteria</a>
-            <a href="/features">Features</a>
+            <Link to="/about">About Study</Link>
+            <Link to="/how-it-works">Triage Criteria</Link>
+            <Link to="/features">Features</Link>
           </div>
         </div>
       </footer>

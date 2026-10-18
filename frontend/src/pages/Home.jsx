@@ -11,6 +11,7 @@ import {
   Cpu,
   Layers,
   LogOut,
+  MapPin,
   MessageSquare,
   ScanLine,
   ShieldCheck,
@@ -50,6 +51,15 @@ const SWINE_MODULES = [
     icon: <Layers size={22} />,
     tag: 'CLASSIFICATION',
     kicker: 'Triaging Pipeline',
+  },
+  {
+    id: 'disease-map',
+    title: 'Disease Map & PVO Surveillance',
+    desc: 'Geospatial swine disease zoning, DA-BAI quarantine perimeters, and Provincial Veterinary Office dispatcher.',
+    path: '/disease-map',
+    icon: <MapPin size={22} />,
+    tag: 'SURVEILLANCE',
+    kicker: 'PVO Emergency Dispatch',
   },
   {
     id: 'environment',
@@ -190,90 +200,7 @@ function Home() {
       <div className="pigify-home-ambient-glow" aria-hidden="true" />
 
       {/* Unified User Header with Unique Theme Switcher */}
-      <UserHeader
-        showDashboardLink={false}
-        rightSlot={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            {/* Live Engine Status */}
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '4px 10px',
-                borderRadius: '8px',
-                background: health === 'healthy' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                border: `1px solid ${health === 'healthy' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
-                fontFamily: 'JetBrains Mono',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: health === 'healthy' ? '#10b981' : '#ef4444',
-              }}
-            >
-              <span
-                style={{
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  backgroundColor: health === 'healthy' ? '#10b981' : '#ef4444',
-                  boxShadow: `0 0 6px ${health === 'healthy' ? '#10b981' : '#ef4444'}`,
-                }}
-              />
-              <span>{health === 'healthy' ? 'AI CORE ONLINE' : 'STANDBY'}</span>
-            </div>
-
-            {/* Operator Profile Pill */}
-            {user && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  borderLeft: '1px solid var(--border-subtle, rgba(255,255,255,0.1))',
-                  paddingLeft: '14px',
-                }}
-              >
-                <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '0.86rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
-                    {user.name || 'Swine Operator'}
-                  </span>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-muted, #94a3b8)', fontFamily: 'JetBrains Mono' }}>
-                    {user.email}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    width: '34px',
-                    height: '34px',
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#ffffff',
-                    fontWeight: 800,
-                    fontSize: '0.9rem',
-                    boxShadow: '0 2px 8px rgba(244, 63, 94, 0.35)',
-                  }}
-                >
-                  {String(user?.name || user?.email || 'U').charAt(0).toUpperCase()}
-                </div>
-              </div>
-            )}
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="pigify-btn-hero-secondary"
-              style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '8px' }}
-              title="Sign out of Pigify"
-            >
-              <LogOut size={13} />
-              <span>Logout</span>
-            </button>
-          </div>
-        }
-      />
+      <UserHeader />
 
       <main className="pigify-home-main">
         <div className="pigify-container">
