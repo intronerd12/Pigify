@@ -352,7 +352,7 @@ const UserManagement = () => {
             Farm Operators & Veterinary Directory
           </h1>
           <p className="admin-hero-sub">
-            Manage smallholder swine raisers, attending veterinary officers, biosecurity researchers, and system administrators with live Supabase database synchronization.
+            Manage smallholder swine raisers, veterinarians, study researchers, and system administrators with database synchronization.
           </p>
         </div>
 
@@ -388,7 +388,7 @@ const UserManagement = () => {
             </div>
           </div>
           <div className="admin-kpi-val" style={{ color: '#34d399' }}>{stats.active}</div>
-          <div className="admin-kpi-sub">Authorized for app & telemetry upload</div>
+          <div className="admin-kpi-sub">Authorized for app &amp; scan uploads</div>
         </div>
 
         <div className="admin-kpi-card">
@@ -412,7 +412,7 @@ const UserManagement = () => {
             </div>
           </div>
           <div className="admin-kpi-val" style={{ color: '#a78bfa' }}>{stats.admins}</div>
-          <div className="admin-kpi-sub">Full access to telemetry command center</div>
+          <div className="admin-kpi-sub">Full access to admin command center</div>
         </div>
       </div>
 

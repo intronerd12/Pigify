@@ -83,15 +83,15 @@ function UserFeatures() {
                 borderColor: 'rgba(255, 255, 255, 0.3)'
               }}>System Capabilities</span>
               <h1 className="lp-title" style={{ color: '#fff' }}>
-                Powerful Features for
-                <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}> Swine Operations</span>
+                Features for
+                <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}> Backyard Swine Monitoring</span>
               </h1>
               <p className="lp-subtitle" style={{ color: 'rgba(255, 255, 255, 0.95)' }}>
-                Our system combines computer vision, machine learning, and agricultural expertise to deliver consistent, actionable quality intelligence for every batch.
+                The system combines deep learning image detection with health records to assist backyard pig farmers in noticing symptoms early.
               </p>
               <div className="lp-hero-cta">
                 <a href="/ai-analysis" className="lp-btn-primary">Try Analyzer →</a>
-                <a href="/marketplace" className="lp-btn-secondary" style={{ background: 'rgba(255, 255, 255, 0.92)', color: '#223049' }}>View Samples</a>
+                <a href="/home" className="lp-btn-secondary" style={{ background: 'rgba(255, 255, 255, 0.92)', color: '#223049' }}>Dashboard</a>
               </div>
             </div>
             <div className="lp-hero-image">
@@ -100,7 +100,7 @@ function UserFeatures() {
                 textAlign: 'center',
                 lineHeight: '1',
                 filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))'
-              }}>✨</div>
+              }}>🐖</div>
             </div>
           </div>
         </section>
@@ -114,33 +114,33 @@ function UserFeatures() {
               {[
                 {
                   icon: '🤖',
-                  title: 'Computer Vision Engine',
-                  desc: 'Detects ripeness, color patterns, and defects using trained deep learning models with 98%+ accuracy'
+                  title: 'YOLOv8 Detection Model',
+                  desc: 'Detects visible skin lesions, rashes, and discoloration using a trained YOLOv8 model'
                 },
                 {
                   icon: '📊',
-                  title: 'Quality Scoring System',
-                  desc: 'Produces consistent diagnostic severity grades with lesion classification and confidence metrics for every swine subject'
+                  title: 'Severity Assessment',
+                  desc: 'Categorizes findings into Mild, Moderate, or Severe to give a preliminary sense of urgency'
                 },
                 {
-                  icon: '⚡',
-                  title: 'Instant Analysis',
-                  desc: 'Get complete grading results in 2-3 seconds with instant feedback and actionable recommendations'
+                  icon: '🔍',
+                  title: 'Photo Analysis',
+                  desc: 'Processes uploaded photos and displays detected signs along with basic care recommendations'
                 },
                 {
                   icon: '💾',
-                  title: 'Batch Management',
-                  desc: 'Track analysis history, compare batches, and generate comprehensive reports for operations'
+                  title: 'Scan History',
+                  desc: 'Keeps a record of past scans to help farmers track symptoms over time'
                 },
                 {
                   icon: '📱',
-                  title: 'Mobile Friendly',
-                  desc: 'Works seamlessly on tablets and phones for farm floor and packing house workflows'
+                  title: 'Mobile & Web Accessible',
+                  desc: 'Accessible from phones, tablets, or computers for flexible use on the farm'
                 },
                 {
                   icon: '🔄',
-                  title: 'Continuous Learning',
-                  desc: 'System improves over time with user corrections and feedback for your specific conditions'
+                  title: 'Feedback & Updates',
+                  desc: 'Allows farmers to review past results and record observations as health changes'
                 }
               ].map((feat, i) => (
                 <div key={i} className="guide-card-pro" style={{
@@ -200,7 +200,7 @@ function UserFeatures() {
       }}>
         <div className="container-pro" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🛡️ {BRAND_NAME}</div>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Swine Disease Telemetry & Biosecurity Control</p>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Swine Disease &amp; Symptom Monitoring System for Backyard Farms</p>
           <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>© {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.</div>
         </div>
       </footer>

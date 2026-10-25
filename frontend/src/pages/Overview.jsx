@@ -168,7 +168,7 @@ function Overview() {
               <div>
                 <div className="mk-kicker">
                   <span className="mk-kicker-dot" />
-                  <span>HERD HEALTH TELEMETRY // BACKYARD FARM SURVEILLANCE</span>
+                  <span>HERD HEALTH OVERVIEW // BACKYARD SWINE STUDY</span>
                 </div>
 
                 <h1 className="mk-title" style={{ marginTop: '14px' }}>
@@ -177,7 +177,7 @@ function Overview() {
                 </h1>
 
                 <p className="mk-subtitle">
-                  Real-time epidemiological metrics, pen infection risk indicators, and quarantine triage summaries
+                  Summary metrics, pen observation logs, and severity records
                   designed for smallholder and backyard pig producers.
                 </p>
               </div>
@@ -304,7 +304,7 @@ function Overview() {
                 <div className="lp-card-reticle top-left" />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)', fontWeight: 700 }}>
-                    QUARANTINE FLAGS
+                    ISOLATION & CARE FLAGS
                   </span>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(244, 63, 94, 0.12)', color: '#f43f5e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <AlertTriangle size={17} />
@@ -332,7 +332,7 @@ function Overview() {
                 <div className="lp-card-reticle top-left" />
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'var(--text-muted, #94a3b8)', fontWeight: 700 }}>
-                    BIOSECURITY SCORE
+                    HERD HEALTH SCORE
                   </span>
                   <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ShieldCheck size={17} />
@@ -342,7 +342,7 @@ function Overview() {
                   {biosecurityScore} <span style={{ fontSize: '1rem', color: 'var(--text-muted, #94a3b8)' }}>/ 100</span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: '#10b981', marginTop: '8px' }}>
-                  Standard backyard defense rating
+                  Backyard pen observation baseline
                 </div>
               </div>
             </div>
@@ -372,10 +372,10 @@ function Overview() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
-                      Pen-by-Pen Outbreak Risk Matrix
+                      Pen-by-Pen Observation Status
                     </h3>
                     <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)' }}>
-                      Surveillance tracking for infection isolation across your backyard pens
+                      Observation tracking and symptom logging across your backyard pens
                     </p>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -543,10 +543,10 @@ function Overview() {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-rose, #f43f5e)', fontWeight: 700, fontSize: '0.84rem', marginBottom: '4px' }}>
                     <ShieldAlert size={15} />
-                    <span>Farmer Biosecurity Notice</span>
+                    <span>Backyard Care Notice</span>
                   </div>
                   <p style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.45, margin: 0 }}>
-                    Pen B is currently under quarantine monitoring due to diamond lesion flags. Restrict cross-pen movement and sanitize rubber boots with disinfectant before entering Pen C.
+                    Pen B has swine flagged with skin lesions. Consider separating affected pigs and cleaning pens before moving to other pens.
                   </p>
                 </div>
               </div>
@@ -562,15 +562,15 @@ function Overview() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
               <div>
                 <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
-                  Recent Swine Diagnostic Telemetry
+                  Recent Swine Scan Records
                 </h3>
                 <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)' }}>
-                  Audit log of recent photo scans, YOLO model classifications, and biosecurity actions
+                  Log of recent photo scans, YOLO model detections, and suggested care actions
                 </p>
               </div>
 
               <Link to="/sorting-grading" style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--accent-rose, #f43f5e)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                <span>View Full Triage Log</span>
+                <span>View All Scan Records</span>
                 <ArrowRight size={13} />
               </Link>
             </div>

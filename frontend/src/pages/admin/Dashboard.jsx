@@ -247,15 +247,15 @@ const Dashboard = () => {
     {
       title: 'Model Pipeline Health',
       value: healthPct === null ? '98%' : `${healthPct}%`,
-      sub: 'YOLO sub-150ms inference active',
+      sub: 'YOLOv8 model active',
       icon: <Cpu size={22} color="#ffffff" />,
       bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
       glow: 'rgba(139, 92, 246, 0.25)',
     },
     {
-      title: 'Quarantine & Biosecurity Alerts',
+      title: 'Severe & Flagged Symptom Alerts',
       value: String(activeAlerts),
-      sub: 'Severe/Critical pen isolations',
+      sub: 'Severe symptom observations',
       icon: <ShieldAlert size={22} color="#ffffff" />,
       bg: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
       glow: 'rgba(244, 63, 94, 0.25)',
@@ -275,7 +275,7 @@ const Dashboard = () => {
     return (
       <div style={{ padding: '60px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
         <RefreshCw size={32} className="si-spin" style={{ margin: '0 auto 16px auto', color: '#10b981' }} />
-        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#e2e8f0' }}>Loading Pigify Telemetry Command...</div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#e2e8f0' }}>Loading Admin Dashboard...</div>
       </div>
     );
   }
@@ -286,23 +286,23 @@ const Dashboard = () => {
       <section className="admin-hero">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-            <span className="admin-hero-badge">Surveillance Active</span>
+            <span className="admin-hero-badge">System Active</span>
             <span className="admin-meta-tag">
               <span className="telemetry-pulse" />
-              BACKYARD SWINE TELEMETRY LIVE
+              BACKYARD SWINE SYSTEM LIVE
             </span>
           </div>
           <h1 className="admin-hero-title">
             <Cpu size={26} color="#34d399" />
-            Swine Health & Inference Telemetry
+            Swine Health &amp; Detection Overview
           </h1>
           <p className="admin-hero-sub">
-            Real-time swine disease surveillance, YOLO deep learning inference status, and clinical severity triage for backyard farms.
+            Swine symptom monitoring overview, YOLOv8 detection records, and severity distribution for backyard farms.
           </p>
         </div>
         <div style={{ textAlign: 'right', minWidth: '180px' }}>
           <div style={{ fontSize: '0.72rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }}>
-            Telemetry Heartbeat
+            System Status
           </div>
           <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#34d399', fontFamily: 'var(--admin-font-mono)', marginTop: '2px' }}>
             {refreshTime.toLocaleTimeString()}
@@ -391,9 +391,9 @@ const Dashboard = () => {
             <div>
               <h2 className="admin-card-title">
                 <Activity size={18} color="#f59e0b" />
-                Severity Triage Distribution
+                Severity Level Distribution
               </h2>
-              <p className="admin-card-desc">Breakdown of herd cases by 5-tier clinical triage matrix</p>
+              <p className="admin-card-desc">Breakdown of herd cases by severity levels</p>
             </div>
           </div>
           <div style={{ width: '100%', height: 260 }}>
@@ -569,7 +569,7 @@ const Dashboard = () => {
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Quarantine Rate</div>
+              <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Severe Rate</div>
               <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#fb7185', fontFamily: 'var(--admin-font-mono)' }}>
                 {activeAlerts > 0 ? `${Math.round((activeAlerts / Math.max(totalScans, 1)) * 100)}%` : '0%'}
               </div>

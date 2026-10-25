@@ -28,86 +28,86 @@ const SWINE_MODULES = [
   {
     id: 'scanner',
     title: 'AI Swine Symptom Scanner',
-    desc: 'Capture or upload swine photos for real-time lesion, rash, and dermatitis detection with YOLOv11.',
+    desc: 'Capture or upload swine photos for lesion, rash, and dermatitis detection with YOLOv8.',
     path: '/ai-analysis',
     icon: <ScanLine size={22} />,
-    tag: 'CORE AI VISION',
-    kicker: 'Real-Time Lesion Detection',
+    tag: 'OBJECT DETECTION',
+    kicker: 'YOLOv8 Symptom Detection',
   },
   {
     id: 'analytics',
-    title: 'Clinical Herd Analytics',
-    desc: 'Review herd health distribution, historical symptom rates, and contagious outbreak risk indicators.',
+    title: 'Herd Health Overview',
+    desc: 'Review recent scan entries, symptom frequency, and general health distribution across pens.',
     path: '/overview',
     icon: <BarChart3 size={22} />,
-    tag: 'EPIDEMIOLOGY',
-    kicker: 'Deep Learning Reports',
+    tag: 'OVERVIEW',
+    kicker: 'Health Records',
   },
   {
     id: 'grading',
-    title: 'Symptom Severity Grading',
-    desc: 'Automated severity classification: Mild, Moderate, or Acute Quarantine for immediate farm bio-security.',
+    title: 'Severity Categorization',
+    desc: 'Categorization of detected symptoms into Mild, Moderate, or Severe to assist in observation.',
     path: '/sorting-grading',
     icon: <Layers size={22} />,
-    tag: 'CLASSIFICATION',
-    kicker: 'Triaging Pipeline',
+    tag: 'SEVERITY',
+    kicker: 'Severity Levels',
   },
   {
     id: 'disease-map',
-    title: 'Disease Map & PVO Surveillance',
-    desc: 'Geospatial swine disease zoning, DA-BAI quarantine perimeters, and Provincial Veterinary Office dispatcher.',
+    title: 'Disease Map & Local Reports',
+    desc: 'Map of reported swine disease cases to help backyard raisers stay informed about local health status.',
     path: '/disease-map',
     icon: <MapPin size={22} />,
-    tag: 'SURVEILLANCE',
-    kicker: 'PVO Emergency Dispatch',
+    tag: 'MAP VIEW',
+    kicker: 'Disease Map',
   },
   {
     id: 'environment',
-    title: 'Farm Environment & Pen Telemetry',
-    desc: 'Track ambient temperature, humidity, and pen ventilation correlating with swine disease outbreaks.',
+    title: 'Farm Environment',
+    desc: 'Monitor ambient temperature and humidity readings that may impact pig comfort and skin health.',
     path: '/environment',
     icon: <CloudSun size={22} />,
-    tag: 'FARM TELEMETRY',
-    kicker: 'Biosecurity Sensors',
+    tag: 'ENVIRONMENT',
+    kicker: 'Temperature & Humidity',
   },
   {
     id: 'community',
     title: 'Backyard Swine Community',
-    desc: 'Discuss diagnostic cases, share symptom photographs, and get feedback from peer swine raisers.',
+    desc: 'Discuss observations, ask questions, and share experiences with fellow backyard pig raisers.',
     path: '/community',
     icon: <MessageSquare size={22} />,
-    tag: 'PEER FORUM',
-    kicker: 'Knowledge Exchange',
+    tag: 'COMMUNITY',
+    kicker: 'Farmer Forum',
   },
 ];
 
 const RECENT_DIAGNOSTICS = [
   {
     id: 'SW-104',
-    title: 'Backyard Pen B • Sow #04',
-    condition: 'Normal Skin Tissue (No Lesions)',
-    confidence: '99.4%',
-    time: '12 mins ago',
+    title: 'Pen B • Sow #04',
+    condition: 'Normal Skin (No Lesions Detected)',
+    confidence: 'Recorded',
+    time: 'Today',
     status: 'healthy',
     statusLabel: 'NORMAL',
   },
   {
     id: 'SW-089',
-    title: 'Nursery Pen A • Piglet #19',
+    title: 'Pen A • Piglet #19',
     condition: 'Mild Dermatitis / Erythema',
-    confidence: '96.2%',
-    time: '45 mins ago',
+    confidence: 'Recorded',
+    time: 'Yesterday',
     status: 'warning',
     statusLabel: 'MONITOR',
   },
   {
     id: 'SW-042',
-    title: 'Finishing Pen C • Boar #02',
-    condition: 'Diamond Skin Disease (Erysipelas)',
-    confidence: '98.7%',
-    time: '2 hours ago',
+    title: 'Pen C • Boar #02',
+    condition: 'Suspected Diamond Skin Signs (Erysipelas)',
+    confidence: 'Recorded',
+    time: '2 days ago',
     status: 'alert',
-    statusLabel: 'ISOLATE',
+    statusLabel: 'OBSERVE',
   },
 ];
 
@@ -220,7 +220,7 @@ function Home() {
                     boxShadow: '0 0 8px #10b981',
                   }}
                 />
-                <span>STUDY RESEARCH // BACKYARD SWINE BIOSECURITY</span>
+                <span>STUDY RESEARCH // BACKYARD SWINE HEALTH MONITORING</span>
               </div>
               <div
                 style={{
@@ -233,7 +233,7 @@ function Home() {
                 }}
               >
                 <Cpu size={13} color="#10b981" />
-                <span>YOLOv8 / YOLOv11 VISION PIPELINE // &lt; 1.8s</span>
+                <span>YOLOv8 OBJECT DETECTION MODEL</span>
               </div>
             </div>
 
@@ -245,21 +245,21 @@ function Home() {
                   <span>Deep Learning Backyard Swine Health</span>
                 </div>
                 <h1 className="pigify-hero-title">
-                  Swine Health <span>Command Center</span>
+                  Swine Health <span>Monitoring Dashboard</span>
                 </h1>
                 <p className="pigify-hero-desc">
-                  Real-time automated skin lesion scanning, herd biosecurity indices, and severity grading built specifically for backyard swine farms.
+                  Automated skin symptom detection, severity categorization, and scan records developed for backyard pig farms.
                 </p>
 
                 <div className="pigify-hero-actions">
                   <Link to="/ai-analysis" className="pigify-btn-hero-primary">
                     <ScanLine size={16} />
-                    <span>Launch AI Swine Scanner</span>
+                    <span>Open Symptom Scanner</span>
                     <ArrowRight size={14} />
                   </Link>
                   <Link to="/overview" className="pigify-btn-hero-secondary">
                     <BarChart3 size={15} />
-                    <span>Herd Health Analytics</span>
+                    <span>View Health Records</span>
                   </Link>
                 </div>
               </div>
@@ -295,7 +295,7 @@ function Home() {
                         }}
                       >
                         <ScanLine size={11} />
-                        <span>AI SCAN: LIVE</span>
+                        <span>AI SCAN: PREVIEW</span>
                       </div>
                       <div
                         style={{
@@ -307,7 +307,7 @@ function Home() {
                           background: 'rgba(0,0,0,0.5)',
                         }}
                       >
-                        DETECTION CONFIDENCE: 96.8%
+                        DETECTION MODEL: YOLOv8
                       </div>
                     </div>
 
@@ -328,10 +328,10 @@ function Home() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
-                        ● AMBIENT PEN INFERENCE
+                        ● VIDEO DEMO
                       </span>
                       <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-                        YOLOv8 / YOLOv11
+                        YOLOv8 MODEL
                       </span>
                     </div>
                   </div>
@@ -340,7 +340,7 @@ function Home() {
                 <div className="pigify-hero-scanner-caption">
                   <div>
                     <h4>Swine Skin Symptom Detection</h4>
-                    <p>Real-time lesion, rash & dermatitis segmentation</p>
+                    <p>Sample lesion and rash detection display</p>
                   </div>
                   <Link
                     to="/ai-analysis"
@@ -374,8 +374,8 @@ function Home() {
                 <span className="pigify-kpi-pill">+12 This Week</span>
               </div>
               <div>
-                <div className="pigify-kpi-val">348 Units</div>
-                <div className="pigify-kpi-label">Total Swine Monitored</div>
+                <div className="pigify-kpi-val">348 Scans</div>
+                <div className="pigify-kpi-label">Total Scans Logged</div>
               </div>
             </div>
 
@@ -385,12 +385,12 @@ function Home() {
                   <CheckCircle2 size={18} />
                 </div>
                 <span className="pigify-kpi-pill" style={{ color: '#10b981' }}>
-                  OPTIMAL
+                  MONITORED
                 </span>
               </div>
               <div>
-                <div className="pigify-kpi-val">95.4%</div>
-                <div className="pigify-kpi-label">Herd Health Index</div>
+                <div className="pigify-kpi-val">Normal</div>
+                <div className="pigify-kpi-label">Primary Herd Status</div>
               </div>
             </div>
 
@@ -400,12 +400,12 @@ function Home() {
                   <AlertTriangle size={18} />
                 </div>
                 <span className="pigify-kpi-pill" style={{ color: '#f59e0b' }}>
-                  ACTION REQ
+                  MONITOR
                 </span>
               </div>
               <div>
-                <div className="pigify-kpi-val">2 Heads</div>
-                <div className="pigify-kpi-label">Active Symptom Flags</div>
+                <div className="pigify-kpi-val">2 Flags</div>
+                <div className="pigify-kpi-label">Recent Symptom Observations</div>
               </div>
             </div>
 
@@ -415,12 +415,12 @@ function Home() {
                   <TrendingUp size={18} />
                 </div>
                 <span className="pigify-kpi-pill" style={{ color: '#06b6d4' }}>
-                  YOLOv8/11
+                  MODEL
                 </span>
               </div>
               <div>
-                <div className="pigify-kpi-val">~98.5%</div>
-                <div className="pigify-kpi-label">Field Validation mAP</div>
+                <div className="pigify-kpi-val">YOLOv8</div>
+                <div className="pigify-kpi-label">Object Detection Model</div>
               </div>
             </div>
           </section>
@@ -432,7 +432,7 @@ function Home() {
             <div className="pigify-section-head">
               <h2 className="pigify-section-title">
                 <ScanLine size={20} color="#f43f5e" />
-                <span>Swine Health Research Modules</span>
+                <span>Swine Health Monitoring Modules</span>
               </h2>
               <span
                 style={{
@@ -441,7 +441,7 @@ function Home() {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                RESEARCH STUDY // PROTOCOL v1.0
+                RESEARCH STUDY // PROTOTYPE
               </span>
             </div>
 
@@ -494,7 +494,7 @@ function Home() {
                     color: 'var(--text-main, #ffffff)',
                   }}
                 >
-                  Recent Swine Diagnostic Telemetry
+                  Recent Scan Records
                 </h3>
               </div>
               <span
@@ -504,7 +504,7 @@ function Home() {
                   color: 'var(--text-muted, #94a3b8)',
                 }}
               >
-                REAL-TIME AUDIT STREAM
+                ACTIVITY LOG
               </span>
             </div>
 
@@ -569,7 +569,7 @@ function Home() {
             </div>
             <div className="pigify-footer-badge-item">
               <Cpu size={14} color="#06b6d4" />
-              <span>YOLOv8/v11 Pipeline</span>
+              <span>YOLOv8 Model</span>
             </div>
             <span>© {new Date().getFullYear()} {BRAND_NAME} System</span>
           </div>

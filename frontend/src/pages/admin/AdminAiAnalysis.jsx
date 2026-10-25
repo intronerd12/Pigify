@@ -188,18 +188,18 @@ function AdminAiAnalysis() {
       <section className="admin-hero">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="admin-hero-badge">Inference Laboratory</span>
+            <span className="admin-hero-badge">Inference Testing</span>
             <span className="admin-meta-tag">
               <span className="telemetry-pulse" />
-              YOLOv8 / YOLOv11 DUAL BACKBONE
+              YOLOv8 DETECTION MODEL
             </span>
           </div>
           <h1 className="admin-hero-title">
             <Brain size={26} color="#34d399" />
-            AI Diagnostic & Inference Laboratory
+            AI Symptom Detection Testing
           </h1>
           <p className="admin-hero-sub">
-            Upload field swine dermis images or test against pre-validated capstone benchmark cases to verify real-time lesion localization and triage grading.
+            Upload swine photos or test against study sample cases to verify skin symptom detection and severity grading.
           </p>
         </div>
       </section>
@@ -210,9 +210,9 @@ function AdminAiAnalysis() {
           <div>
             <h2 className="admin-card-title">
               <Sparkles size={18} color="#38bdf8" />
-              Pre-Validated Study Benchmark Cases
+              Study Sample Cases
             </h2>
-            <p className="admin-card-desc">Click any benchmark scenario to immediately simulate and inspect inference telemetry</p>
+            <p className="admin-card-desc">Click any study sample scenario to inspect model detection and care advice</p>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px' }}>
@@ -389,7 +389,7 @@ function AdminAiAnalysis() {
                 <Brain size={18} color="#a855f7" />
                 Real-Time Inference Output
               </h2>
-              <p className="admin-card-desc">Deep learning bounding box and clinical triage verification</p>
+              <p className="admin-card-desc">YOLOv8 bounding box and symptom severity verification</p>
             </div>
             {analysisResult && (
               <span className={`admin-badge-grade admin-badge-grade-${analysisResult.grade.toLowerCase()}`}>
@@ -457,7 +457,7 @@ function AdminAiAnalysis() {
                   gap: '6px'
                 }}>
                   {analysisResult.grade === 'A' ? <ShieldCheck size={14} /> : <ShieldAlert size={14} />}
-                  Quarantine & Care Protocol
+                  Farmer Care &amp; Isolation Protocol
                 </div>
                 <div style={{ fontSize: '0.84rem', color: '#e2e8f0', lineHeight: '1.45' }}>
                   {analysisResult.recommendation}
@@ -493,7 +493,7 @@ function AdminAiAnalysis() {
             <thead>
               <tr>
                 <th>Case / Subject</th>
-                <th>Triage Grade</th>
+                <th>Severity Grade</th>
                 <th>Diagnosed Pathogen / Condition</th>
                 <th>Confidence</th>
                 <th>Lesion %</th>
@@ -535,7 +535,7 @@ function AdminAiAnalysis() {
                       color: item.grade === 'A' ? '#34d399' : '#fb7185',
                       border: item.grade === 'A' ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)'
                     }}>
-                      {item.grade === 'A' ? 'Healthy Pass' : 'Quarantine Active'}
+                      {item.grade === 'A' ? 'Healthy Pass' : 'Isolation Flag'}
                     </span>
                   </td>
                 </tr>

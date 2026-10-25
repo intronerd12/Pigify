@@ -360,17 +360,17 @@ function DiseaseMap() {
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>BAI 1-7-10 KM ZONING &bull; PROVINCIAL VETERINARY SURVEILLANCE</span>
+              <span>FARM GEOGRAPHY &bull; COMMUNITY HEALTH MAP &amp; ZONING</span>
             </div>
 
             <h1 className="mk-title">
-              Swine Disease Surveillance &amp;
-              <span className="accent"> Biosecurity Risk Map</span>
+              Swine Health Map &amp;
+              <span className="accent"> Community Awareness</span>
             </h1>
 
             <p className="mk-subtitle">
-              Interactive geographic tracking of swine disease spread, African Swine Fever (ASF) quarantine buffer zones,
-              and direct emergency escalation to the Provincial Veterinary Office (PVO) across commercial and Philippine Native Pig herds.
+              Interactive geographic reference for swine health observations, local zoning boundaries,
+              and contact information for the Provincial Veterinary Office (PVO).
             </p>
 
             {/* Sub-Nav Bar */}
@@ -448,9 +448,9 @@ function DiseaseMap() {
                     RED ZONE (0-1 KM)
                   </div>
                   <div style={{ fontFamily: 'Sora', fontSize: '1.6rem', fontWeight: 800, color: '#ffffff', marginTop: '4px' }}>
-                    {stats.redInfected} Outbreaks
+                    {stats.redInfected} Monitored Zones
                   </div>
-                  <small style={{ fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>Infected Movement Cordon</small>
+                  <small style={{ fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>Restricted Movement Zone</small>
                 </div>
 
                 <div
@@ -780,7 +780,7 @@ function DiseaseMap() {
                   <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.76rem', color: 'var(--text-muted, #94a3b8)' }}>
                     <span>
                       <Compass size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                      Projections calibrated to Philippine Swine Industry Surveillance Standards (BAI Administrative Order No. 22).
+                      Reference map illustrating zoning standards aligned with Philippine animal health guidelines (BAI Administrative Order No. 22).
                     </span>
                     <button
                       type="button"
@@ -940,7 +940,7 @@ function DiseaseMap() {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted, #94a3b8)' }}>
                       <MapPin size={32} style={{ margin: '0 auto 12px auto', opacity: 0.5 }} />
-                      <p>Click any farm pin or PVO station on the map to inspect telemetry and zoning mandates.</p>
+                      <p>Click any farm pin or PVO station on the map to view farm details and zoning guidelines.</p>
                     </div>
                   )}
                 </div>
@@ -1073,7 +1073,7 @@ function DiseaseMap() {
                 <div style={{ maxWidth: '800px', marginBottom: '28px' }}>
                   <div className="mk-kicker">
                     <span className="mk-kicker-dot" />
-                    <span>CLINICAL BIOSECURITY &bull; SICK PIG SOP</span>
+                    <span>CARE &amp; ISOLATION &bull; SICK PIG GUIDELINES</span>
                   </div>
                   <h2 style={{ fontFamily: 'Sora', fontSize: '1.8rem', fontWeight: 800, color: '#ffffff', margin: '8px 0 12px 0' }}>
                     What Should Be Done When a Pig Shows Signs of Illness?

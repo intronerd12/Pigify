@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { to: '/about', label: 'About' },
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/features', label: 'Features' },
-  { to: '/home', label: 'Live Scanner' },
+  { to: '/home', label: 'Scanner' },
 ]
 
 const PREFETCH_MAP = {
@@ -49,7 +49,7 @@ function MarketingHeader() {
           <BrandMark size={38} />
           <div className="lp-brand-copy">
             <span className="lp-brand-name">{BRAND_NAME}</span>
-            <span className="lp-brand-tag">Swine AI Telemetry</span>
+            <span className="lp-brand-tag">Swine Health System</span>
           </div>
         </Link>
 

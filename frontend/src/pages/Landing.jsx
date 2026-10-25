@@ -28,43 +28,43 @@ import './Landing.css'
 const VIDEO_SLIDES = [
   {
     type: 'video',
-    title: 'Pig Disease & Skin Health Scanning',
-    description: 'Real-time AI scanning for swine skin lesions, rashes, erysipelas, and disease symptoms with instant severity scoring.',
+    title: 'Checking Pig Photos for Skin Symptoms',
+    description: 'Pigify analyzes a photo of a pig and points out visible skin signs, such as lesions or redness, that may be linked to disease.',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/how-it-works',
-    buttonText: 'Learn Our Process',
+    buttonText: 'See How It Works',
     icon: '🐖',
-    tag: 'LIVE LESION RECOGNITION',
+    tag: 'SYMPTOM DETECTION',
   },
   {
     type: 'video',
-    title: 'Backyard Swine Health Monitoring',
-    description: 'Automated early detection system for swine disease prevention and herd management across outdoor pens.',
+    title: 'Health Monitoring for Backyard Farms',
+    description: 'The study focuses on small-scale backyard pig raisers who may not have regular access to a veterinarian.',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
     link: '/features',
-    buttonText: 'Explore Features',
+    buttonText: 'View Features',
     icon: '✨',
-    tag: 'HERD BIOSECURITY',
+    tag: 'BACKYARD FARMS',
   },
   {
     type: 'video',
-    title: 'Swine Symptom & Lesion Detection',
-    description: 'Computer vision analysis detecting swine rash, dermatological lesions, and parasitic infections in seconds.',
+    title: 'Deep Learning Image Analysis',
+    description: 'Photos are processed by YOLOv8 object detection models that the team trained on pig images.',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
     link: '/home',
-    buttonText: 'Try AI Scanner',
+    buttonText: 'Open the Scanner',
     icon: '🔍',
-    tag: 'CLINICAL INFERENCE',
+    tag: 'YOLOv8 MODEL',
   },
   {
     type: 'video',
-    title: 'Pigify Herd Health & Diagnostics',
-    description: 'Deep learning skin health analytics and automated severity assessment tailored specifically for backyard pig farms.',
+    title: 'Scan Records and Monitoring',
+    description: 'Each scan result is saved so farmers can look back on the health condition of their pigs over time.',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
     link: '/about',
-    buttonText: 'About Pigify',
+    buttonText: 'About the Study',
     icon: '🩺',
-    tag: 'PEN TELEMETRY',
+    tag: 'SCAN HISTORY',
   },
 ]
 
@@ -74,28 +74,28 @@ const QUICK_LINKS = [
     title: 'About Pigify',
     description: 'A deep learning-based swine disease and symptom monitoring system for backyard farms.',
     icon: ShieldCheck,
-    tag: 'SYSTEM ARCHITECTURE',
+    tag: 'THE STUDY',
   },
   {
     to: '/how-it-works',
     title: 'How It Works',
-    description: 'A step-by-step pipeline from image capture to disease detection, severity score, and health report.',
+    description: 'The steps from taking a photo of a pig to viewing the detected symptoms and suggested severity level.',
     icon: Layers,
-    tag: 'DIAGNOSTIC PIPELINE',
+    tag: 'PROCESS',
   },
   {
     to: '/features',
     title: 'Features',
-    description: 'Explore skin symptom segmentation, disease classification, herd trend analytics, and farm controls.',
+    description: 'The modules included in the system: symptom detection, scan history, disease map, and environment monitoring.',
     icon: Sparkles,
-    tag: 'CLINICAL CAPABILITIES',
+    tag: 'SYSTEM MODULES',
   },
   {
     to: '/home',
-    title: 'Live Scanner Workspace',
-    description: 'Go straight to the operator interface to capture images and scan pig health in real time.',
+    title: 'Scanner',
+    description: 'Upload or capture a photo of a pig and let the system check it for visible symptoms.',
     icon: ScanLine,
-    tag: 'OPERATOR CONSOLE',
+    tag: 'SCAN A PIG',
   },
 ]
 
@@ -103,65 +103,65 @@ const WORKFLOW = [
   {
     step: '01',
     title: 'Capture',
-    description: 'Take a clear photo of pig skin, lesions, or rash using your mobile or camera device.',
+    description: 'Take or upload a clear photo of the pig using a phone or computer.',
     icon: Camera,
-    stats: '1.8s avg',
-    label: 'IMAGE ACQUISITION',
+    stats: 'Web or mobile',
+    label: 'PHOTO INPUT',
   },
   {
     step: '02',
-    title: 'Scan & Detect',
-    description: 'AI model scans for skin lesions, erythema, parasite marks, and general disease indicators.',
+    title: 'Detect',
+    description: 'The trained YOLOv8 model checks the photo for visible skin signs such as lesions or redness.',
     icon: Cpu,
-    stats: '98.5% confidence',
-    label: 'YOLOv8 INFERENCE',
+    stats: 'YOLOv8 model',
+    label: 'IMAGE ANALYSIS',
   },
   {
     step: '03',
-    title: 'Diagnose',
-    description: 'Receive symptom classification, health risk level, affected dermal surface, and treatment guidance.',
+    title: 'Review Result',
+    description: 'View the detected signs, the model confidence score, a suggested severity level, and basic care guidance.',
     icon: BarChart3,
     stats: 'Mild/Moderate/Severe',
-    label: 'SEVERITY SCORING',
+    label: 'SCAN RESULT',
   },
   {
     step: '04',
-    title: 'Action',
-    description: 'Save diagnostics, generate vet reports, and isolate affected swine for herd safety.',
+    title: 'Record & Consult',
+    description: 'Save the result to your scan history and consult a veterinarian when signs of illness are found.',
     icon: ShieldCheck,
-    stats: 'Early Prevention',
-    label: 'BIOSECURITY CONTAIN',
+    stats: 'Saved to history',
+    label: 'FOLLOW-UP',
   },
 ]
 
 const MODULES = [
   {
-    title: 'Skin Disease Detection',
-    description: 'Detect skin lesions, scabies, swine pox, erysipelas, and dermatological conditions.',
+    title: 'Symptom Detection',
+    description: 'Checks pig photos for visible skin signs that may indicate disease.',
     icon: ShieldCheck,
-    badge: 'Core AI',
-    bullets: ['Lesion Boundary Segmentation', 'Erysipelas & Swine Pox', 'Parasitic Mange Identification'],
+    badge: 'Core',
+    bullets: ['Photo upload or camera capture', 'YOLOv8 object detection', 'Suggested severity level'],
   },
   {
-    title: 'General Health Diagnostics',
-    description: 'Identify early warning signs of systemic swine illness and viral/bacterial infections.',
+    title: 'Scan Results & History',
+    description: 'Keeps a record of each scan so farmers can review past results.',
     icon: Activity,
-    badge: 'Analytics',
-    bullets: ['Fever Flush & Erythema Index', 'Lethargy Clinical Markers', 'Systemic Anomaly Warnings'],
+    badge: 'Records',
+    bullets: ['Saved scan images and results', 'Basic care guidance', 'Reminder to consult a veterinarian'],
   },
   {
-    title: 'Herd Disease Tracking',
-    description: 'Track infection rates, herd health trends, and treatment history across pens.',
+    title: 'Disease Map',
+    description: 'Shows reported swine disease cases on a map to give farmers awareness of nearby cases.',
     icon: BarChart3,
-    badge: 'Reports',
-    bullets: ['Pen-Level Infection Logs', 'Historical Trend Analytics', 'Veterinary PDF Summaries'],
+    badge: 'Map',
+    bullets: ['Location-based case view', 'Disease information', 'Farm awareness'],
   },
   {
-    title: 'Environmental Factors',
-    description: 'Connect farm temperature and humidity with skin health risks and infection outbreaks.',
+    title: 'Environment Monitoring',
+    description: 'Displays temperature and humidity readings that can affect the comfort and health of pigs.',
     icon: CloudSun,
-    badge: 'Integration',
-    bullets: ['Pen Humidity & Ammonia Index', 'Heat Stress Correlation', 'Biosecurity Flare Alerts'],
+    badge: 'Environment',
+    bullets: ['Temperature readings', 'Humidity readings', 'Heat stress reminders'],
   },
 ]
 
@@ -247,52 +247,52 @@ function Landing() {
             <div className="lp-hero-copy">
               <div className="lp-kicker">
                 <span className="lp-kicker-dot" />
-                <span>PIGIFY BIOMETRICS // SWINE LESION TELEMETRY V4.2</span>
+                <span>RESEARCH PROJECT // BACKYARD SWINE HEALTH MONITORING</span>
               </div>
 
               <h1 className="lp-title">
-                Early disease detection for
-                <span className="lp-title-gradient"> swine & backyard herd health</span>
+                Swine disease and symptom monitoring for
+                <span className="lp-title-gradient"> backyard farms</span>
               </h1>
 
               <p className="lp-subtitle">
-                Move from manual visual inspection to rapid, deep learning-driven swine skin scanning,
-                lesion segmentation, severity stratification (Mild / Moderate / Severe), and early outbreak prevention.
+                Pigify uses deep learning to check photos of pigs for visible signs of disease. It is meant to help
+                backyard farmers notice possible health problems earlier and decide when to consult a veterinarian.
               </p>
 
               {/* Action Buttons */}
               <div className="lp-hero-cta">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={18} />
-                  <span>Start Live Swine Scan</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">
                   <Layers size={17} />
-                  <span>Diagnostic Workflow</span>
+                  <span>How It Works</span>
                 </Link>
                 <Link to="/login" className="lp-btn-ghost">
-                  <span>Farm Login</span>
+                  <span>Log In</span>
                 </Link>
               </div>
 
-              {/* Trust & Telemetry Strip */}
+              {/* Study Summary Strip */}
               <div className="lp-trust-strip">
                 <div className="lp-trust-card">
-                  <span className="lp-trust-value">98.5%</span>
-                  <span className="lp-trust-label">AI Accuracy</span>
+                  <span className="lp-trust-value">YOLOv8</span>
+                  <span className="lp-trust-label">Detection Model</span>
                 </div>
                 <div className="lp-trust-card">
-                  <span className="lp-trust-value">&lt; 1.8s</span>
-                  <span className="lp-trust-label">Inference Latency</span>
+                  <span className="lp-trust-value">Web &amp; Mobile</span>
+                  <span className="lp-trust-label">Photo Scanning</span>
                 </div>
                 <div className="lp-trust-card">
-                  <span className="lp-trust-value">14 Conditions</span>
-                  <span className="lp-trust-label">Lesion Classes</span>
+                  <span className="lp-trust-value">3 Levels</span>
+                  <span className="lp-trust-label">Severity Rating</span>
                 </div>
                 <div className="lp-trust-card">
-                  <span className="lp-trust-value">Real-Time</span>
-                  <span className="lp-trust-label">Pen Biosecurity</span>
+                  <span className="lp-trust-value">Saved</span>
+                  <span className="lp-trust-label">Scan History</span>
                 </div>
               </div>
             </div>
@@ -307,14 +307,14 @@ function Landing() {
 
               <div className="lp-panel-top">
                 <div className="lp-panel-header-line">
-                  <span className="lp-panel-badge">DIAGNOSTIC OUTPUT // NODE #04</span>
+                  <span className="lp-panel-badge">SAMPLE SCAN RESULT</span>
                   <div className="lp-live-badge">
                     <span className="lp-live-indicator" />
-                    <span>OPERATIONAL</span>
+                    <span>EXAMPLE</span>
                   </div>
                 </div>
-                <h2>Pig Skin Health Telemetry</h2>
-                <p>Real-time computer vision inference with bounding box lesion segmentation.</p>
+                <h2>What a scan result looks like</h2>
+                <p>An illustration of how detected skin signs are marked on a photo. Values shown are examples only.</p>
               </div>
 
               {/* Simulated Scanner Viewport with Real Swine Side-View Subject */}
@@ -334,7 +334,7 @@ function Landing() {
                 <div className="lp-target-bbox">
                   <div className="lp-bbox-tag">
                     <span className="lp-bbox-dot" />
-                    <span>ERYSIPELAS LESION // 98.7%</span>
+                    <span>SUSPECTED LESION // SAMPLE</span>
                   </div>
                   <div className="lp-lesion-hotspot" />
                   <div className="lp-bbox-corners" />
@@ -342,8 +342,8 @@ function Landing() {
 
                 <div className="lp-viewport-meta">
                   <span>PEN: B-12</span>
-                  <span>SWINE ID: #0482</span>
-                  <span>LOC: DORSAL DERMIS</span>
+                  <span>SAMPLE ID: #0482</span>
+                  <span>AREA: SKIN SURFACE</span>
                 </div>
               </div>
 
@@ -352,22 +352,22 @@ function Landing() {
                 <div className="lp-metric">
                   <span className="lp-metric-title">STATUS</span>
                   <strong className="lp-metric-val danger">LESION DETECTED</strong>
-                  <small className="lp-metric-sub">Erysipelas symptom match</small>
+                  <small className="lp-metric-sub">Visible skin symptom found</small>
                 </div>
                 <div className="lp-metric">
-                  <span className="lp-metric-title">RISK LEVEL</span>
-                  <strong className="lp-metric-val warning">MODERATE [STAGE 2]</strong>
-                  <small className="lp-metric-sub">Recommend pen isolation</small>
+                  <span className="lp-metric-title">SUGGESTED SEVERITY</span>
+                  <strong className="lp-metric-val warning">MODERATE</strong>
+                  <small className="lp-metric-sub">Monitor and separate pen</small>
                 </div>
                 <div className="lp-metric">
-                  <span className="lp-metric-title">CONFIDENCE</span>
-                  <strong className="lp-metric-val success">98.7% YOLOv8</strong>
-                  <small className="lp-metric-sub">Multiclass verification</small>
+                  <span className="lp-metric-title">DETECTION MODEL</span>
+                  <strong className="lp-metric-val success">YOLOv8</strong>
+                  <small className="lp-metric-sub">Object detection model</small>
                 </div>
                 <div className="lp-metric">
-                  <span className="lp-metric-title">ACTION PROTOCOL</span>
-                  <strong className="lp-metric-val info">ISOLATE &amp; TREAT</strong>
-                  <small className="lp-metric-sub">Antimicrobial administration</small>
+                  <span className="lp-metric-title">RECOMMENDED STEP</span>
+                  <strong className="lp-metric-val info">ISOLATE &amp; OBSERVE</strong>
+                  <small className="lp-metric-sub">Consult a veterinarian</small>
                 </div>
               </div>
 
@@ -529,11 +529,11 @@ function Landing() {
             <div className="lp-section-head">
               <div className="lp-kicker">
                 <Cpu size={13} />
-                <span>CLINICAL PIPELINE</span>
+                <span>MONITORING PIPELINE</span>
               </div>
-              <h2>How backyard farm diagnostics flow</h2>
+              <h2>How backyard farm monitoring works</h2>
               <p>
-                Built for real-world swine management: scan quickly, standardize skin disease detection, and keep historical herd health data organized.
+                Designed for everyday backyard pig farming: take a photo, run image analysis for visible symptoms, and keep an organized record of findings.
               </p>
             </div>
 
@@ -580,10 +580,10 @@ function Landing() {
             <div className="lp-section-head">
               <div className="lp-kicker">
                 <ShieldCheck size={13} />
-                <span>DIAGNOSTIC SUITE</span>
+                <span>SYSTEM MODULES</span>
               </div>
-              <h2>Core swine health modules</h2>
-              <p>Purpose-built tools to reduce swine mortality, prevent disease outbreaks, and improve backyard farm productivity.</p>
+              <h2>Included system features</h2>
+              <p>Features developed to help small-scale farmers notice symptoms early and maintain records for their pigs.</p>
             </div>
 
             <div className="lp-module-grid">
@@ -631,11 +631,11 @@ function Landing() {
               <div className="lp-cta-text">
                 <div className="lp-kicker">
                   <Radio size={13} />
-                  <span>BIOSECURITY DEFENSE</span>
+                  <span>START MONITORING</span>
                 </div>
-                <h2>Ready to protect your swine herd?</h2>
-                <h3 className="lp-cta-lead">Give your backyard farm a professional AI disease monitoring standard.</h3>
-                <p>Sign in to start scanning pig skin health, tracking symptoms, and preventing herd disease outbreaks.</p>
+                <h2>Ready to check your pigs?</h2>
+                <h3 className="lp-cta-lead">A practical symptom checking and monitoring tool for backyard pig farming.</h3>
+                <p>Sign in to scan pig photos, view detected skin signs, and keep records of your herd health over time.</p>
               </div>
 
               <div className="lp-cta-actions">

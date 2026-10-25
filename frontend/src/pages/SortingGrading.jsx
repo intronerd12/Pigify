@@ -234,17 +234,17 @@ function SortingGrading() {
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>CLINICAL TRIAGE // BACKYARD SWINE PROTOCOL</span>
+              <span>SEVERITY CATEGORIZATION // BACKYARD SWINE STUDY</span>
             </div>
 
             <h1 className="mk-title">
               Symptom Severity
-              <span className="accent"> Grading &amp; Triage</span>
+              <span className="accent"> Categorization &amp; Records</span>
             </h1>
 
             <p className="mk-subtitle">
-              Audit and filter all swine lesion scans classified by the YOLO deep learning model.
-              Stratified into Mild, Moderate, or Acute Quarantine tiers for pen biosecurity.
+              Review and filter swine lesion scans detected by the YOLOv8 model.
+              Categorized into Normal, Mild, Moderate, and Severe levels for practical backyard management.
             </p>
           </div>
         </section>
@@ -689,7 +689,7 @@ function SortingGrading() {
           <span>(c) {new Date().getFullYear()} {BRAND_NAME}. {BRAND_TAGLINE}.</span>
           <div className="lp-footer-legal">
             <Link to="/about">About Study</Link>
-            <Link to="/how-it-works">Triage Criteria</Link>
+            <Link to="/how-it-works">Severity Criteria</Link>
             <Link to="/features">Features</Link>
           </div>
         </div>

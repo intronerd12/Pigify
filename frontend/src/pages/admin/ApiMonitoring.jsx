@@ -115,10 +115,10 @@ const ApiMonitoring = () => {
           </div>
           <h1 className="admin-hero-title">
             <Cpu size={26} color="#34d399" />
-            Inference & Node Health Telemetry
+            API &amp; Service Status
           </h1>
           <p className="admin-hero-sub">
-            Continuous health telemetry across the YOLOv8/v11 deep learning engine, Supabase PostgreSQL, and cloud telemetry gateways.
+            Operational status for the YOLOv8 detection service, database connections, and backend endpoints.
           </p>
         </div>
         <div style={{ textAlign: 'right' }}>

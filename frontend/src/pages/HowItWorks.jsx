@@ -27,100 +27,100 @@ const WORKFLOW_STAGES = [
     step: '01',
     id: 'Stage 01',
     title: 'Image Acquisition',
-    description: 'Farmers capture high-definition photographs of pig skin, lesions, or rashes using any smartphone camera in natural pen lighting.',
+    description: 'Farmers take a clear photo of the pig using a smartphone or upload an existing image from their device.',
     icon: Camera,
-    tag: 'PEN ACQUISITION',
-    stats: 'Instant Capture',
-    bullets: ['Automatic framing guidance', 'Backyard pen daylight compensation', 'Multi-angle lesion capture'],
+    tag: 'PHOTO INPUT',
+    stats: 'Phone or Web',
+    bullets: ['Natural daylight recommended', 'Focus on visible skin areas', 'Direct upload or camera snap'],
   },
   {
     step: '02',
     id: 'Stage 02',
-    title: 'YOLO Lesion Segmentation',
-    description: 'State-of-the-art YOLOv8 and YOLOv11 deep learning models process the dermal surface, isolating lesion boundaries and classifying disease signatures.',
+    title: 'YOLOv8 Detection',
+    description: 'The trained YOLOv8 model processes the image to identify visible skin signs such as lesions, redness, or patches.',
     icon: Cpu,
-    tag: 'YOLO INFERENCE',
-    stats: '< 1.8s Latency',
-    bullets: ['Sub-second boundary masking', '14 Swine disease classes', 'Bounding box confidence calculation'],
+    tag: 'MODEL ANALYSIS',
+    stats: 'YOLOv8 Model',
+    bullets: ['Object detection model', 'Bounding box localization', 'Confidence score calculation'],
   },
   {
     step: '03',
     id: 'Stage 03',
-    title: 'Severity Stratification',
-    description: 'The diagnostic core calculates total affected skin surface ratio and stratifies into Mild (Monitor), Moderate (Isolate), or Severe (Acute Quarantine).',
+    title: 'Severity Assessment',
+    description: 'The system provides a suggested severity level (Mild, Moderate, or Severe) to help farmers understand the general condition.',
     icon: BarChart3,
-    tag: 'TRIAGE ENGINE',
+    tag: 'SEVERITY RATING',
     stats: 'Mild/Mod/Severe',
-    bullets: ['Dermal spread quantification', 'Contagion transmission risk index', 'Automated veterinary priority ranking'],
+    bullets: ['Visual symptom indicator', 'Preliminary severity rating', 'Observation priority'],
   },
   {
     step: '04',
     id: 'Stage 04',
-    title: 'Biosecurity Action Protocol',
-    description: 'Smallholders receive clear, actionable pen quarantine protocols, safe treatment guidance, and exportable veterinary summary logs.',
+    title: 'Record & Consultation',
+    description: 'The scan result is saved to the history log, accompanied by basic care advice and a recommendation to consult a veterinarian.',
     icon: ShieldCheck,
-    tag: 'HERD BIOSECURITY',
-    stats: 'Early Containment',
-    bullets: ['Instant pen isolation advice', 'Targeted antimicrobial guidance', 'Exportable clinical PDF report'],
+    tag: 'HEALTH LOG',
+    stats: 'Saved to Log',
+    bullets: ['Recorded in scan history', 'Basic care reminders', 'Prompt to consult a veterinarian'],
   },
 ]
 
 const CLINICAL_PILLARS = [
   {
-    title: 'Backyard Farmer Feedback Loop',
-    description: 'Field diagnostic confirmations and treatment outcomes submitted by farmers continuously refine model precision for backyard conditions.',
+    title: 'Farmer Record Keeping',
+    description: 'Enables farmers to keep a digital record of pig health observations and track symptoms over time.',
     icon: RefreshCw,
-    tag: 'ACTIVE LEARNING',
+    tag: 'RECORDS',
   },
   {
-    title: 'Herd-Wide Epidemiological Tracking',
-    description: 'Automated summaries reveal infection prevalence, symptom velocity, and historical recovery timelines by individual pen.',
+    title: 'Pen Health History',
+    description: 'Helps farmers review past scans across different pens to observe if symptoms are appearing in other pigs.',
     icon: ClipboardList,
-    tag: 'PEN TELEMETRY',
+    tag: 'PEN HISTORY',
   },
   {
-    title: 'Explainable Diagnostic Metrics',
-    description: 'Every scan result features clear boundary boxes, class confidence percentages, and transparent clinical score factors.',
+    title: 'Clear Visual Feedback',
+    description: 'Displays bounding boxes on the uploaded image so farmers can clearly see which areas were flagged.',
     icon: CheckCircle2,
-    tag: 'TRANSPARENCY',
+    tag: 'VISUAL OUTPUT',
   },
 ]
 
 const LESION_SIMULATION_DATA = [
   {
-    condition: 'Erysipelas (Diamond Skin Disease)',
-    confidence: '98.7%',
-    severity: 'Moderate [Stage 2]',
+    condition: 'Erysipelas (Diamond Skin Signs)',
+    confidence: 'Sample Detection',
+    severity: 'Moderate',
     severityType: 'warning',
     pen: 'Pen B-12',
-    swineId: 'SW-0482',
-    treatment: 'Immediate penicillin administration & isolate from pen herd.',
+    swineId: 'Sample #0482',
+    treatment: 'Separate the pig from others in the pen and consult a veterinarian for diagnosis.',
     top: '38%',
     left: '52%',
     width: '120px',
     height: '90px',
   },
   {
-    condition: 'Sarcoptic Mange (Scabies)',
-    confidence: '97.4%',
-    severity: 'Mild [Stage 1]',
+    condition: 'Sarcoptic Mange Signs',
+    confidence: 'Sample Detection',
+    severity: 'Mild',
     severityType: 'info',
     pen: 'Pen A-04',
-    swineId: 'SW-0319',
-    treatment: 'Apply acaricide spray or injectable ivermectin; sanitize bedding.',
+    swineId: 'Sample #0319',
+    treatment: 'Clean pen bedding, monitor itching or crusted skin, and ask a vet about treatment options.',
     top: '46%',
     left: '32%',
     width: '100px',
     height: '75px',
   },
   {
-    condition: 'Swine Pox & Dermatitis',
-    confidence: '99.1%',
-    severity: 'Severe [Stage 3]',
+    condition: 'Skin Irritation & Dermatitis',
+    confidence: 'Sample Detection',
+    severity: 'Severe',
     severityType: 'danger',
     pen: 'Pen C-08',
-    swineId: 'SW-0651',
-    treatment: 'Strict pen isolation; prevent lice transmission, supportive hydration.',
+    swineId: 'Sample #0651',
+    treatment: 'Observe closely, separate the pig if needed, and contact a veterinarian as soon as possible.',
     top: '30%',
     left: '42%',
     width: '135px',
@@ -145,24 +145,23 @@ function HowItWorks() {
             <div className="mk-hero-copy">
               <div className="mk-kicker">
                 <span className="mk-kicker-dot" />
-                <span>DIAGNOSTIC PIPELINE // REAL-TIME SWINE DERMIS INFERENCE</span>
+                <span>MONITORING WORKFLOW // STEP-BY-STEP PROCESS</span>
               </div>
 
               <h1 className="mk-title">
-                A clear pipeline from
-                <span className="accent"> image scan to health decision</span>
+                From photo capture
+                <span className="accent"> to symptom review</span>
               </h1>
 
               <p className="mk-subtitle">
-                Pigify removes guesswork from backyard swine disease management. Every step in our computer vision
-                pipeline is optimized so small-scale farmers can detect infections early, isolate sick pigs,
-                and prevent devastating herd-wide outbreaks.
+                Pigify provides a straightforward process for backyard pig raisers to photograph their pigs,
+                check for visible skin signs of disease, and keep track of their observations over time.
               </p>
 
               <div className="mk-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Start Live Swine Scan</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/features" className="lp-btn-secondary">
@@ -179,42 +178,42 @@ function HowItWorks() {
               <div>
                 <div className="mk-card-head">
                   <BarChart3 size={16} />
-                  <span>CLINICAL TRIAGE FLOW</span>
+                  <span>WORKFLOW OUTLINE</span>
                 </div>
-                <h3>Engineered for early herd protection</h3>
+                <h3>Designed for backyard pig farming</h3>
                 <p>
-                  By standardizing image acquisition and leveraging YOLO neural segmentation, Pigify turns any
-                  smartphone camera into an on-farm diagnostic tool for backyard swine herds.
+                  By applying trained YOLOv8 models to photos taken on mobile phones or webcams,
+                  Pigify helps small-scale farmers spot skin symptoms and maintain health records.
                 </p>
 
                 <ul className="mk-feature-list">
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Rapid on-device or edge image preprocessing</span>
+                    <span>Upload or camera photo input</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Lesion boundary localization with sub-second inference</span>
+                    <span>YOLOv8 bounding box symptom localization</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Explainable severity grades: Mild, Moderate, or Acute Quarantine</span>
+                    <span>Suggested severity: Mild, Moderate, or Severe</span>
                   </li>
                 </ul>
               </div>
 
               <div className="mk-metric-strip">
                 <div className="mk-metric">
-                  <span className="value">4 Stages</span>
-                  <span className="label">Pipeline</span>
+                  <span className="value">4 Steps</span>
+                  <span className="label">Workflow</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">&lt; 1.8s</span>
-                  <span className="label">Analysis</span>
+                  <span className="value">YOLOv8</span>
+                  <span className="label">Model</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">0.05%</span>
-                  <span className="label">False Alert</span>
+                  <span className="value">3 Levels</span>
+                  <span className="label">Severity</span>
                 </div>
               </div>
             </aside>
@@ -229,12 +228,11 @@ function HowItWorks() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Cpu size={12} />
-                <span>STEP-BY-STEP BREAKDOWN</span>
+                <span>STEP-BY-STEP PROCESS</span>
               </div>
-              <h2>The four-stage swine diagnostic workflow</h2>
+              <h2>The four steps of the Pigify workflow</h2>
               <p>
-                From pen-side image capture to actionable biosecurity containment, every phase is engineered
-                to be intuitive for smallholders while maintaining clinical diagnostic rigor.
+                From photo capture to reviewing results and saving health logs, here is how the monitoring process is structured.
               </p>
             </div>
 
@@ -280,12 +278,11 @@ function HowItWorks() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Radio size={12} />
-                <span>SIMULATION BENCHMARK</span>
+                <span>SAMPLE PREVIEW</span>
               </div>
-              <h2>Interactive lesion segmentation preview</h2>
+              <h2>Example scan result display</h2>
               <p>
-                See how Pigify's vision models detect swine dermatological conditions, establish bounding boxes,
-                and generate clinical treatment protocols in real time.
+                This demonstration shows how detected skin signs are marked with bounding boxes and accompanied by preliminary observation advice.
               </p>
             </div>
 
@@ -298,7 +295,7 @@ function HowItWorks() {
                 <div className="lp-scanner-viewport" style={{ height: '360px' }}>
                   <img
                     src="/landing/swine-scan-subject.jpg"
-                    alt="Swine Clinical Subject"
+                    alt="Pig Subject Example"
                     className="lp-viewport-subject"
                     loading="lazy"
                     decoding="async"
@@ -319,7 +316,7 @@ function HowItWorks() {
                   >
                     <div className="lp-bbox-tag">
                       <span className="lp-bbox-dot" />
-                      <span>{currentSim.condition.toUpperCase()} // {currentSim.confidence}</span>
+                      <span>{currentSim.condition.toUpperCase()} // SAMPLE</span>
                     </div>
                     <div className="lp-lesion-hotspot" />
                     <div className="lp-bbox-corners" />
@@ -328,7 +325,7 @@ function HowItWorks() {
                   <div className="lp-viewport-meta">
                     <span>PEN: {currentSim.pen}</span>
                     <span>SUBJECT: {currentSim.swineId}</span>
-                    <span>STATUS: {currentSim.severity}</span>
+                    <span>SEVERITY: {currentSim.severity}</span>
                   </div>
                 </div>
 
@@ -336,7 +333,7 @@ function HowItWorks() {
                 <div className="swine-showcase-telemetry">
                   <div className="mk-card-head">
                     <Activity size={15} />
-                    <span>SELECT CONDITION TO SIMULATE</span>
+                    <span>SELECT SAMPLE TO PREVIEW</span>
                   </div>
 
                   {/* Selector Chips */}
@@ -355,24 +352,24 @@ function HowItWorks() {
                   </div>
 
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Classified Pathology</span>
+                    <span className="swine-telemetry-label">Observed Symptom</span>
                     <span className="swine-telemetry-val highlight">{currentSim.condition}</span>
                   </div>
 
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Neural Confidence</span>
-                    <span className="swine-telemetry-val">{currentSim.confidence} YOLOv8</span>
+                    <span className="swine-telemetry-label">Detection Model</span>
+                    <span className="swine-telemetry-val">YOLOv8 Detection</span>
                   </div>
 
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Assessed Risk Level</span>
+                    <span className="swine-telemetry-label">Suggested Severity</span>
                     <span className="swine-telemetry-val" style={{ color: currentSim.severityType === 'danger' ? '#f43f5e' : currentSim.severityType === 'warning' ? '#f59e0b' : '#06b6d4' }}>
                       {currentSim.severity}
                     </span>
                   </div>
 
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Action Protocol</span>
+                    <span className="swine-telemetry-label">Recommended Step</span>
                     <span className="swine-telemetry-val" style={{ fontSize: '0.82rem' }}>
                       {currentSim.treatment}
                     </span>
@@ -380,7 +377,7 @@ function HowItWorks() {
 
                   <Link to="/home" className="lp-btn-primary" style={{ marginTop: '8px' }}>
                     <ScanLine size={16} />
-                    <span>Launch Live Diagnostic Scanner</span>
+                    <span>Open the Scanner</span>
                     <ArrowRight size={14} />
                   </Link>
                 </div>
@@ -397,11 +394,11 @@ function HowItWorks() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <ShieldCheck size={12} />
-                <span>FIELD VALIDATION</span>
+                <span>PRACTICAL APPROACH</span>
               </div>
-              <h2>Continuous learning &amp; biosecurity governance</h2>
+              <h2>Designed for backyard farm monitoring</h2>
               <p>
-                How Pigify maintains diagnostic reliability across backyard environments through structured farmer feedback loops and telemetry logging.
+                How Pigify organizes image analysis and health tracking to assist small-scale pig raisers.
               </p>
             </div>
 
@@ -436,18 +433,18 @@ function HowItWorks() {
               <div>
                 <div className="mk-kicker" style={{ marginBottom: '12px' }}>
                   <Sparkles size={12} />
-                  <span>COMMENCE SCANNING</span>
+                  <span>START MONITORING</span>
                 </div>
-                <h3>Ready to test the diagnostic pipeline?</h3>
+                <h3>Ready to check your pigs?</h3>
                 <p>
-                  Access the live operator workspace to capture swine photographs, run instant lesion segmentation, and receive clinical biosecurity reports.
+                  Upload or take a photo to see how symptom detection and health record keeping work.
                 </p>
               </div>
 
               <div className="mk-cta-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Launch Live Scanner</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/features" className="lp-btn-secondary">

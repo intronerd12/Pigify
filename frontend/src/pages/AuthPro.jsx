@@ -28,31 +28,31 @@ import './AuthPro.css';
 const AUTH_VIDEO_SLIDES = [
   {
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
-    title: 'AI Swine Symptom Scan',
-    desc: 'Real-time lesion, rash & dermatitis segmentation',
-    tag: 'MODEL: YOLOv11-VET',
-    confidence: '98.8%',
+    title: 'Symptom Detection',
+    desc: 'Checks pig photos for visible lesions, rashes, and irritation',
+    tag: 'MODEL: YOLOv8',
+    confidence: 'YOLOv8',
   },
   {
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
-    title: 'Backyard Swine Analytics',
-    desc: 'Deep learning herd health reports & risk forecasting',
-    tag: 'ANALYTICS: HERD-AI',
-    confidence: '99.1%',
+    title: 'Backyard Health Monitoring',
+    desc: 'Saves scan results to help farmers track herd condition over time',
+    tag: 'MODULE: MONITORING',
+    confidence: 'SAVED LOGS',
   },
   {
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
-    title: 'Swine Disease Prevention',
-    desc: 'Early detection & biosecurity outbreak deterrence',
-    tag: 'DETECTION: CONTAGION',
-    confidence: '97.9%',
+    title: 'Early Observation',
+    desc: 'Supports prompt isolation and monitoring of pigs displaying symptoms',
+    tag: 'PURPOSE: OBSERVATION',
+    confidence: '3 SEVERITY TIERS',
   },
   {
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
-    title: 'Swine Health Workspace',
-    desc: 'Veterinary clinical telemetry & audit tracking',
-    tag: 'SECURE: SUPABASE-TLS',
-    confidence: '99.5%',
+    title: 'Pig Health Records',
+    desc: 'Historical scan logs to reference during farm visits',
+    tag: 'STORAGE: CLOUD',
+    confidence: 'AUTHENTICATED',
   },
 ];
 
@@ -324,11 +324,11 @@ function AuthPro() {
       {/* Background Telemetry Markers */}
       <div className="pigify-bg-hud-left" aria-hidden="true">
         <span className="pigify-hud-pulse" />
-        <span>VET-CORE // PIGIFY-AI-SYS-v4.2</span>
+        <span>PIGIFY // BACKYARD SWINE STUDY</span>
       </div>
       <div className="pigify-bg-hud-right" aria-hidden="true">
-        <span>SWINE CLINICAL TELEMETRY</span>
-        <span style={{ color: 'var(--p-emerald)' }}>ONLINE [99.8%]</span>
+        <span>SWINE HEALTH MONITORING</span>
+        <span style={{ color: 'var(--p-emerald)' }}>ONLINE</span>
       </div>
 
       {/* Main Glassmorphic Container Frame */}
@@ -343,23 +343,23 @@ function AuthPro() {
                 <div>
                   <div className="pigify-brand-name">
                     {BRAND_NAME}
-                    <span className="pigify-brand-name-tag">CLINICAL</span>
+                    <span className="pigify-brand-name-tag">RESEARCH</span>
                   </div>
                   <div className="pigify-brand-sub">{BRAND_TAGLINE}</div>
                 </div>
               </div>
               <div className="pigify-live-badge">
                 <span className="pigify-hud-pulse" />
-                <span>AI LIVE</span>
+                <span>ONLINE</span>
               </div>
             </div>
 
             {/* Hero Copy */}
             <h1 className="pigify-hero-title">
-              <span>Swine Health</span> & AI Diagnostics
+              <span>Swine Health</span> &amp; Symptom Monitoring
             </h1>
             <p className="pigify-hero-subtitle">
-              Deep learning-based lesion scanning, real-time symptom classification, and automated biosecurity analytics built specifically for backyard pig farms.
+              A deep learning-based swine disease and symptom monitoring system for backyard farms.
             </p>
 
             {/* AI Scanner Viewfinder Showcase */}
@@ -380,7 +380,7 @@ function AuthPro() {
                       <span>{activeSlide.tag}</span>
                     </div>
                     <div className="pigify-hud-model-tag">
-                      CONFIDENCE: {activeSlide.confidence}
+                      STATUS: {activeSlide.confidence}
                     </div>
                   </div>
                   <div className="pigify-viewfinder-reticle">
@@ -388,10 +388,10 @@ function AuthPro() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
-                      ● REAL-TIME STREAM ACTIVE
+                      ● VIDEO PREVIEW
                     </span>
                     <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
-                      FPS: 60 // RES: 1080p
+                      SAMPLE FOOTAGE
                     </span>
                   </div>
                 </div>
@@ -427,8 +427,8 @@ function AuthPro() {
                   <ScanLine size={18} />
                 </div>
                 <div className="pigify-feature-text">
-                  <strong>Skin Disease Segmentation</strong>
-                  <span>Detects erysipelas, greasy pig, mange, and rash severity instantly.</span>
+                  <strong>Skin Symptom Detection</strong>
+                  <span>Detects visible skin lesions, rashes, and redness on pig photos.</span>
                 </div>
               </div>
 
@@ -437,8 +437,8 @@ function AuthPro() {
                   <Activity size={18} />
                 </div>
                 <div className="pigify-feature-text">
-                  <strong>Herd Telemetry & Biosecurity</strong>
-                  <span>Continuous health monitoring dashboard preventing outbreak contagions.</span>
+                  <strong>Herd Monitoring &amp; History</strong>
+                  <span>Maintains an organized log of past scans to track symptoms over time.</span>
                 </div>
               </div>
 
@@ -447,8 +447,8 @@ function AuthPro() {
                   <ShieldCheck size={18} />
                 </div>
                 <div className="pigify-feature-text">
-                  <strong>Supabase Cloud Security</strong>
-                  <span>End-to-end encrypted veterinary clinical records & strict role segregation.</span>
+                  <strong>Cloud Account &amp; Storage</strong>
+                  <span>User account authentication with Supabase and Cloudinary image storage.</span>
                 </div>
               </div>
             </div>
@@ -458,7 +458,7 @@ function AuthPro() {
           <div className="pigify-showcase-footer">
             <div className="pigify-engine-status">
               <Cpu size={12} color="#10b981" />
-              <span>YOLOv11-VET ENGINE // REV 4.2</span>
+              <span>YOLOv8 DETECTION MODEL</span>
             </div>
             <span>© {new Date().getFullYear()} {BRAND_NAME} System</span>
           </div>
@@ -475,7 +475,7 @@ function AuthPro() {
               </Link>
               <div className="pigify-security-tag">
                 <ShieldCheck size={13} color="#10b981" />
-                <span>TLS-256 SECURED</span>
+                <span>USER ACCESS</span>
               </div>
             </div>
 

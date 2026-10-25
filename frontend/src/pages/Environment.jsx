@@ -147,7 +147,7 @@ function Environment() {
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>PEN MICROCLIMATE TELEMETRY // BIOSECURITY v1.0</span>
+              <span>PEN ENVIRONMENT // SENSOR MONITORING</span>
             </div>
 
             <h1 className="mk-title">
@@ -232,7 +232,7 @@ function Environment() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                   <div>
                     <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
-                      {selectedZone.name} Telemetry
+                      {selectedZone.name} Readings
                     </h3>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px' }}>
                       {selectedZone.location} • {selectedZone.swineCount} swine heads
@@ -354,12 +354,12 @@ function Environment() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
                     <ShieldCheck size={20} color="#10b981" />
                     <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
-                      Backyard Pen Biosecurity Rules
+                      Backyard Pen Care &amp; Hygiene Guidelines
                     </h3>
                   </div>
 
                   <p style={{ fontSize: '0.84rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.5, margin: '0 0 18px 0' }}>
-                    Research-proven environmental interventions to minimize swine skin lesion proliferation:
+                    Practical pen hygiene steps to help minimize swine skin irritation and lesions:
                   </p>
 
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>

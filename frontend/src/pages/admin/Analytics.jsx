@@ -147,18 +147,18 @@ const Analytics = () => {
     let y = margin;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
-    doc.text(`${BRAND_NAME}: Veterinary Clinical Audit & Surveillance Report`, margin, y);
+    doc.text(`${BRAND_NAME}: Swine Health & Symptom Monitoring Report`, margin, y);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     y += 16;
     doc.text(`Study: ${STUDY_TITLE}`, margin, y);
     y += 14;
-    doc.text(`Generated: ${now.toLocaleString()} | Audit Authority: Municipal Veterinary Operations`, margin, y);
+    doc.text(`Generated: ${now.toLocaleString()} | System: Backyard Swine Health Monitoring`, margin, y);
     y += 18;
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(12);
-    doc.text('1. Epidemiological Summary', margin, y);
+    doc.text('1. Herd Health Summary', margin, y);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     y += 14;
@@ -166,10 +166,10 @@ const Analytics = () => {
     y += 14;
     doc.text(`• Smallholder Farms Monitored: ${numberFmt.format(totals.users || 0)} (${numberFmt.format(totals.activeUsers || 0)} active).`, margin, y);
     y += 14;
-    doc.text(`• Telemetry Sources: Mobile Pen Camera (${totals.mobileScans || 0}) vs Web Diagnostic Lab (${totals.webScans || 0}).`, margin, y);
+    doc.text(`• Scan Sources: Mobile App (${totals.mobileScans || 0}) vs Web Scanner (${totals.webScans || 0}).`, margin, y);
     y += 14;
     if (topGrade?.grade) {
-      doc.text(`• Triage Dominance: Severity Grade ${topGrade.grade} accounts for ${topGradePct}% of all evaluated swine.`, margin, y);
+      doc.text(`• Dominant Grade: Severity Grade ${topGrade.grade} accounts for ${topGradePct}% of all evaluated swine.`, margin, y);
       y += 14;
     }
     if (swineThi) {
@@ -181,13 +181,13 @@ const Analytics = () => {
     // Severity Triage Table
     autoTable(doc, {
       startY: y,
-      head: [['Severity Grade', 'Clinical Classification', 'Count', 'Percent']],
+      head: [['Severity Grade', 'Symptom Classification', 'Count', 'Percent']],
       body: [
         ['Grade A', 'Healthy Baseline (Clear Dermis)', numberFmt.format(grades.find(g => g.grade === 'A')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'A')?.count || 0) / totalGrades) * 100) : 0}%`],
         ['Grade B', 'Mild / Localized Scrapes/Papules', numberFmt.format(grades.find(g => g.grade === 'B')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'B')?.count || 0) / totalGrades) * 100) : 0}%`],
         ['Grade C', 'Moderate / Watchlist Monitoring', numberFmt.format(grades.find(g => g.grade === 'C')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'C')?.count || 0) / totalGrades) * 100) : 0}%`],
         ['Grade D', 'Severe Exudative / Systemic Action', numberFmt.format(grades.find(g => g.grade === 'D')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'D')?.count || 0) / totalGrades) * 100) : 0}%`],
-        ['Grade E', 'Critical Pen Quarantine Required', numberFmt.format(grades.find(g => g.grade === 'E')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'E')?.count || 0) / totalGrades) * 100) : 0}%`],
+        ['Grade E', 'Severe / Flagged Action Required', numberFmt.format(grades.find(g => g.grade === 'E')?.count || 0), `${totalGrades ? Math.round(((grades.find(g => g.grade === 'E')?.count || 0) / totalGrades) * 100) : 0}%`],
       ],
       styles: { fontSize: 9 },
       headStyles: { fillColor: [16, 185, 129] },
@@ -199,7 +199,7 @@ const Analytics = () => {
     // Disease Signal Breakdown
     autoTable(doc, {
       startY: afterGradesY,
-      head: [['Target Swine Pathogen / Symptom', 'Reported Cases', 'Biosecurity Protocol']],
+      head: [['Target Swine Symptom / Condition', 'Reported Cases', 'Care Protocol']],
       body: [
         ['Exudative Epidermitis (Greasy Pig)', '14', 'Warm antiseptic wash, separate pen, topical iodine'],
         ['Swine Pox (Suipoxvirus)', '9', 'Lice vector eradication, pen disinfection, barrier nursing'],
@@ -215,9 +215,9 @@ const Analytics = () => {
     const footerY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 24 : afterGradesY + 24;
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(9);
-    doc.text(`${BRAND_NAME} • Clinical Deep Learning Telemetry for Backyard Swine Biosecurity`, margin, footerY);
+    doc.text(`${BRAND_NAME} • Swine Disease and Symptom Monitoring System for Backyard Farms`, margin, footerY);
 
-    const fileName = `Pigify_Swine_Clinical_Audit_${new Date(now).toISOString().slice(0, 10)}.pdf`;
+    const fileName = `Pigify_Swine_Health_Report_${new Date(now).toISOString().slice(0, 10)}.pdf`;
     doc.save(fileName);
   }, [analytics, weather, swineThi, lastUpdated]);
 
@@ -351,7 +351,7 @@ const Analytics = () => {
     return (
       <div style={{ padding: '60px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>
         <RefreshCw size={32} className="si-spin" style={{ margin: '0 auto 16px auto', color: '#10b981' }} />
-        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#e2e8f0' }}>Loading Swine Epidemiological Telemetry...</div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#e2e8f0' }}>Loading Swine Health Analytics...</div>
       </div>
     );
   }
@@ -362,18 +362,18 @@ const Analytics = () => {
       <section className="admin-hero">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="admin-hero-badge">Epidemiological Intelligence</span>
+            <span className="admin-hero-badge">Herd Analytics</span>
             <span className="admin-meta-tag">
               <span className="telemetry-pulse" />
-              CLINICAL SURVEILLANCE ACTIVE
+              STUDY MONITORING ACTIVE
             </span>
           </div>
           <h1 className="admin-hero-title">
             <Activity size={26} color="#34d399" />
-            Epidemiological Trends & Analytics
+            Swine Health Trends &amp; Analytics
           </h1>
           <p className="admin-hero-sub">
-            Continuous disease pattern monitoring, deep learning model confidence benchmarks, and environmental heat stress telemetry.
+            Symptom pattern monitoring, YOLOv8 detection distribution, and environmental heat index observations.
           </p>
         </div>
 
@@ -388,7 +388,7 @@ const Analytics = () => {
             style={{ padding: '10px 18px' }}
           >
             <Download size={16} />
-            <span>Generate Clinical Audit PDF</span>
+            <span>Generate Health Summary PDF</span>
           </button>
         </div>
       </section>
@@ -463,9 +463,9 @@ const Analytics = () => {
             <div>
               <h2 className="admin-card-title">
                 <ShieldCheck size={18} color="#38bdf8" />
-                Severity Triage Distribution
+                Severity Level Distribution
               </h2>
-              <p className="admin-card-desc">Clinical case distribution from Grade A (Healthy) to Grade E (Critical)</p>
+              <p className="admin-card-desc">Case distribution from Grade A (Healthy) to Grade E (Severe)</p>
             </div>
           </div>
           <div style={{ width: '100%', height: 260 }}>

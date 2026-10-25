@@ -32,7 +32,7 @@ import './UserProfile.css'
 
 const AVATAR_PALETTES = [
   { id: 'rose', name: 'Rose Red (Default)', gradient: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)' },
-  { id: 'emerald', name: 'Emerald Clinical', gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
+  { id: 'emerald', name: 'Emerald Green', gradient: 'linear-gradient(135deg, #10b981 0%, #047857 100%)' },
   { id: 'indigo', name: 'Deep Indigo', gradient: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' },
   { id: 'amber', name: 'Farm Amber', gradient: 'linear-gradient(135deg, #f59e0b 0%, #b45309 100%)' },
   { id: 'cyan', name: 'Optic Cyan', gradient: 'linear-gradient(135deg, #06b6d4 0%, #0e7490 100%)' },
@@ -106,7 +106,7 @@ function UserProfile() {
     const next = !showAiBadge
     setShowAiBadge(next)
     saveUserSettings(userKey, { showAiBadge: next })
-    toast.success(`Live AI telemetry indicator ${next ? 'enabled' : 'hidden'}`)
+    toast.success(`Live AI indicator badge ${next ? 'enabled' : 'hidden'}`)
   }
 
   const handleToggleDensity = (newDensity) => {
@@ -335,7 +335,7 @@ function UserProfile() {
                   {/* AI Badge Toggle */}
                   <div className="profile-toggle-item">
                     <div>
-                      <span className="profile-toggle-label">AI Engine Telemetry Badge</span>
+                      <span className="profile-toggle-label">AI Model Badge</span>
                       <span className="profile-toggle-sub">Show live pulsating "AI ONLINE" indicator in header</span>
                     </div>
                     <button

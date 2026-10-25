@@ -213,7 +213,7 @@ function Marketplace() {
       }}>
         <div className="container-pro" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '1.3rem', fontWeight: '700', marginBottom: '12px', color: '#fff' }}>🛡️ {BRAND_NAME}</div>
-          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Intelligent Swine Disease Telemetry & Biosecurity Control</p>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', margin: '0 0 12px 0' }}>Swine Disease &amp; Symptom Monitoring System for Backyard Farms</p>
           <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>© {new Date().getFullYear()} {BRAND_NAME}. All rights reserved.</div>
         </div>
       </footer>

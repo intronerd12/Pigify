@@ -538,6 +538,33 @@ export const ScanService = {
     }
   },
 
+  getRaspiStatus: async (host, pen) => {
+    try {
+      const query = new URLSearchParams();
+      if (host) query.set('host', host);
+      if (pen) query.set('pen', pen);
+      const res = await apiFetch(`/api/scan/raspi/status?${query.toString()}`);
+      if (res.ok) return await res.json();
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
+  captureRaspiFrame: async ({ host, penId, swineId } = {}) => {
+    try {
+      const res = await apiFetch('/api/scan/raspi/capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ host, penId, swineId }),
+      });
+      if (res.ok) return await res.json();
+      return null;
+    } catch {
+      return null;
+    }
+  },
+
   uploadTrainingSample: async (imageUri, { source } = {}) => {
     try {
       const { mime, fileName } = getUploadMeta(imageUri);

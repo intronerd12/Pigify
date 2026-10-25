@@ -476,7 +476,7 @@ function CommunityForum() {
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>FARMER PEER FORUM // BACKYARD SWINE BIOSECURITY</span>
+              <span>FARMER PEER FORUM // BACKYARD SWINE COMMUNITY</span>
             </div>
 
             <h1 className="mk-title">
@@ -485,7 +485,7 @@ function CommunityForum() {
             </h1>
 
             <p className="mk-subtitle">
-              Share symptom photographs, discuss pen quarantine protocols, and exchange field treatment advice with fellow backyard pig farmers.
+              Share symptom photographs, discuss pen management, and exchange practical pig care advice with fellow backyard farmers.
             </p>
           </div>
         </section>

@@ -27,23 +27,23 @@ const FeatureShowcase = () => {
 
   const tabDefs = [
     { id: 'ai-model', label: 'AI Detection Engine', icon: <Cpu size={16} /> },
-    { id: 'severity-triage', label: 'Clinical Triage Matrix', icon: <Activity size={16} /> },
+    { id: 'severity-triage', label: 'Severity Grading Matrix', icon: <Activity size={16} /> },
     { id: 'swine-pathology', label: 'Swine Pathology Profiles', icon: <Microscope size={16} /> },
-    { id: 'quarantine-protocols', label: 'Biosecurity Protocols', icon: <ShieldCheck size={16} /> },
-    { id: 'surveillance', label: 'Epidemiological Telemetry', icon: <Eye size={16} /> },
+    { id: 'quarantine-protocols', label: 'Pen Care Protocols', icon: <ShieldCheck size={16} /> },
+    { id: 'surveillance', label: 'Herd Health Records', icon: <Eye size={16} /> },
     { id: 'microclimate', label: 'Heat Stress & THI', icon: <Thermometer size={16} /> },
   ];
 
   const features = {
     'ai-model': {
       title: 'Deep Learning Vision Architecture',
-      subtitle: 'Dual YOLOv8 & YOLOv11 detectors calibrated for swine dermatological and behavioral symptoms',
-      badge: 'Edge + Cloud Dual Model',
+      subtitle: 'YOLOv8 detector trained to recognize visible skin symptoms in backyard pigs',
+      badge: 'YOLOv8 Detection',
       highlights: [
-        'Sub-150ms field inference on modest backyard mobile devices',
-        'Multi-lesion bounding box regression with precision coordinates',
-        'Continuous active learning pipeline with expert vet validation',
-        'Calibrated confidence thresholds (85%–99%) preventing false quarantine alerts'
+        'Fast inference designed for mobile and web inspection',
+        'Multi-lesion bounding box regression with localized coordinates',
+        'Trained on diverse pig photos under realistic backyard conditions',
+        'Confidence thresholds tuned to reduce false symptom alerts'
       ],
       sections: [
         {
@@ -65,33 +65,33 @@ const FeatureShowcase = () => {
           ]
         },
         {
-          heading: 'Continuous Retraining Pipeline',
+          heading: 'Model Training & Checkpoints',
           items: [
-            'Field-contributed verified samples ingested via secure Supabase telemetry',
-            'Semi-supervised pseudo-labeling with confidence gates > 92%',
-            'Municipal veterinary officer feedback loop for misclassified cases',
-            'Versioned model checkpoint registry with automated mAP regression testing'
+            'Field-contributed verified samples collected for study evaluation',
+            'Carefully annotated bounding boxes for visible skin symptoms',
+            'Municipal veterinary consultation on symptom descriptions',
+            'Versioned model checkpoints for training and evaluation'
           ]
         },
         {
           heading: 'Validated Datasets & Benchmarks',
           items: [
-            'Curated smallholder swine farm photographic repository (5,000+ labeled images)',
-            'Clinical diagnostic ground truth verified by licensed swine practitioners',
-            'Synthetic augmentations: extreme angles, low lux, motion blur, and wet pens',
-            'Benchmark mAP@0.5 score: 94.7% across primary target skin conditions'
+            'Curated smallholder swine farm photographic repository for backyard conditions',
+            'Symptom verification and categorization for smallholder farming',
+            'Varied photo conditions: pen angles, daylight variation, and natural skin tones',
+            'Evaluated on study dataset across visible skin symptom categories'
           ]
         }
       ]
     },
 
     'severity-triage': {
-      title: '5-Tier Clinical Severity Triage System',
-      subtitle: 'Standardized veterinary classification routing backyard pigs from routine care to emergency quarantine',
-      badge: 'Veterinary Validated',
+      title: 'Swine Severity Grading System',
+      subtitle: 'Categorization guiding backyard pig farmers from routine care to pen isolation',
+      badge: 'Severity Categorization',
       highlights: [
-        'Objective triage eliminating smallholder subjective guesswork',
-        'Direct linkage between severity grade and automated pen quarantine action',
+        'Objective triage helping reduce subjective guesswork in pens',
+        'Direct connection between severity level and practical pen hygiene actions',
         'Color-coded operational badges utilized across all admin tables and mobile alerts',
         'Automated notification thresholds for contagious systemic indications'
       ],
@@ -236,14 +236,14 @@ const FeatureShowcase = () => {
     },
 
     'surveillance': {
-      title: 'Epidemiological Telemetry & Herd Surveillance',
-      subtitle: 'Real-time spatial-temporal monitoring tracking swine symptom clusters across backyard farms',
-      badge: 'Surveillance Analytics',
+      title: 'Herd Health Records & Farm Awareness',
+      subtitle: 'Observation tracking for swine symptoms and pen records across backyard farms',
+      badge: 'Herd Records',
       highlights: [
         'Geospatial mapping of backyard farms by barangay and municipality',
-        'Outbreak cluster detection warning neighboring smallholders before spread occurs',
-        'Longitudinal disease progression tracking individual pigs over multi-week scans',
-        'Exportable veterinary audit summaries for local municipal agricultural offices'
+        'Symptom clustering awareness informing nearby smallholder raisers',
+        'Longitudinal symptom tracking for individual pigs over multi-week scans',
+        'Exportable summary reports for local farm records and extension workers'
       ],
       sections: [
         {
@@ -355,7 +355,7 @@ const FeatureShowcase = () => {
             System Architecture & Pathology Tabs
           </h1>
           <p className="admin-hero-sub">
-            Technical and clinical capability matrix for <strong>PIGIFY: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms</strong>. Explore each interactive pillar below.
+            System overview and feature matrix for <strong>PIGIFY: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms</strong>. Explore each prototype module below.
           </p>
         </div>
       </section>

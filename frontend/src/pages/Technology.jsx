@@ -34,7 +34,7 @@ function Technology() {
           <div className="container-pro">
             <div className="landing-section-head">
               <h2 className="landing-section-title">Technology Stack</h2>
-              <p className="landing-section-subtitle">Built with modern, open-source, and enterprise-grade technology for reliability and scalability.</p>
+              <p className="landing-section-subtitle">The software libraries, frameworks, and services used to develop the Pigify system prototype.</p>
             </div>
 
             <div className="tech-stack-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>

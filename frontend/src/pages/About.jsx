@@ -23,55 +23,55 @@ import './MarketingPages.css'
 
 const PILLARS = [
   {
-    title: 'Diagnostic Transparency',
-    description: 'Every lesion detection and severity score is backed by measurable bounding box indicators and explainable confidence vectors.',
+    title: 'Visual Detection',
+    description: 'Bounding box detections highlight visible areas of concern so farmers can easily see what signs the model flagged.',
     icon: ShieldCheck,
-    tag: 'EXPLAINABLE AI',
+    tag: 'OBJECT DETECTION',
   },
   {
-    title: 'Backyard Pen Speed',
-    description: 'Engineered for real-world small farm pens, with mobile inference under 1.8s for immediate on-site swine triage.',
+    title: 'Backyard Farm Usability',
+    description: 'Designed for practical use by small-scale farmers using standard smartphone cameras or computer webcams.',
     icon: Activity,
-    tag: '< 1.8S INFERENCE',
+    tag: 'ACCESSIBLE',
   },
   {
-    title: 'Continuous Retraining',
-    description: 'Field diagnostic logs from smallholders continually refine model precision across diverse lighting and pen environments.',
+    title: 'Health Record Keeping',
+    description: 'Keeps an organized history of past scans to help farmers track symptoms over time and share findings with veterinarians.',
     icon: TrendingUp,
-    tag: 'ACTIVE LEARNING',
+    tag: 'RECORDS',
   },
   {
-    title: 'Biosecurity Impact',
-    description: 'Early symptom recognition halts disease transmission across outdoor pens and significantly reduces swine mortality.',
+    title: 'Early Observation',
+    description: 'Encourages timely isolation and veterinary consultation before symptoms worsen or spread to other pigs in the pen.',
     icon: Radio,
-    tag: 'HERD BIOSECURITY',
+    tag: 'EARLY MONITORING',
   },
 ]
 
 const PIPELINE = [
   {
     id: 'Stage 01',
-    title: 'Image Acquisition & Pen Logging',
-    description: 'Farmers capture swine skin photos on mobile devices with pen context, age group, and observed symptom markers.',
-    latency: 'Instant Upload',
+    title: 'Photo Capture & Pen Details',
+    description: 'Farmers upload or capture a photo of the pig and record optional details such as pen number or notes.',
+    latency: 'Photo Input',
   },
   {
     id: 'Stage 02',
-    title: 'YOLO Lesion Segmentation',
-    description: 'Deep neural networks identify lesion boundaries, erythema patches, diamond skin marks, and parasitic scabies.',
-    latency: '1.4s Inference',
+    title: 'YOLOv8 Detection',
+    description: 'The trained model analyzes the image to identify visible skin signs such as lesions, redness, or patches.',
+    latency: 'Model Analysis',
   },
   {
     id: 'Stage 03',
-    title: 'Severity Stratification',
-    description: 'The engine classifies findings into Mild (Monitor), Moderate (Isolate), or Severe (Acute Veterinary Care).',
-    latency: 'Automated Scoring',
+    title: 'Severity Categorization',
+    description: 'The system categorizes the finding into Mild, Moderate, or Severe to give a preliminary sense of urgency.',
+    latency: 'Severity Rating',
   },
   {
     id: 'Stage 04',
-    title: 'Biosecurity Containment',
-    description: 'Immediate containment guidelines, quarantine protocols, and exportable veterinary summary reports are generated.',
-    latency: 'Live Protocol',
+    title: 'Record & Consultation',
+    description: 'The scan is saved to the history log, accompanied by basic care advice and a reminder to consult a veterinarian.',
+    latency: 'Saved to Log',
   },
 ]
 
@@ -79,14 +79,14 @@ const TEAM_MEMBERS = [
   {
     name: 'Adora, Joenabelle',
     role: 'Member',
-    description: 'Supports swine dermatological dataset curation, annotation pipelines, and validation checks to keep training inputs clinically sound.',
+    description: 'Contributes to swine dataset collection, image annotation, and documentation for the monitoring study.',
     imgSrc: '/About%20us/adora,%20joanabel.jpg',
     fbLink: 'https://www.facebook.com/aeri.elle.0#',
   },
   {
     name: 'Bumatay, Axel Jillian',
     role: 'Leader',
-    description: 'Leads project architecture, coordinates deep learning model integration, and drives technical delivery for backyard swine monitoring.',
+    description: 'Project leader responsible for system architecture, coordinating deep learning model integration, and full-stack development.',
     isLeader: true,
     imgSrc: '/About%20us/axel%20bumatay.jpg',
     fbLink: 'https://www.facebook.com/axeljilian.bumatay.5#',
@@ -94,14 +94,14 @@ const TEAM_MEMBERS = [
   {
     name: 'Danque, John Michael',
     role: 'Member',
-    description: 'Contributes to computer vision workflow execution, bounding box validation, and clinical triaging accuracy under field conditions.',
+    description: 'Contributes to dataset preparation, bounding box verification, and evaluating detection performance.',
     imgSrc: '/About%20us/john%20michael%20danque.jpg',
     fbLink: 'https://www.facebook.com/john.michael.danque.2024',
   },
   {
     name: 'Landas, Davimher',
     role: 'Member',
-    description: 'Supports system implementation, testing across varied mobile devices, and refining the farm-friendly user interface.',
+    description: 'Supports system implementation, testing across varied mobile devices, and user interface refinement.',
     imgSrc: '/About%20us/landas,%20davimher.jpg',
     fbLink: 'https://www.facebook.com/davimher.landas#',
   },
@@ -110,21 +110,21 @@ const TEAM_MEMBERS = [
 const DATASET_SAMPLES = [
   {
     src: '/landing/swine-health-scan.jpg',
-    title: 'Veterinary Skin Lesion Inspection',
-    tag: 'CLINICAL DERMIS',
-    stats: '98.8% Lesion Boundary Accuracy',
+    title: 'Skin Symptom Inspection',
+    tag: 'SAMPLE SCAN',
+    stats: 'Bounding Box Detection',
   },
   {
     src: '/landing/swine-biosecurity-pen.jpg',
-    title: 'Backyard Swine Pen Surveillance',
-    tag: 'HERD BIOSECURITY',
-    stats: 'Automated Multi-Subject Tracking',
+    title: 'Backyard Pig Pen Setting',
+    tag: 'FARM CONTEXT',
+    stats: 'Field Photography',
   },
   {
     src: '/landing/swine-scan-subject.jpg',
-    title: 'Lateral Dorsal Telemetry Scan',
-    tag: 'YOLOv8 INFERENCE',
-    stats: 'Real-Time Erythema Segmentation',
+    title: 'Pig Subject Image Scan',
+    tag: 'YOLOv8 MODEL',
+    stats: 'Symptom Localization',
   },
 ]
 
@@ -160,7 +160,7 @@ function About() {
             <div className="mk-hero-copy">
               <div className="mk-kicker">
                 <span className="mk-kicker-dot" />
-                <span>STUDY ARCHITECTURE // BACKYARD SWINE BIOSECURITY</span>
+                <span>STUDY OBJECTIVE // BACKYARD SWINE HEALTH MONITORING</span>
               </div>
 
               <h1 className="mk-title">
@@ -169,20 +169,20 @@ function About() {
               </h1>
 
               <p className="mk-subtitle">
-                Pigify was engineered for small-scale swine producers and backyard farmers who need accessible,
-                accurate, and early disease detection. We pair high-performance YOLO computer vision with rapid
-                skin lesion segmentation to safeguard herd health and prevent devastating biosecurity outbreaks.
+                Pigify is developed as a research project to support small-scale backyard pig farmers.
+                Using YOLOv8 deep learning models trained on pig images, the application analyzes photographs to detect
+                visible skin symptoms, suggest a general severity level, and assist farmers in keeping records.
               </p>
 
               <div className="mk-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Launch Live Scanner</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">
                   <Layers size={16} />
-                  <span>Diagnostic Workflow</span>
+                  <span>How It Works</span>
                 </Link>
               </div>
             </div>
@@ -194,42 +194,42 @@ function About() {
               <div>
                 <div className="mk-card-head">
                   <ShieldCheck size={16} />
-                  <span>RESEARCH INITIATIVE</span>
+                  <span>RESEARCH PURPOSE</span>
                 </div>
-                <h3>Engineered for backyard farm resilience</h3>
+                <h3>Developed for backyard pig raisers</h3>
                 <p>
-                  Small-scale pig farming represents the livelihood of thousands of rural families. Pigify provides an
-                  accessible clinical standard to detect contagious skin symptoms before they spread throughout the pen.
+                  Backyard pig farming is an important livelihood for many families. Pigify aims to provide
+                  an accessible visual check to help farmers notice potential symptoms and seek veterinary advice in a timely manner.
                 </p>
 
                 <ul className="mk-feature-list">
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Real-time bounding box detection of swine skin lesions &amp; dermatitis</span>
+                    <span>Bounding box detection for visible skin lesions and irritation</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Mild / Moderate / Severe symptom stratification and quarantine alerts</span>
+                    <span>Mild, Moderate, and Severe category suggestions</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Historical health traceability for localized veterinary intervention</span>
+                    <span>Saved scan records to track pig health over time</span>
                   </li>
                 </ul>
               </div>
 
               <div className="mk-metric-strip">
                 <div className="mk-metric">
-                  <span className="value">YOLOv8/11</span>
-                  <span className="label">Vision Engine</span>
+                  <span className="value">YOLOv8</span>
+                  <span className="label">Model Architecture</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">&lt; 1.8s</span>
-                  <span className="label">Latency</span>
+                  <span className="value">Web &amp; Mobile</span>
+                  <span className="label">Platform</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">98.5%</span>
-                  <span className="label">mAP Precision</span>
+                  <span className="value">3 Levels</span>
+                  <span className="label">Severity Levels</span>
                 </div>
               </div>
             </aside>
@@ -244,12 +244,12 @@ function About() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Sparkles size={12} />
-                <span>CORE METHODOLOGY</span>
+                <span>STUDY OBJECTIVES</span>
               </div>
-              <h2>What defines our research approach</h2>
+              <h2>Focus of our research</h2>
               <p>
-                Our study focuses on accessibility, diagnostic precision under variable farm conditions,
-                and actionable disease containment protocols for backyard pig farmers.
+                Our study focuses on accessibility, practical usability in backyard pens,
+                and providing timely symptom awareness for small-scale swine raisers.
               </p>
             </div>
 
@@ -279,12 +279,12 @@ function About() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Cpu size={12} />
-                <span>CLINICAL PIPELINE</span>
+                <span>MONITORING PIPELINE</span>
               </div>
-              <h2>Swine skin pathology &amp; disease detection pipeline</h2>
+              <h2>How image analysis works</h2>
               <p>
-                From raw pen photography to multi-class neural inference, each step is optimized for speed,
-                robustness against low lighting, and practical farmer usability.
+                From photo capture to object detection and result review, each step is organized to give
+                clear, straightforward guidance to the farmer.
               </p>
             </div>
 
@@ -321,12 +321,11 @@ function About() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Database size={12} />
-                <span>CLINICAL BENCHMARK</span>
+                <span>IMAGE ANALYSIS</span>
               </div>
-              <h2>Swine visual telemetry &amp; biosecurity dataset</h2>
+              <h2>Sample symptom detections</h2>
               <p>
-                Rigorous multi-condition dataset validation across diverse backyard swine pens, natural lighting conditions,
-                and critical dermatological pathologies.
+                Examples demonstrating how the YOLOv8 model localizes visible skin symptoms on pig photos.
               </p>
             </div>
 
@@ -357,21 +356,21 @@ function About() {
                   </div>
                   <h3>{DATASET_SAMPLES[activeSample].title}</h3>
                   <p style={{ color: 'var(--text-muted, #94a3b8)', lineHeight: 1.65, margin: 0 }}>
-                    Trained on high-resolution swine dermatological markers including Erysipelas diamond lesions,
-                    swine pox papules, sarcoptic mange patches, and systemic erythema indicators.
+                    Trained on pig images displaying various dermatological symptoms including visible lesions,
+                    erythema (redness), and skin irritation markers.
                   </p>
 
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Model Backbone</span>
-                    <span className="swine-telemetry-val highlight">YOLOv8 + YOLOv11 Ensemble</span>
+                    <span className="swine-telemetry-label">Model Architecture</span>
+                    <span className="swine-telemetry-val highlight">YOLOv8 Detection</span>
                   </div>
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Mean Average Precision</span>
-                    <span className="swine-telemetry-val highlight">98.5% mAP@0.50</span>
+                    <span className="swine-telemetry-label">Output Format</span>
+                    <span className="swine-telemetry-val highlight">Bounding Box Coordinates</span>
                   </div>
                   <div className="swine-telemetry-item">
-                    <span className="swine-telemetry-label">Inference Processing</span>
-                    <span className="swine-telemetry-val">&lt; 1.8s Edge Optimized</span>
+                    <span className="swine-telemetry-label">Analysis Target</span>
+                    <span className="swine-telemetry-val">Visible Skin Symptoms</span>
                   </div>
 
                   <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
@@ -496,18 +495,18 @@ function About() {
               <div>
                 <div className="mk-kicker" style={{ marginBottom: '12px' }}>
                   <Radio size={12} />
-                  <span>EARLY INTERVENTION</span>
+                  <span>HEALTH MONITORING</span>
                 </div>
-                <h3>Ready to protect your backyard swine herd?</h3>
+                <h3>Ready to check your pigs?</h3>
                 <p>
-                  Experience instant swine skin lesion scanning, severity scoring, and outbreak containment alerts engineered for smallholder pig farming.
+                  Upload or capture a photo to scan for visible skin symptoms, view suggested severity ratings, and save records for future reference.
                 </p>
               </div>
 
               <div className="mk-cta-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Start Live Swine Scan</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">

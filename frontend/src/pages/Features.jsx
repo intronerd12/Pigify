@@ -25,97 +25,97 @@ import './MarketingPages.css'
 
 const CORE_SWINE_FEATURES = [
   {
-    title: 'YOLO Lesion Segmentation',
-    description: 'High-precision deep neural vision that detects dermal boundaries, erythema flush, diamond shapes, and rash patches in real time.',
+    title: 'YOLOv8 Symptom Detection',
+    description: 'Applies trained YOLOv8 object detection to locate visible lesions, rashes, and skin discoloration on pig photos.',
     icon: Layers,
-    badge: 'YOLOv8 / v11',
-    tag: 'COMPUTER VISION',
+    badge: 'YOLOv8',
+    tag: 'OBJECT DETECTION',
     bullets: [
-      'Sub-second bounding box segmentation',
-      'Robust against outdoor dust and lighting',
-      'Real-time polygon boundary masking',
+      'Bounding box localization',
+      'Confidence score for detections',
+      'Trained on pig symptom photos',
     ],
   },
   {
-    title: 'Multi-Class Pathology Classifier',
-    description: 'Trained to recognize specific swine dermatological conditions to guide targeted intervention before symptoms escalate.',
+    title: 'Skin Symptom Identification',
+    description: 'Aims to help recognize visible signs associated with common swine conditions to support early observation.',
     icon: ShieldCheck,
-    badge: '14 Conditions',
-    tag: 'DERMIS INFERENCE',
+    badge: 'Symptoms',
+    tag: 'IMAGE ANALYSIS',
     bullets: [
-      'Erysipelas (Diamond Skin Disease)',
-      'Sarcoptic Mange & Parasitic Scabies',
-      'Swine Pox & Exudative Epidermitis',
+      'Visible rash and redness',
+      'Dermal lesions and spots',
+      'Assists visual inspection',
     ],
   },
   {
-    title: 'Severity Stratification Engine',
-    description: 'Quantifies total affected skin surface area and stratifies cases into clear triage levels: Mild, Moderate, or Acute Quarantine.',
+    title: 'Severity Rating',
+    description: 'Suggests a severity level—Mild, Moderate, or Severe—based on detected signs to help gauge urgency.',
     icon: BarChart3,
-    badge: '3-Tier Triage',
-    tag: 'CLINICAL TRIAGE',
+    badge: '3 Levels',
+    tag: 'SEVERITY',
     bullets: [
-      'Affected dermal percentage calculation',
-      'Contagion transmission risk index',
-      'Automated priority flagging for vets',
+      'Mild, Moderate, or Severe rating',
+      'Preliminary observation suggestion',
+      'Guidance on when to consult a vet',
     ],
   },
   {
-    title: 'Biosecurity Quarantine Protocols',
-    description: 'Generates instant, actionable containment guidelines to isolate infected animals and protect healthy pen mates.',
+    title: 'Care & Observation Guidance',
+    description: 'Provides initial advice such as pen observation, clean bedding, and consulting a veterinarian.',
     icon: ShieldAlert,
-    badge: 'Outbreak Contain',
-    tag: 'PEN BIOSECURITY',
+    badge: 'Guidance',
+    tag: 'CARE REMINDERS',
     bullets: [
-      'Safe pen separation guidelines',
-      'Targeted antimicrobial administration advice',
-      'Disinfection & bedding cleanup protocols',
+      'Pen separation reminder',
+      'Observation checklist',
+      'Encourages veterinary advice',
     ],
   },
   {
-    title: 'Herd Epidemiological Analytics',
-    description: 'Monitors infection transmission velocity, recovery trajectories, and historical symptom trends across backyard pens.',
+    title: 'Scan History & Records',
+    description: 'Maintains a log of previous scans with dates and images so farmers can track health over time.',
     icon: Activity,
-    badge: 'Trend Telemetry',
-    tag: 'EPIDEMIOLOGY',
+    badge: 'Records',
+    tag: 'HISTORY',
     bullets: [
-      'Pen-level infection heatmaps',
-      'Longitudinal recovery tracking',
-      'Exportable veterinary audit summaries',
+      'Saved photos and results',
+      'Review past scan dates',
+      'Useful reference for visiting vets',
     ],
   },
   {
-    title: 'Pen Microclimate Telemetry',
-    description: 'Correlates ambient farm temperature, humidity, and ventilation with swine dermatological flare-ups and heat stress.',
+    title: 'Environment Data Viewing',
+    description: 'Displays temperature and humidity data to help farmers stay aware of pen comfort conditions.',
     icon: CloudSun,
-    badge: 'Sensor Fusion',
-    tag: 'ENVIRONMENT',
+    badge: 'Environment',
+    tag: 'CONDITIONS',
     bullets: [
-      'Ambient heat index correlation',
-      'Humidity and ammonia risk markers',
-      'Seasonal outbreak pattern forecasting',
+      'Current temperature reading',
+      'Relative humidity levels',
+      'Heat stress awareness',
     ],
   },
 ]
 
 const EXTENSIONS = [
   {
-    title: 'Live Mobile & Desktop Scanner',
-    description: 'Intuitive camera scanner interface optimized for phones, tablets, or pen-mounted devices with offline caching.',
+    title: 'Web & Mobile Interface',
+    description: 'Accessible from both mobile browsers and desktop computers for flexible use on the farm.',
     icon: ScanLine,
-    tag: 'FIELD OPERATOR',
+    tag: 'PLATFORM',
   },
   {
-    title: 'Active Learning Feedback Loop',
-    description: 'Farmer-confirmed diagnostics and vet corrections continuously feed model retraining pipelines to elevate precision.',
+    title: 'Disease Map',
+    description: 'Displays reported disease cases on a map so farmers can stay informed about local health trends.',
     icon: Cpu,
-    tag: 'MODEL EVOLUTION',
+    tag: 'MAP VIEW',
   },
   {
-    title: 'Multi-Role Farm Governance',
-    description: 'Role-based access separating smallholder operators, livestock inspectors, and veterinary consultants.',
+    title: 'Community Forum',
+    description: 'Enables farmers to ask questions, share observations, and discuss farming practices with peers.',
     icon: Users,
-    tag: 'ACCESS CONTROL',
+    tag: 'COMMUNITY',
   },
 ]
 
@@ -133,28 +133,28 @@ function Features() {
             <div className="mk-hero-copy">
               <div className="mk-kicker">
                 <span className="mk-kicker-dot" />
-                <span>PLATFORM CAPABILITIES // CLINICAL SWINE SUITE</span>
+                <span>SYSTEM FEATURES // BACKYARD SWINE HEALTH MONITORING</span>
               </div>
 
               <h1 className="mk-title">
-                Feature set built for
-                <span className="accent"> backyard swine disease defense</span>
+                Features developed for
+                <span className="accent"> backyard swine health monitoring</span>
               </h1>
 
               <p className="mk-subtitle">
-                Pigify combines advanced computer vision, automated severity grading, and practical farm biosecurity
-                workflows into a unified platform so backyard pig farmers can detect, isolate, and treat infections with confidence.
+                Pigify combines YOLOv8 object detection, severity rating, and simple record keeping
+                into a web and mobile application to help backyard pig raisers monitor their herd.
               </p>
 
               <div className="mk-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Launch Live Scanner</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">
                   <Layers size={16} />
-                  <span>See Diagnostic Process</span>
+                  <span>How It Works</span>
                 </Link>
               </div>
             </div>
@@ -166,42 +166,42 @@ function Features() {
               <div>
                 <div className="mk-card-head">
                   <Cpu size={16} />
-                  <span>SYSTEM ARCHITECTURE</span>
+                  <span>SYSTEM OVERVIEW</span>
                 </div>
-                <h3>Enterprise swine health intelligence</h3>
+                <h3>Built for small-scale raisers</h3>
                 <p>
-                  Built from the ground up to address real challenges faced by smallholders: inconsistent lighting,
-                  unruly animal movement, and lack of immediate on-site veterinary diagnostics.
+                  Backyard farming often lacks quick access to specialized equipment. These features provide
+                  a practical tool to support daily pig observation and health tracking.
                 </p>
 
                 <ul className="mk-feature-list">
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Real-time YOLOv8 / YOLOv11 neural inference</span>
+                    <span>YOLOv8 deep learning object detection</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>14 Verified swine skin lesion and disease classes</span>
+                    <span>Visible skin lesion and symptom detection</span>
                   </li>
                   <li>
                     <CheckCircle2 size={16} />
-                    <span>Instant PDF health reports for local veterinarians</span>
+                    <span>Historical scan logs for review</span>
                   </li>
                 </ul>
               </div>
 
               <div className="mk-metric-strip">
                 <div className="mk-metric">
-                  <span className="value">14 Classes</span>
-                  <span className="label">Lesion Index</span>
+                  <span className="value">YOLOv8</span>
+                  <span className="label">Model</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">98.5%</span>
-                  <span className="label">mAP Score</span>
+                  <span className="value">Web &amp; Mobile</span>
+                  <span className="label">Platform</span>
                 </div>
                 <div className="mk-metric">
-                  <span className="value">Real-Time</span>
-                  <span className="label">Pen Telemetry</span>
+                  <span className="value">3 Levels</span>
+                  <span className="label">Severity</span>
                 </div>
               </div>
             </aside>
@@ -216,12 +216,11 @@ function Features() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <ShieldCheck size={12} />
-                <span>CORE CAPABILITIES</span>
+                <span>CORE MODULES</span>
               </div>
-              <h2>Six pillars of backyard herd health monitoring</h2>
+              <h2>Main features of the monitoring system</h2>
               <p>
-                A comprehensive clinical suite engineered to halt disease spread, reduce mortality,
-                and maintain high biosecurity standards across backyard swine pens.
+                Tools to help smallholder farmers detect visible symptoms, categorize severity, and maintain herd records.
               </p>
             </div>
 
@@ -278,11 +277,11 @@ function Features() {
             <div className="mk-section-head">
               <div className="mk-kicker">
                 <Sparkles size={12} />
-                <span>ECOSYSTEM INTEGRATIONS</span>
+                <span>ADDITIONAL TOOLS</span>
               </div>
-              <h2>Operational modules &amp; farmer workflows</h2>
+              <h2>Additional system modules</h2>
               <p>
-                Seamlessly connecting on-pen scanning with historical analytics, model retraining, and farm collaboration.
+                Supporting features including community discussions, disease maps, and environmental readings.
               </p>
             </div>
 
@@ -313,7 +312,7 @@ function Features() {
                         textDecoration: 'none',
                       }}
                     >
-                      <span>Explore in workspace</span>
+                      <span>Open in workspace</span>
                       <ArrowRight size={13} />
                     </Link>
                   </div>
@@ -335,22 +334,22 @@ function Features() {
               <div>
                 <div className="mk-kicker" style={{ marginBottom: '12px' }}>
                   <Radio size={12} />
-                  <span>FARM BIOSECURITY</span>
+                  <span>START MONITORING</span>
                 </div>
-                <h3>Ready to equip your farm with AI disease monitoring?</h3>
+                <h3>Ready to check your pigs?</h3>
                 <p>
-                  Start scanning pig skin health, tracking symptom severity, and protecting your herd from contagious disease outbreaks.
+                  Start scanning pig photos, tracking symptoms over time, and keeping records for your farm.
                 </p>
               </div>
 
               <div className="mk-cta-actions">
                 <Link to="/home" className="lp-btn-primary">
                   <ScanLine size={16} />
-                  <span>Launch Live Scanner</span>
+                  <span>Start a Scan</span>
                   <ArrowRight size={16} />
                 </Link>
                 <Link to="/how-it-works" className="lp-btn-secondary">
-                  <span>Diagnostic Workflow</span>
+                  <span>How It Works</span>
                 </Link>
               </div>
             </div>

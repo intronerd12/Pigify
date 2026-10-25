@@ -55,7 +55,7 @@ const getGradePill = (gradeRaw) => {
   if (grade === 'B') return { grade, label: 'Grade B', description: 'Mild Localized', className: 'si-grade si-grade-b' };
   if (grade === 'C') return { grade, label: 'Grade C', description: 'Moderate Watch', className: 'si-grade si-grade-c' };
   if (grade === 'D') return { grade, label: 'Grade D', description: 'Severe Action', className: 'si-grade si-grade-d' };
-  if (grade === 'E') return { grade, label: 'Grade E', description: 'Quarantine Req.', className: 'si-grade si-grade-e' };
+  if (grade === 'E') return { grade, label: 'Grade E', description: 'Severe Flag', className: 'si-grade si-grade-e' };
   return { grade: 'N/A', label: 'N/A', description: 'Unclassified', className: 'si-grade si-grade-na' };
 };
 
@@ -282,15 +282,15 @@ const ScannedItems = () => {
       <section className="si-hero">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <span className="admin-hero-badge">Swine Telemetry Feed</span>
+            <span className="admin-hero-badge">Swine Scan Feed</span>
             <span className="admin-meta-tag">
               <span className="telemetry-pulse" />
               AUTO-POLL 5S
             </span>
           </div>
-          <h1 className="si-title">Herd Scan Telemetry</h1>
+          <h1 className="si-title">Herd Scan Records</h1>
           <p className="si-subtitle">
-            Centralized clinical log of all swine pen inspections, dermatological lesion detections, and severity triage classifications.
+            Centralized log of swine pen photo scans, skin symptom detections, and severity classifications.
           </p>
           <div className="si-meta">
             <span>Last sync: {lastUpdated ? lastUpdated.toLocaleTimeString() : 'Connecting...'}</span>
@@ -365,7 +365,7 @@ const ScannedItems = () => {
       {!loading && scans.length > 0 && (
         <section className="si-toolbar">
           <div className="si-toolbar-group">
-            <span className="si-toolbar-label">Triage Filter:</span>
+            <span className="si-toolbar-label">Severity Filter:</span>
             <div className="si-chip-row">
               {['ALL', 'A', 'B', 'C', 'D', 'E'].map((g) => (
                 <button
@@ -422,9 +422,9 @@ const ScannedItems = () => {
         </div>
       ) : filteredScans.length === 0 ? (
         <div className="si-empty-card">
-          <div className="si-empty-title">No matching scan telemetry records found</div>
+          <div className="si-empty-title">No matching scan records found</div>
           <div className="si-empty-desc">
-            Scans performed on the mobile pen app or web diagnostic scanner will appear here with clinical symptoms, severity grading, and quarantine status.
+            Scans performed on the mobile app or web scanner will appear here with detected symptoms and severity levels.
           </div>
         </div>
       ) : (
@@ -432,12 +432,12 @@ const ScannedItems = () => {
           <table className="si-table">
             <thead>
               <tr>
-                <th>Timestamp & Pen</th>
-                <th>Severity Triage</th>
-                <th>Swine Condition & Clinical Notes</th>
-                <th>Backyard Farm & Operator</th>
+                <th>Timestamp &amp; Pen</th>
+                <th>Severity Level</th>
+                <th>Swine Condition &amp; Notes</th>
+                <th>Backyard Farm &amp; Operator</th>
                 <th>Location</th>
-                <th>Telemetry Source</th>
+                <th>Scan Source</th>
               </tr>
             </thead>
             <tbody>
@@ -451,7 +451,7 @@ const ScannedItems = () => {
 
                 const scanNotes = scan?.details && scan?.details !== rawCondition
                   ? scan.details
-                  : 'Clinical symptoms logged via deep learning vision model';
+                  : 'Symptoms logged via YOLOv8 model';
 
                 const penLabel = scan?.pen_id || scan?.penId || 'Pen #1';
                 const created = scan.timestamp || scan.createdAt;
