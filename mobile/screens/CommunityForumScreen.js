@@ -562,16 +562,31 @@ export default function CommunityForumScreen({ route, navigation, user }) {
     const heartCount = reactions.filter((r) => r.type === 'heart').length;
     const likeCount = reactions.filter((r) => r.type === 'like').length;
 
+    const currentUid = user?.id || user?._id;
+    const currentEmail = user?.email ? String(user.email).toLowerCase() : '';
+
     const hasLiked = reactions.some(
-      (r) => r.type === 'like' && (r.user === user?._id || r.email === user?.email)
+      (r) =>
+        r.type === 'like' &&
+        ((currentUid && (r.user === currentUid || r.userId === currentUid)) ||
+          (currentEmail && String(r.email || '').toLowerCase() === currentEmail))
     );
     const hasHearted = reactions.some(
-      (r) => r.type === 'heart' && (r.user === user?._id || r.email === user?.email)
+      (r) =>
+        r.type === 'heart' &&
+        ((currentUid && (r.user === currentUid || r.userId === currentUid)) ||
+          (currentEmail && String(r.email || '').toLowerCase() === currentEmail))
     );
 
     const isAuthor =
-      (user?._id && (item?.userId === user._id || item?.user === user._id || item?.user?._id === user._id)) ||
-      (user?.email && (String(item?.authorEmail || '').toLowerCase() === String(user.email).toLowerCase() || String(item?.email || '').toLowerCase() === String(user.email).toLowerCase()));
+      (currentUid &&
+        (item?.userId === currentUid ||
+          item?.user === currentUid ||
+          item?.user?._id === currentUid ||
+          item?.user?.id === currentUid)) ||
+      (currentEmail &&
+        (String(item?.authorEmail || '').toLowerCase() === currentEmail ||
+          String(item?.email || '').toLowerCase() === currentEmail));
 
     return (
       <Surface style={styles.postCard} elevation={0}>

@@ -69,11 +69,13 @@ const getUserMeta = (user) => {
   const userId = user?._id || user?.id || user?.userId || user?.uid || undefined;
   const authorName = normalizeText(user?.name || user?.fullName || user?.username) || 'Anonymous User';
   const authorEmail = normalizeText(user?.email).toLowerCase() || undefined;
+  const authorAvatar = normalizeText(user?.avatar) || undefined;
 
   return {
     userId: userId ? String(userId) : undefined,
     authorName,
     authorEmail,
+    authorAvatar,
   };
 };
 
@@ -170,6 +172,7 @@ export const CommunityService = {
       userId: userMeta.userId,
       commenterName: userMeta.authorName,
       commenterEmail: userMeta.authorEmail,
+      commenterAvatar: userMeta.authorAvatar,
       text: cleanText,
     };
 

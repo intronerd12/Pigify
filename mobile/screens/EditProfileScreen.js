@@ -95,7 +95,17 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
       let finalUser = { ...user, ...updateData };
       try {
         if (user._id || user.id) {
-          finalUser = await updateUser(user._id || user.id, updateData);
+          const apiUpdated = await updateUser(user._id || user.id, updateData);
+          if (apiUpdated && typeof apiUpdated === 'object') {
+            finalUser = {
+              ...user,
+              ...updateData,
+              ...apiUpdated,
+              token: user.token || apiUpdated.token,
+              supabaseToken: user.supabaseToken || apiUpdated.supabaseToken,
+              farmName: updateData.farmName || apiUpdated.farmName || user.farmName,
+            };
+          }
         }
       } catch (apiErr) {
         console.warn('Backend sync failed, saving locally:', apiErr?.message);
