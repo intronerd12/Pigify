@@ -1,30 +1,40 @@
-# Colab Training (Own Unhealthy Dataset)
+# PIGIFY: Swine Disease Colab Training Guide (6 Classes, 1,000+ Images)
 
-Use this for your local folder dataset:
-- `Own Dataset/not healthy dragon`
+Train your deep learning swine disease and symptom monitoring model using your 1,000+ image dataset.
+
+### Swine Disease Classes:
+0. `african_swine_fever` (ASF)
+1. `swine_erysipelas` (Diamond Skin Disease)
+2. `sarcoptic_mange` (Galis Baboy)
+3. `greasy_pig_disease` (Exudative Epidermitis)
+4. `porcine_dermatitis_pdns` (PDNS)
+5. `healthy_swine` (Healthy Control)
 
 Target output:
-- `yolo_bad_own.pt`
+- `yolov8_pigify_best.pt`
 
-## 1) Create The Zip Locally
-Run:
+---
+
+## 1) Package The Dataset Locally
+Run in your PowerShell terminal:
 
 ```powershell
-.\prepare_own_bad_zip.ps1
+.\prepare_pigify_dataset.ps1
 ```
 
-This creates:
-- `own_not_healthy_dragon_v2.zip`
+This packages the `dataset_1000` directory into:
+- `pigify_swine_dataset_1000.zip`
+
+---
 
 ## 2) Upload To Google Drive
-Upload `own_not_healthy_dragon_v2.zip` to:
-- `/content/drive/MyDrive/DragonFruit/own_not_healthy_dragon_v2.zip`
+Upload `pigify_swine_dataset_1000.zip` to your Google Drive at:
+- `/content/drive/MyDrive/Pigify/pigify_swine_dataset_1000.zip`
 
-Optional (for fine-tuning from your existing model):
-- `/content/drive/MyDrive/DragonFruit/yolo_best.pt`
+---
 
-## 3) Paste This Single Cell In Colab
-Set Colab runtime to GPU first (`Runtime` -> `Change runtime type` -> `T4 GPU`), then run:
+## 3) Paste & Run This Cell In Google Colab
+Set your Colab runtime to GPU first (`Runtime` -> `Change runtime type` -> `T4 GPU`), then paste and run:
 
 ```python
 from google.colab import drive, files
@@ -32,102 +42,59 @@ drive.mount("/content/drive")
 
 !pip -q install ultralytics pyyaml
 
-import hashlib
-import random
 import shutil
 import zipfile
 from pathlib import Path
-
 import yaml
 from ultralytics import YOLO
 
 # ================== CONFIG ==================
-ZIP_PATH = Path("/content/drive/MyDrive/DragonFruit/own_not_healthy_dragon_v2.zip")
-BASE_WEIGHTS = Path("/content/drive/MyDrive/DragonFruit/yolo_best.pt")  # optional
-CLASS_NAME = "not_healthy_dragon"
-
-EPOCHS = 30
+ZIP_PATH = Path("/content/drive/MyDrive/Pigify/pigify_swine_dataset_1000.zip")
+EPOCHS = 35
 IMGSZ = 640
 BATCH = 16
-DEVICE = 0  # GPU 0. Use "cpu" if no GPU.
-
-VAL_RATIO = 0.2
-SEED = 42
-
-RUN_NAME = "dragon_bad_own"
+DEVICE = 0  # GPU 0
+RUN_NAME = "pigify_swine_model"
 RUNS_PROJECT = Path("/content/runs/detect")
-OUT_WEIGHTS = Path("/content/yolo_bad_own.pt")
+OUT_WEIGHTS = Path("/content/yolov8_pigify_best.pt")
 # ============================================
 
 if not ZIP_PATH.exists():
-    raise FileNotFoundError(f"Zip not found: {ZIP_PATH}")
+    raise FileNotFoundError(f"Zip not found: {ZIP_PATH}. Please check your Drive path.")
 
-work_root = Path("/content/dragon_bad_own_workspace")
-raw_dir = work_root / "raw"
-yolo_dir = work_root / "yolo"
-run_dir = RUNS_PROJECT / RUN_NAME
+work_root = Path("/content/pigify_dataset")
+if work_root.exists():
+    shutil.rmtree(work_root)
+work_root.mkdir(parents=True, exist_ok=True)
 
-for p in (work_root, run_dir):
-    if p.exists():
-        shutil.rmtree(p)
-
-raw_dir.mkdir(parents=True, exist_ok=True)
-
+print(f"Extracting {ZIP_PATH.name}...")
 with zipfile.ZipFile(ZIP_PATH, "r") as zf:
-    zf.extractall(raw_dir)
+    zf.extractall(work_root)
 
-img_exts = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
-all_images = [p for p in raw_dir.rglob("*") if p.is_file() and p.suffix.lower() in img_exts]
+# Find data.yaml or create dynamically
+yaml_candidates = list(work_root.rglob("data.yaml"))
+if yaml_candidates:
+    data_yaml = yaml_candidates[0]
+    print(f"Found dataset config at: {data_yaml}")
+else:
+    raise FileNotFoundError("data.yaml not found inside extracted zip.")
 
-if not all_images:
-    raise RuntimeError("No images found in zip.")
+# Update absolute path inside data.yaml for Colab environment
+with open(data_yaml, "r") as f:
+    conf = yaml.safe_load(f)
 
-random.seed(SEED)
-random.shuffle(all_images)
+dataset_base = data_yaml.parent
+conf["path"] = str(dataset_base)
+conf["train"] = "images/train"
+conf["val"] = "images/val"
 
-val_count = int(round(len(all_images) * VAL_RATIO))
-val_count = max(1, min(val_count, len(all_images) - 1))
-val_images = all_images[:val_count]
-train_images = all_images[val_count:]
+with open(data_yaml, "w") as f:
+    yaml.safe_dump(conf, f, sort_keys=False)
 
-for split in ("train", "val"):
-    (yolo_dir / split / "images").mkdir(parents=True, exist_ok=True)
-    (yolo_dir / split / "labels").mkdir(parents=True, exist_ok=True)
+print("Dataset classes:", conf.get("names"))
 
-def safe_name(text: str) -> str:
-    out = "".join(ch if ch.isalnum() or ch in "._-" else "_" for ch in text)
-    return out.strip("._-") or "img"
-
-def write_sample(src_img: Path, split: str) -> None:
-    digest = hashlib.sha1(str(src_img).encode("utf-8")).hexdigest()[:10]
-    img_name = f"{safe_name(src_img.stem)}_{digest}{src_img.suffix.lower()}"
-    dst_img = yolo_dir / split / "images" / img_name
-    dst_lbl = yolo_dir / split / "labels" / f"{Path(img_name).stem}.txt"
-
-    shutil.copy2(src_img, dst_img)
-    # Full-image pseudo box: class x_center y_center width height
-    dst_lbl.write_text("0 0.5 0.5 1.0 1.0\n", encoding="utf-8")
-
-for p in train_images:
-    write_sample(p, "train")
-for p in val_images:
-    write_sample(p, "val")
-
-data_yaml = yolo_dir / "data.yaml"
-data = {
-    "path": str(yolo_dir),
-    "train": "train/images",
-    "val": "val/images",
-    "nc": 1,
-    "names": [CLASS_NAME],
-}
-data_yaml.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
-
-weights = str(BASE_WEIGHTS) if BASE_WEIGHTS.exists() else "yolov8s.pt"
-print(f"Starting weights: {weights}")
-print(f"Train images: {len(train_images)}, Val images: {len(val_images)}")
-
-model = YOLO(weights)
+# Train with Ultralytics YOLOv8
+model = YOLO("yolov8s.pt")  # Starting from pre-trained YOLOv8s
 results = model.train(
     data=str(data_yaml),
     epochs=EPOCHS,
@@ -136,19 +103,19 @@ results = model.train(
     device=DEVICE,
     project=str(RUNS_PROJECT),
     name=RUN_NAME,
-    exist_ok=False,
+    exist_ok=True
 )
 
 best_pt = Path(results.save_dir) / "weights" / "best.pt"
 if not best_pt.exists():
-    raise FileNotFoundError(f"Training finished but best.pt missing: {best_pt}")
+    raise FileNotFoundError(f"Training completed but weights not found at {best_pt}")
 
 shutil.copy2(best_pt, OUT_WEIGHTS)
-print(f"Saved final model: {OUT_WEIGHTS}")
+print(f"Successfully trained! Best weights saved to: {OUT_WEIGHTS}")
 files.download(str(OUT_WEIGHTS))
 ```
 
-## Notes
-- This dataset has image-level class only (no real boxes). The cell creates full-image pseudo boxes so YOLO training can run.
-- Keep `EPOCHS = 30` as requested.
-- If training fails due memory, reduce `BATCH` from `16` to `8`.
+---
+
+## 4) Load Into Pigify
+Once downloaded, place `yolov8_pigify_best.pt` into your `backend/` or root `Pigify/` directory to serve real-time predictions via the dashboard and mobile app.

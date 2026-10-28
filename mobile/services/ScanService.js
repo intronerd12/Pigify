@@ -306,6 +306,8 @@ const sanitizeScanForStorage = (scan) => {
     recommendations,
     location: scan.location || null,
     source: scan.source || 'mobile_app',
+    hardwareSource: scan.hardwareSource || (scan.source === 'raspberry_pi_5' ? 'Raspberry Pi 5 (Pi Cam Module v3 IMX708)' : undefined),
+    hardwareTelemetry: scan.hardwareTelemetry,
   };
 };
 
@@ -344,7 +346,9 @@ const buildScanPayload = (scan, user) => {
     operatorName: userName || undefined,
     operatorEmail: userEmail || undefined,
     localScanId: scan?.id || undefined,
-    source: 'mobile_app',
+    source: scan?.source || 'mobile_app',
+    hardwareSource: scan?.hardwareSource || (scan?.source === 'raspberry_pi_5' ? 'Raspberry Pi 5 (Pi Cam Module v3 IMX708)' : undefined),
+    hardwareTelemetry: scan?.hardwareTelemetry,
   };
 };
 
@@ -503,11 +507,25 @@ const flushPendingSyncInternal = async ({ user } = {}) => {
 export const ScanService = {
   analyzeImage: async (imageUri) => {
     try {
-      const { mime, fileName } = getUploadMeta(imageUri);
+      let uploadUri = imageUri;
+      if (typeof imageUri === 'string' && (imageUri.startsWith('http://') || imageUri.startsWith('https://'))) {
+        try {
+          const cacheDir = FileSystem.cacheDirectory || FileSystem.documentDirectory;
+          const targetPath = `${cacheDir}temp_analyze_${Date.now()}.jpg`;
+          const downloaded = await FileSystem.downloadAsync(imageUri, targetPath);
+          if (downloaded?.uri) {
+            uploadUri = downloaded.uri;
+          }
+        } catch {
+          // Fallback to original URI
+        }
+      }
+
+      const { mime, fileName } = getUploadMeta(uploadUri);
 
       const formData = new FormData();
       formData.append('image', {
-        uri: imageUri,
+        uri: uploadUri,
         type: mime,
         name: fileName,
       });
@@ -563,6 +581,97 @@ export const ScanService = {
     } catch {
       return null;
     }
+  },
+
+  evaluateDifferentialTriage: async ({ symptoms = [], pigBreed = 'Philippine Native Pig', ageGroup = 'Grower' } = {}) => {
+    try {
+      const res = await apiFetch('/api/scan/differential-triage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symptoms, pigBreed, ageGroup }),
+      });
+      if (res.ok) {
+        const data = await safeReadJson(res);
+        if (data) return data;
+      }
+    } catch {
+      // Offline fallback below
+    }
+
+    // Grounded triage algorithm for Philippine domestic and native swine
+    const lowerSymptoms = (Array.isArray(symptoms) ? symptoms : [symptoms]).map((s) => String(s).toLowerCase());
+    const hasFever = lowerSymptoms.some((s) => s.includes('fever') || s.includes('pyrexia') || s.includes('hot'));
+    const hasPurpleSkin = lowerSymptoms.some((s) => s.includes('purple') || s.includes('cyanosis') || s.includes('blotches') || s.includes('ear tip'));
+    const hasDiamond = lowerSymptoms.some((s) => s.includes('diamond') || s.includes('rhomboid') || s.includes('square'));
+    const hasDiarrhea = lowerSymptoms.some((s) => s.includes('diarrhea') || s.includes('watery') || s.includes('scour'));
+    const hasCough = lowerSymptoms.some((s) => s.includes('cough') || s.includes('breathing') || s.includes('respiratory') || s.includes('dyspnea'));
+    const hasMange = lowerSymptoms.some((s) => s.includes('scratch') || s.includes('crust') || s.includes('itch') || s.includes('ear crust'));
+    const hasGreasy = lowerSymptoms.some((s) => s.includes('greas') || s.includes('sticky') || s.includes('brown exudate') || s.includes('sebaceous'));
+    const hasSuddenDeath = lowerSymptoms.some((s) => s.includes('death') || s.includes('dead') || s.includes('fatal') || s.includes('collapse'));
+
+    let asfScore = (hasFever ? 30 : 0) + (hasPurpleSkin ? 35 : 0) + (hasSuddenDeath ? 30 : 0) + (hasDiarrhea ? 10 : 0);
+    let eryScore = (hasFever ? 25 : 0) + (hasDiamond ? 55 : 0) + (hasPurpleSkin && !hasDiamond ? 15 : 0);
+    let prrsScore = (hasCough ? 40 : 0) + (hasFever ? 20 : 0) + (hasPurpleSkin ? 20 : 0);
+    let mangeScore = hasMange ? 85 : 5;
+    let pedScore = hasDiarrhea ? 75 : 5;
+    let greasyScore = hasGreasy ? 80 : 5;
+
+    const list = [
+      {
+        disease: 'African Swine Fever (ASF)',
+        probability: Math.min(99, Math.max(12, asfScore || 14)),
+        severity: 'Critical Emergency (Grade E)',
+        pvoReportMandatory: true,
+        differentialClues: 'Extremely high mortality (up to 100%), rapid collapse, does NOT respond to penicillin/antibiotics.',
+        affectedBreeds: 'ALL domestic pigs (Native Pigs, Commercial White) & Wild Boars (100% mortal)',
+      },
+      {
+        disease: 'Swine Erysipelas (Diamond Skin)',
+        probability: Math.min(96, Math.max(10, eryScore || 12)),
+        severity: 'High Biosecurity Risk (Grade B/C)',
+        pvoReportMandatory: false,
+        differentialClues: 'Responds within 24-36h to Penicillin G therapy. Raised diamond urticaria on flank.',
+        affectedBreeds: 'Commercial White (high visual display) & Philippine Native Pigs (masked by dark skin)',
+      },
+      {
+        disease: 'PRRS (Porcine Reproductive & Respiratory Syndrome / Blue Ear)',
+        probability: Math.min(92, Math.max(8, prrsScore || 10)),
+        severity: 'Severe Respiratory Threat',
+        pvoReportMandatory: false,
+        differentialClues: 'Late-term sow abortions + nursery respiratory thumping; transient cyanosis of ear tips.',
+        affectedBreeds: 'Commercial breeding herds & Native Sows',
+      },
+      {
+        disease: 'Sarcoptic Mange (Acariasis)',
+        probability: Math.min(95, Math.max(5, mangeScore)),
+        severity: 'Chronic Dermal Infestation (Grade C)',
+        pvoReportMandatory: false,
+        differentialClues: 'Relentless itching against pen posts; thick asbestos crusts inside ear canals; no fever.',
+        affectedBreeds: 'Endemic in Philippine Native Pigs in rustic wooden/bamboo pens',
+      },
+      {
+        disease: 'Porcine Epidemic Diarrhea (PEDv)',
+        probability: Math.min(95, Math.max(5, pedScore)),
+        severity: 'Neonatal Piglet Risk',
+        pvoReportMandatory: false,
+        differentialClues: 'Profuse watery yellow diarrhea; near 100% mortal in piglets under 10 days old; adult sows recover in 1 week.',
+        affectedBreeds: 'Piglets of all swine breeds',
+      },
+      {
+        disease: 'Exudative Epidermitis (Greasy Pig)',
+        probability: Math.min(90, Math.max(5, greasyScore)),
+        severity: 'Piglet Dermal Exudate',
+        pvoReportMandatory: false,
+        differentialClues: 'Dark brown greasy foul-smelling sebaceous exudate without frantic scratching.',
+        affectedBreeds: 'Piglets (1-6 weeks old); adult native skin resists generalized infection',
+      },
+    ].sort((a, b) => b.probability - a.probability);
+
+    return {
+      topDiagnosis: list[0],
+      differentials: list,
+      pvoAlertTriggerRecommended: list[0].pvoReportMandatory && list[0].probability >= 50,
+    };
   },
 
   uploadTrainingSample: async (imageUri, { source } = {}) => {

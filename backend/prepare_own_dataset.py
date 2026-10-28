@@ -20,8 +20,12 @@ class ClassSpec:
 
 
 CLASS_SPECS = [
-  ClassSpec(source_dir="Healthy dragon", class_id=0, class_name="healthy", output_prefix="healthy"),
-  ClassSpec(source_dir="not healthy dragon", class_id=1, class_name="unhealthy", output_prefix="unhealthy"),
+  ClassSpec(source_dir="african_swine_fever", class_id=0, class_name="african_swine_fever", output_prefix="asf"),
+  ClassSpec(source_dir="swine_erysipelas", class_id=1, class_name="swine_erysipelas", output_prefix="erysipelas"),
+  ClassSpec(source_dir="sarcoptic_mange", class_id=2, class_name="sarcoptic_mange", output_prefix="mange"),
+  ClassSpec(source_dir="greasy_pig_disease", class_id=3, class_name="greasy_pig_disease", output_prefix="greasy"),
+  ClassSpec(source_dir="porcine_dermatitis_pdns", class_id=4, class_name="porcine_dermatitis_pdns", output_prefix="pdns"),
+  ClassSpec(source_dir="healthy_swine", class_id=5, class_name="healthy_swine", output_prefix="healthy"),
 ]
 
 

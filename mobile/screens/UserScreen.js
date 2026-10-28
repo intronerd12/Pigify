@@ -118,7 +118,7 @@ export default function UserScreen({ navigation, user, onLogout }) {
           icon: 'person-outline',
           title: 'Operator Profile',
           subtitle: 'Update clinical identity and credentials',
-          action: () => navigation.navigate('EditProfile'),
+          action: () => navigation.navigate('EditProfile', { user }),
         },
         {
           id: 'notifications',
@@ -225,7 +225,7 @@ export default function UserScreen({ navigation, user, onLogout }) {
               )}
               <TouchableOpacity
                 style={styles.editBadge}
-                onPress={() => navigation.navigate('EditProfile')}
+                onPress={() => navigation.navigate('EditProfile', { user })}
                 activeOpacity={0.8}
               >
                 <Ionicons name="pencil" size={13} color="#FFFFFF" />

@@ -30,8 +30,8 @@ const THEME = {
   textMuted: '#64748B',
 };
 
-export default function EditProfileScreen({ route, navigation, onUpdateUser }) {
-  const user = route.params?.user || {};
+export default function EditProfileScreen({ route, navigation, onUpdateUser, user: propUser }) {
+  const user = route.params?.user || propUser || {};
   const insets = useSafeAreaInsets();
 
   const [name, setName] = useState(user?.name || user?.fullName || '');

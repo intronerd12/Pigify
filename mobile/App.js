@@ -235,7 +235,7 @@ export default function App() {
               {props => <MappingEnvironmentScreen {...props} user={user} />}
             </Stack.Screen>
             <Stack.Screen name="EditProfile">
-              {props => <EditProfileScreen {...props} onUpdateUser={handleUpdateUser} />}
+              {props => <EditProfileScreen {...props} user={user} onUpdateUser={handleUpdateUser} />}
             </Stack.Screen>
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
             <Stack.Screen name="CommunityForum">

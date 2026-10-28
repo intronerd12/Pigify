@@ -177,8 +177,19 @@ export default function ScanScreen({ user }) {
   const [raspiHost, setRaspiHost] = useState('192.168.1.150:8080');
   const [tempHost, setTempHost] = useState('192.168.1.150:8080');
   const [raspiConfigModal, setRaspiConfigModal] = useState(false);
+  const [raspiGuideModal, setRaspiGuideModal] = useState(false);
   const [raspiLatency, setRaspiLatency] = useState(36);
   const [raspiTemp, setRaspiTemp] = useState('47.6°C');
+
+  // Auto-surveillance states for autonomous pen monitoring (matching web)
+  const [autoSurveillance, setAutoSurveillance] = useState(false);
+  const [autoCountdown, setAutoCountdown] = useState(15);
+
+  // Multi-symptom differential diagnostic engine states
+  const [differentialModal, setDifferentialModal] = useState(false);
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
+  const [evaluatingDiff, setEvaluatingDiff] = useState(false);
+  const [diffResults, setDiffResults] = useState(null);
 
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
@@ -188,6 +199,49 @@ export default function ScanScreen({ user }) {
 
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
+
+  // Load persisted Raspberry Pi 5 IP
+  useEffect(() => {
+    AsyncStorage.getItem('@pigify_raspi_host_v1')
+      .then((saved) => {
+        if (saved && saved.trim()) {
+          setRaspiHost(saved.trim());
+          setTempHost(saved.trim());
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveRaspiHost = async (newHost) => {
+    const val = (newHost || '').trim() || '192.168.1.150:8080';
+    setRaspiHost(val);
+    setRaspiConfigModal(false);
+    try {
+      await AsyncStorage.setItem('@pigify_raspi_host_v1', val);
+    } catch {}
+    void testRaspiPing(val);
+  };
+
+  const handleToggleSymptom = (symId) => {
+    setSelectedSymptoms((prev) =>
+      prev.includes(symId) ? prev.filter((s) => s !== symId) : [...prev, symId]
+    );
+  };
+
+  const handleRunDifferential = async () => {
+    setEvaluatingDiff(true);
+    try {
+      const res = await ScanService.evaluateDifferentialTriage({
+        symptoms: selectedSymptoms,
+        pigBreed: selectedBreed === 'native' ? 'Philippine Native Pig' : 'Commercial White',
+      });
+      setDiffResults(res);
+    } catch (err) {
+      Alert.alert('Differential Error', 'Failed to calculate differential triage.');
+    } finally {
+      setEvaluatingDiff(false);
+    }
+  };
 
   const handleSelectPreset = (preset) => {
     setScanResult({
@@ -246,21 +300,23 @@ export default function ScanScreen({ user }) {
     ).start();
   }, [scanLineAnim]);
 
-  const testRaspiPing = async () => {
+  const testRaspiPing = async (overrideHost) => {
+    const targetHost = overrideHost || raspiHost;
+    const activePen = RASPI_PENS[activePenIndex];
     try {
-      const data = await ScanService.getRaspiStatus(raspiHost);
+      const data = await ScanService.getRaspiStatus(targetHost, activePen?.id);
       if (data) {
         setRaspiLatency(data.latencyMs || 35);
         setRaspiTemp(data.temperature || '47.6°C');
         Alert.alert(
-          'RPi 5 Online',
-          `Connected to Raspberry Pi 5 node!\nHost: ${raspiHost}\nLatency: ${data.latencyMs || 35}ms\nCPU Temp: ${data.temperature || '47.6°C'}\nSensor: Pi Camera Module v3 (Sony IMX708 Autofocus)`
+          'RPi 5 Edge Node Online',
+          `Connected to Raspberry Pi 5 node!\n\n• Host IP: ${targetHost}\n• Network Latency: ${data.latencyMs || 35}ms\n• CPU Temp: ${data.temperature || '47.6°C'}\n• Camera Sensor: Pi Camera Module v3 (Sony IMX708 Autofocus)\n• SoC: Broadcom BCM2712 Quad-Core @ 2.4GHz\n• Stream: 1080p @ 30FPS\n• Pen Sector: ${data.penSector || activePen?.name}`
         );
       } else {
-        Alert.alert('RPi 5 Node', `Node simulation active at ${raspiHost}`);
+        Alert.alert('RPi 5 Node Simulation', `Simulation telemetry active at ${targetHost}`);
       }
     } catch {
-      Alert.alert('RPi 5 Node', `Connected to Raspberry Pi 5 simulation node at ${raspiHost}`);
+      Alert.alert('RPi 5 Node', `Connected to Raspberry Pi 5 simulation node at ${targetHost}`);
     }
   };
 
@@ -315,7 +371,28 @@ export default function ScanScreen({ user }) {
     }
   };
 
-  const handleCaptureRaspi = async () => {
+  // Auto-Surveillance interval for continuous autonomous pen biosecurity monitoring (matching web)
+  useEffect(() => {
+    let timer = null;
+    if (autoSurveillance && sourceMode === 'raspi') {
+      timer = setInterval(() => {
+        setAutoCountdown((prev) => {
+          if (prev <= 1) {
+            void handleCaptureRaspi(true);
+            return 15;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      setAutoCountdown(15);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [autoSurveillance, sourceMode, activePenIndex, raspiHost]);
+
+  const handleCaptureRaspi = async (isAuto = false) => {
     if (scanning) return;
     setScanning(true);
     const activePen = RASPI_PENS[activePenIndex];
@@ -341,7 +418,9 @@ export default function ScanScreen({ user }) {
         presetData: activePen,
       });
     } catch (err) {
-      Alert.alert('Capture Error', 'Failed to capture frame from Raspberry Pi 5.');
+      if (!isAuto) {
+        Alert.alert('Capture Error', 'Failed to capture frame from Raspberry Pi 5.');
+      }
     } finally {
       setScanning(false);
     }
@@ -553,6 +632,30 @@ export default function ScanScreen({ user }) {
                   </Text>
                 </TouchableOpacity>
               )}
+
+              {/* Direct Link to Community Forum with Scan Attached */}
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.navigate('CommunityForum', { initialScan: scanResult });
+                  setScanResult(null);
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'rgba(236, 72, 153, 0.16)',
+                  borderColor: '#ec4899',
+                  borderWidth: 1,
+                  paddingVertical: 11,
+                  borderRadius: 10,
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="people" size={16} color="#ec4899" style={{ marginRight: 8 }} />
+                <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#ec4899' }}>
+                  Discuss Case in Swine Community
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -664,18 +767,32 @@ export default function ScanScreen({ user }) {
           <View style={styles.topActions}>
             {sourceMode === 'raspi' ? (
               <>
-                <TouchableOpacity onPress={testRaspiPing} style={styles.glassBtn} title="Test Connection">
-                  <Ionicons name="radio" size={18} color="#10B981" />
+                <TouchableOpacity onPress={() => testRaspiPing()} style={styles.glassBtn} title="Test Connection">
+                  <Ionicons name="radio" size={17} color="#10B981" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setDifferentialModal(true)}
+                  style={[styles.glassBtn, { marginLeft: 6 }]}
+                  title="Differential Triage"
+                >
+                  <Ionicons name="medkit" size={17} color="#EC4899" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setRaspiGuideModal(true)}
+                  style={[styles.glassBtn, { marginLeft: 6 }]}
+                  title="RPi 5 Hardware Guide"
+                >
+                  <Ionicons name="hardware-chip-outline" size={17} color="#F59E0B" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => {
                     setTempHost(raspiHost);
                     setRaspiConfigModal(true);
                   }}
-                  style={[styles.glassBtn, { marginLeft: 8 }]}
+                  style={[styles.glassBtn, { marginLeft: 6 }]}
                   title="Configure IP"
                 >
-                  <Ionicons name="settings-sharp" size={18} color="#38BDF8" />
+                  <Ionicons name="settings-sharp" size={17} color="#38BDF8" />
                 </TouchableOpacity>
               </>
             ) : sourceMode === 'phone' ? (
@@ -741,6 +858,29 @@ export default function ScanScreen({ user }) {
               <Text style={styles.hudMeta}>
                 BCM2712 • IMX708 AF • {raspiTemp} • {raspiLatency}ms
               </Text>
+            </View>
+
+            {/* Auto-Surveillance & Diagnostic Quick Bar */}
+            <View style={styles.raspiToolRow}>
+              <TouchableOpacity
+                onPress={() => setAutoSurveillance(!autoSurveillance)}
+                style={[styles.autoSurveillancePill, autoSurveillance && styles.autoSurveillancePillActive]}
+                activeOpacity={0.8}
+              >
+                <View style={[styles.surveillanceDot, autoSurveillance && styles.surveillanceDotActive]} />
+                <Text style={[styles.surveillanceText, autoSurveillance && styles.surveillanceTextActive]}>
+                  {autoSurveillance ? `Auto-Surveillance (${autoCountdown}s)` : 'Auto-Surveillance: OFF'}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setDifferentialModal(true)}
+                style={styles.diffTriageBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="medkit-outline" size={13} color="#38BDF8" style={{ marginRight: 5 }} />
+                <Text style={styles.diffTriageBtnText}>Differential Triage</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Pen Sector Pills */}
@@ -968,9 +1108,36 @@ export default function ScanScreen({ user }) {
               <Ionicons name="hardware-chip" size={22} color={THEME.primary} style={{ marginRight: 8 }} />
               <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>Raspberry Pi 5 Node Config</Text>
             </View>
-            <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 14 }}>
+            <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
               Enter the local IP and port of the Raspberry Pi 5 node in your swine facility.
             </Text>
+
+            {/* Quick Presets */}
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+              {[
+                '192.168.1.150:8080',
+                'raspberrypi.local:8080',
+                '10.0.2.2:8080',
+                'localhost:8080',
+              ].map((h) => (
+                <TouchableOpacity
+                  key={h}
+                  onPress={() => setTempHost(h)}
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 6,
+                    backgroundColor: tempHost === h ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.05)',
+                    borderWidth: 1,
+                    borderColor: tempHost === h ? '#38BDF8' : 'rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <Text style={{ fontSize: 10.5, color: tempHost === h ? '#38BDF8' : '#94A3B8', fontWeight: '700' }}>
+                    {h}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <TextInput
               value={tempHost}
@@ -984,18 +1151,198 @@ export default function ScanScreen({ user }) {
 
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 16 }}>
               <TouchableOpacity
-                onPress={() => {
-                  setRaspiHost(tempHost.trim() || '192.168.1.150:8080');
-                  setRaspiConfigModal(false);
-                }}
+                onPress={() => handleSaveRaspiHost(tempHost)}
                 style={styles.modalSaveBtn}
               >
-                <Text style={styles.modalSaveBtnText}>Save Settings</Text>
+                <Text style={styles.modalSaveBtnText}>Save & Ping Node</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setRaspiConfigModal(false)} style={styles.modalCancelBtn}>
                 <Text style={styles.modalCancelBtnText}>Cancel</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Raspberry Pi 5 Hardware Setup & Pinout Reference Modal */}
+      <Modal visible={raspiGuideModal} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { maxHeight: '86%' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="hardware-chip" size={22} color="#F59E0B" style={{ marginRight: 8 }} />
+                <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>RPi 5 Hardware Installation</Text>
+              </View>
+              <TouchableOpacity onPress={() => setRaspiGuideModal(false)}>
+                <Ionicons name="close" size={20} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 14, lineHeight: 18 }}>
+                Hardware connection diagram and streaming setup for physical Raspberry Pi 5 and Camera Module v3 in swine pens.
+              </Text>
+
+              {/* Hardware Spec Card */}
+              <View style={styles.guideSpecCard}>
+                <Text style={styles.guideSpecTitle}>HARDWARE ARCHITECTURE</Text>
+                <Text style={styles.guideSpecRow}>• <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Host Computer:</Text> Raspberry Pi 5 Model B (8GB RAM)</Text>
+                <Text style={styles.guideSpecRow}>• <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Processor SoC:</Text> Broadcom BCM2712 Quad Cortex-A76 @ 2.4GHz</Text>
+                <Text style={styles.guideSpecRow}>• <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Camera Sensor:</Text> Raspberry Pi Camera Module v3 (Sony IMX708)</Text>
+                <Text style={styles.guideSpecRow}>• <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Autofocus & Lens:</Text> Phase Detection AF (PDAF) • 75°/120° Wide</Text>
+                <Text style={styles.guideSpecRow}>• <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Video Telemetry:</Text> 1920x1080 @ 30FPS • H.264 / MJPEG</Text>
+              </View>
+
+              {/* Physical Installation Steps */}
+              <View style={styles.guideStepsCard}>
+                <Text style={styles.guideSpecTitle}>INSTALLATION & PINOUT CONNECTION</Text>
+                <Text style={styles.guideStepText}>
+                  <Text style={{ color: '#38BDF8', fontWeight: '800' }}>1. CSI Ribbon Cable: </Text>
+                  Connect the 15-to-22 pin miniature FPC cable into <Text style={{ color: '#F8FAFC' }}>CAM/DISP0</Text> or <Text style={{ color: '#F8FAFC' }}>CAM/DISP1</Text>. Ensure copper contacts face inward towards HDMI ports.
+                </Text>
+                <Text style={styles.guideStepText}>
+                  <Text style={{ color: '#38BDF8', fontWeight: '800' }}>2. Power Supply: </Text>
+                  Use the official <Text style={{ color: '#F8FAFC' }}>27W USB-C PD (5V/5A)</Text> power adapter to prevent undervoltage in high-humidity barn environments.
+                </Text>
+                <Text style={styles.guideStepText}>
+                  <Text style={{ color: '#38BDF8', fontWeight: '800' }}>3. Mounting Position: </Text>
+                  Mount the camera module 1.2m to 1.8m above the pen floor overlooking feeding troughs and resting beds.
+                </Text>
+              </View>
+
+              {/* Linux Launch Commands */}
+              <View style={styles.guideCmdCard}>
+                <Text style={styles.guideSpecTitle}>LINUX DAEMON COMMAND</Text>
+                <Text style={styles.guideCmdSnippet}>
+                  rpicam-vid -t 0 --inline --listen -o tcp://0.0.0.0:8080 --width 1920 --height 1080 --framerate 30
+                </Text>
+                <Text style={[styles.guideStepText, { marginTop: 8 }]}>
+                  Or start the edge proxy service:
+                </Text>
+                <Text style={styles.guideCmdSnippet}>
+                  python3 pigify_edge_node.py --port 8080 --pen "Sector B"
+                </Text>
+              </View>
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setRaspiGuideModal(false)} style={[styles.modalSaveBtn, { marginTop: 14 }]}>
+              <Text style={styles.modalSaveBtnText}>Got It</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Multi-Symptom Differential Diagnostic Engine Modal */}
+      <Modal visible={differentialModal} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalCard, { maxHeight: '90%' }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Ionicons name="medkit" size={22} color="#EC4899" style={{ marginRight: 8 }} />
+                <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>Differential Triage Engine</Text>
+              </View>
+              <TouchableOpacity onPress={() => setDifferentialModal(false)}>
+                <Ionicons name="close" size={20} color="#94A3B8" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12, lineHeight: 17 }}>
+                Select observed swine clinical symptoms to evaluate differential diagnosis across African Swine Fever, Erysipelas, PRRS, and mange.
+              </Text>
+
+              {/* Symptoms Checklist */}
+              <View style={styles.symptomsGrid}>
+                {[
+                  { id: 'fever', label: 'High Fever / Pyrexia (40-42°C)' },
+                  { id: 'purple_skin', label: 'Cyanosis / Purple Ears & Ventral Skin' },
+                  { id: 'diamond_plaques', label: 'Rhomboid Diamond Plaques on Flank' },
+                  { id: 'diarrhea', label: 'Profuse Watery Diarrhea / Scours' },
+                  { id: 'respiratory_cough', label: 'Respiratory Thumping & Cough' },
+                  { id: 'ear_scratching', label: 'Ear Canal Itching & Mange Crusts' },
+                  { id: 'greasy_exudate', label: 'Dark Brown Greasy Exudate' },
+                  { id: 'sudden_mortality', label: 'Sudden Peracute Collapse & Death' },
+                ].map((sym) => {
+                  const isChecked = selectedSymptoms.includes(sym.id);
+                  return (
+                    <TouchableOpacity
+                      key={sym.id}
+                      onPress={() => handleToggleSymptom(sym.id)}
+                      style={[styles.symptomCheckbox, isChecked && styles.symptomCheckboxActive]}
+                      activeOpacity={0.75}
+                    >
+                      <Ionicons
+                        name={isChecked ? 'checkbox' : 'square-outline'}
+                        size={18}
+                        color={isChecked ? '#F43F5E' : '#64748B'}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={[styles.symptomText, isChecked && styles.symptomTextActive]}>
+                        {sym.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Action: Run Diagnostic Inference */}
+              <TouchableOpacity
+                onPress={handleRunDifferential}
+                disabled={evaluatingDiff}
+                style={[styles.modalSaveBtn, { marginVertical: 14 }]}
+                activeOpacity={0.85}
+              >
+                {evaluatingDiff ? (
+                  <ActivityIndicator size="small" color="#FFFFFF" />
+                ) : (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                    <Ionicons name="analytics" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={styles.modalSaveBtnText}>Run Differential Inference</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Inference Results Presentation */}
+              {diffResults && (
+                <View style={styles.diffResultsWrap}>
+                  {diffResults.pvoAlertTriggerRecommended && (
+                    <View style={styles.emergencyBanner}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <Ionicons name="warning" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                        <Text style={styles.emergencyBannerTitle}>MANDATORY PVO REPORT RECOMMENDED</Text>
+                      </View>
+                      <Text style={styles.emergencyBannerText}>
+                        African Swine Fever (ASF) probability exceeds 50%. Isolate pen immediately and alert provincial veterinarians.
+                      </Text>
+                      <TouchableOpacity onPress={handleAlertPvo} style={styles.emergencyCallBtn}>
+                        <Ionicons name="call" size={14} color="#FFFFFF" style={{ marginRight: 6 }} />
+                        <Text style={styles.emergencyCallBtnText}>Call PVO Hotline (0917-838-5847)</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+
+                  <Text style={styles.diffResultsHeading}>DIFFERENTIAL PROBABILITY RANKING:</Text>
+                  {(diffResults.differentials || []).map((diag, dIdx) => (
+                    <View key={dIdx} style={styles.diffDiagCard}>
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                        <Text style={styles.diffDiseaseName}>{diag.disease}</Text>
+                        <View style={[styles.diffProbBadge, { backgroundColor: diag.probability > 60 ? 'rgba(244, 63, 94, 0.2)' : 'rgba(56, 189, 248, 0.2)' }]}>
+                          <Text style={[styles.diffProbText, { color: diag.probability > 60 ? '#FB7185' : '#38BDF8' }]}>
+                            {diag.probability}% Match
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={styles.diffSeverityText}>{diag.severity}</Text>
+                      <Text style={styles.diffCluesText}>"{diag.differentialClues}"</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setDifferentialModal(false)} style={[styles.modalCancelBtn, { marginTop: 8 }]}>
+              <Text style={styles.modalCancelBtnText}>Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -1546,5 +1893,214 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontWeight: '700',
     fontSize: 13,
+  },
+  raspiToolRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
+    gap: 8,
+  },
+  autoSurveillancePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  autoSurveillancePillActive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.16)',
+    borderColor: '#10B981',
+  },
+  surveillanceDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#64748B',
+    marginRight: 6,
+  },
+  surveillanceDotActive: {
+    backgroundColor: '#10B981',
+  },
+  surveillanceText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#94A3B8',
+  },
+  surveillanceTextActive: {
+    color: '#10B981',
+  },
+  diffTriageBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+  },
+  diffTriageBtnText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#38BDF8',
+  },
+  guideSpecCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 12,
+  },
+  guideSpecTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#F59E0B',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  guideSpecRow: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    marginBottom: 4,
+    lineHeight: 16,
+  },
+  guideStepsCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 12,
+  },
+  guideStepText: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    marginBottom: 8,
+    lineHeight: 16,
+  },
+  guideCmdCard: {
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    marginBottom: 8,
+  },
+  guideCmdSnippet: {
+    fontFamily: 'monospace',
+    fontSize: 11,
+    color: '#10B981',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    padding: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
+  },
+  symptomsGrid: {
+    gap: 8,
+  },
+  symptomCheckbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+  },
+  symptomCheckboxActive: {
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    borderColor: '#F43F5E',
+  },
+  symptomText: {
+    fontSize: 12,
+    color: '#94A3B8',
+    flex: 1,
+  },
+  symptomTextActive: {
+    color: '#F8FAFC',
+    fontWeight: '700',
+  },
+  diffResultsWrap: {
+    marginTop: 8,
+  },
+  diffResultsHeading: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#38BDF8',
+    letterSpacing: 0.5,
+    marginBottom: 8,
+  },
+  emergencyBanner: {
+    backgroundColor: 'rgba(239, 68, 68, 0.25)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1.5,
+    borderColor: '#EF4444',
+    marginBottom: 14,
+  },
+  emergencyBannerTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  emergencyBannerText: {
+    fontSize: 11.5,
+    color: '#FECACA',
+    lineHeight: 16,
+    marginBottom: 10,
+  },
+  emergencyCallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#EF4444',
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  emergencyCallBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  diffDiagCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 10,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.07)',
+    marginBottom: 8,
+  },
+  diffDiseaseName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F8FAFC',
+  },
+  diffProbBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  diffProbText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  diffSeverityText: {
+    fontSize: 11,
+    color: '#F59E0B',
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  diffCluesText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontStyle: 'italic',
+    lineHeight: 15,
   },
 });
