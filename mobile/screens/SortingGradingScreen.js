@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScanService } from '../services/ScanService';
+import InfectionDecisionCard from '../components/InfectionDecisionCard';
 
 // ── Web Design Tokens (Exact match with SortingGrading.jsx & Home.css) ────────
 const THEME = {
@@ -37,7 +38,7 @@ const getGradeTone = (grade) => {
   return { bg: 'rgba(100, 116, 139, 0.14)', text: '#94A3B8', border: 'rgba(100, 116, 139, 0.35)', label: 'BASELINE' };
 };
 
-export default function SortingGradingScreen({ user }) {
+export default function SortingGradingScreen({ navigation, user }) {
   const insets = useSafeAreaInsets();
   const [scans, setScans] = useState([]);
   const [gradeFilter, setGradeFilter] = useState('All');
@@ -261,6 +262,13 @@ export default function SortingGradingScreen({ user }) {
             );
           })
         )}
+
+        {/* What To Do First: Single & Multi-Infection Decision Engine */}
+        <InfectionDecisionCard
+          detectedConditions={filtered}
+          navigation={navigation}
+          contextTitle="SWINE TRIAGE • MULTI-INFECTION PRIORITY GUIDE"
+        />
       </ScrollView>
     </View>
   );

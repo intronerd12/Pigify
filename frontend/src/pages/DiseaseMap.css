@@ -1,0 +1,411 @@
+/* ── Luna, La Union Swine Disease Surveillance & GIS Map Styles ── */
+
+.luna-map-page {
+  min-height: 100vh;
+}
+
+/* Scenario Simulator Control Bar */
+.luna-sim-banner {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(24, 24, 48, 0.92) 100%);
+  border: 1px solid rgba(244, 63, 94, 0.32);
+  border-radius: 20px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.45);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="light"] .luna-sim-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+  border-color: rgba(244, 63, 94, 0.35);
+  box-shadow: 0 10px 25px -10px rgba(244, 63, 94, 0.12);
+}
+
+.luna-sim-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.luna-sim-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.luna-sim-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(244, 63, 94, 0.18);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.4);
+}
+
+[data-theme="light"] .luna-sim-badge {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+
+.luna-sim-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin: 0;
+}
+
+[data-theme="light"] .luna-sim-title {
+  color: #0f172a;
+}
+
+.luna-sim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+}
+
+.luna-scenario-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.luna-scenario-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244, 63, 94, 0.45);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.luna-scenario-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(190, 18, 60, 0.16) 100%);
+  border-color: #f43f5e;
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.25);
+}
+
+.luna-scenario-btn.active.green-mode {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.22) 0%, rgba(5, 150, 105, 0.16) 100%);
+  border-color: #10b981;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.22);
+}
+
+[data-theme="light"] .luna-scenario-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+[data-theme="light"] .luna-scenario-btn.active {
+  background: #ffe4e6;
+  border-color: #e11d48;
+}
+
+[data-theme="light"] .luna-scenario-btn.active.green-mode {
+  background: #d1fae5;
+  border-color: #059669;
+}
+
+.luna-scenario-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.luna-scenario-desc {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+[data-theme="light"] .luna-scenario-desc {
+  color: #475569;
+}
+
+/* Walkthrough Stepper Strip */
+.luna-walkthrough-strip {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+[data-theme="light"] .luna-walkthrough-strip {
+  border-top-color: #e2e8f0;
+}
+
+.luna-step-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.luna-step-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.luna-step-pill.active {
+  background: #f43f5e;
+  color: #ffffff;
+  border-color: #fb7185;
+  box-shadow: 0 2px 10px rgba(244, 63, 94, 0.35);
+}
+
+[data-theme="light"] .luna-step-pill {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+[data-theme="light"] .luna-step-pill.active {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.luna-step-banner-box {
+  width: 100%;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.32);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+[data-theme="light"] .luna-step-banner-box {
+  background: #ecfeff;
+  border-color: #67e8f9;
+}
+
+/* Map Mode Switcher */
+.luna-map-mode-toggle {
+  display: inline-flex;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 4px;
+}
+
+[data-theme="light"] .luna-map-mode-toggle {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.luna-mode-btn {
+  padding: 5px 11px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.luna-mode-btn.active {
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+[data-theme="light"] .luna-mode-btn {
+  color: #475569;
+}
+
+[data-theme="light"] .luna-mode-btn.active {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+/* Main Two-Column Map Layout */
+.luna-map-grid {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.38fr) minmax(330px, 0.85fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .luna-map-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Barangay Quick Directory Table under Map */
+.luna-barangay-directory {
+  margin-top: 24px;
+  background: var(--surface-card, rgba(13, 19, 32, 0.9));
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 22px;
+  padding: 22px 24px;
+}
+
+.luna-dir-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.luna-dir-card {
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.luna-dir-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244, 63, 94, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.luna-dir-card.selected {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.08);
+}
+
+[data-theme="light"] .luna-dir-card {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .luna-dir-card.selected {
+  background: #ecfeff;
+  border-color: #06b6d4;
+}
+
+/* Inspector Action Box */
+.luna-sim-control-box {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px dashed rgba(244, 63, 94, 0.45);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 18px;
+}
+
+[data-theme="light"] .luna-sim-control-box {
+  background: #fff1f2;
+  border-color: #f43f5e;
+}
+
+.luna-sim-btn-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.luna-mini-sim-btn {
+  padding: 8px 10px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.18s ease;
+}
+
+.luna-mini-sim-btn.trigger-asf {
+  background: rgba(244, 63, 94, 0.18);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+}
+
+.luna-mini-sim-btn.trigger-asf:hover {
+  background: #f43f5e;
+  color: #ffffff;
+}
+
+.luna-mini-sim-btn.trigger-ery {
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+
+.luna-mini-sim-btn.trigger-ery:hover {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.luna-mini-sim-btn.trigger-clear {
+  grid-column: span 2;
+  background: rgba(16, 185, 129, 0.16);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #34d399;
+}
+
+.luna-mini-sim-btn.trigger-clear:hover {
+  background: #10b981;
+  color: #ffffff;
+}
+
+[data-theme="light"] .luna-mini-sim-btn.trigger-asf {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+[data-theme="light"] .luna-mini-sim-btn.trigger-ery {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+[data-theme="light"] .luna-mini-sim-btn.trigger-clear {
+  background: #d1fae5;
+  color: #047857;
+}
+

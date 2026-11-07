@@ -26,6 +26,7 @@ import {
   User,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
+import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import './Landing.css'
 import './MarketingPages.css'
@@ -551,6 +552,18 @@ function Overview() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ================================================================
+            3B. WHAT TO DO FIRST: MULTI-INFECTION HERD DECISION ENGINE
+            ================================================================ */}
+        <section className="mk-section" style={{ paddingTop: '8px', paddingBottom: '12px' }}>
+          <div className="container-pro">
+            <InfectionDecisionEngine
+              detectedConditions={displayScans}
+              contextLabel="HERD MONITORING • MULTI-INFECTION PRIORITY ENGINE"
+            />
           </div>
         </section>
 

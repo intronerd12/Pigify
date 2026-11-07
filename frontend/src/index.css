@@ -48,5 +48,38 @@ button {
   cursor: pointer;
 }
 
+/* Global Anti-Lag & Rendering Performance Optimizations */
+.mk-section:not(:first-of-type),
+.lp-section:not(:first-of-type) {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 460px;
+}
+
+.luna-farm-grid,
+.mk-grid-2,
+.mk-grid-3,
+.mk-grid-4,
+.admin-kpi-grid {
+  contain: layout style;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+
 
 

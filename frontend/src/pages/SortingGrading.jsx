@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import UserHeader from '../components/user/UserHeader'
+import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import { API_BASE_URL } from '../config/api'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import './Landing.css'
@@ -612,6 +613,16 @@ function SortingGrading() {
               )}
             </>
           )}
+          </div>
+        </section>
+
+        {/* What To Do First: Single & Multi-Infection Decision Engine */}
+        <section className="mk-section" style={{ paddingTop: '0px', paddingBottom: '20px' }}>
+          <div className="container-pro">
+            <InfectionDecisionEngine
+              detectedConditions={filteredScans}
+              contextLabel="SEVERITY GRADING • MULTI-INFECTION ACTION PRIORITY"
+            />
           </div>
         </section>
 

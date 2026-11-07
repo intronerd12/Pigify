@@ -1,0 +1,308 @@
+/* ==========================================================================
+   PIGIFY CLINICAL PRIORITY & MULTI-INFECTION DECISION ENGINE STYLES
+   Supports Dark & Light Themes
+   ========================================================================== */
+
+.ide-wrapper {
+  position: relative;
+  border-radius: 22px;
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  background: linear-gradient(145deg, rgba(13, 19, 34, 0.96) 0%, rgba(18, 25, 43, 0.94) 100%);
+  padding: 26px;
+  box-shadow: 0 18px 42px -12px rgba(0, 0, 0, 0.42);
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+[data-theme="light"] .ide-wrapper {
+  background: linear-gradient(145deg, #ffffff 0%, #fff1f2 100%);
+  border-color: rgba(225, 29, 72, 0.25);
+  box-shadow: 0 14px 34px -10px rgba(15, 23, 42, 0.08);
+}
+
+.ide-top-bar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .ide-top-bar {
+  border-bottom-color: rgba(15, 23, 42, 0.08);
+}
+
+.ide-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+  margin-bottom: 8px;
+}
+
+[data-theme="light"] .ide-kicker {
+  background: rgba(225, 29, 72, 0.1);
+  color: #be123c;
+}
+
+.ide-title {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: clamp(1.25rem, 2.2vw, 1.55rem);
+  font-weight: 800;
+  color: var(--text-main, #f8fafc);
+  letter-spacing: -0.02em;
+}
+
+.ide-subtitle {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.55;
+  max-width: 780px;
+}
+
+/* Preset & Toggle Bar */
+.ide-controls-box {
+  background: rgba(7, 11, 21, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+[data-theme="light"] .ide-controls-box {
+  background: rgba(248, 250, 252, 0.95);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+.ide-controls-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ide-preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ide-preset-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main, #e2e8f0);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+[data-theme="light"] .ide-preset-btn {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #1e293b;
+}
+
+.ide-preset-btn:hover,
+.ide-preset-btn.active {
+  border-color: #f43f5e;
+  background: rgba(244, 63, 94, 0.14);
+  color: #fb7185;
+}
+
+[data-theme="light"] .ide-preset-btn.active {
+  background: #ffe4e6;
+  color: #be123c;
+}
+
+.ide-disease-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ide-disease-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+[data-theme="light"] .ide-disease-chip {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+.ide-disease-chip.selected {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+/* Alert Banner for Co-Infection / Multi-Infection */
+.ide-coinfection-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  border: 1px solid;
+}
+
+/* Priority Triage Queue Cards */
+.ide-priority-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.ide-priority-card {
+  border-radius: 15px;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="light"] .ide-priority-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.ide-priority-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ide-rank-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+/* 4-Step Chronological Action Plan */
+.ide-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+@media (max-width: 860px) {
+  .ide-steps-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ide-step-card {
+  border-radius: 15px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="light"] .ide-step-card {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.ide-step-time {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.ide-step-title {
+  margin: 0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: var(--text-main, #ffffff);
+}
+
+.ide-step-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ide-step-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted, #cbd5e1);
+  line-height: 1.48;
+}
+
+[data-theme="light"] .ide-step-list li {
+  color: #334155;
+}
+
+.ide-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="light"] .ide-footer-bar {
+  border-top-color: rgba(15, 23, 42, 0.08);
+}
+

@@ -41,6 +41,7 @@ import {
   Wifi,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
+import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import { API_BASE_URL } from '../config/api'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import {
@@ -2127,6 +2128,22 @@ function AiAnalysis() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ================================================================
+            2B. WHAT TO DO FIRST: SINGLE & MULTI-INFECTION DECISION ENGINE
+            ================================================================ */}
+        <section className="mk-section" style={{ paddingTop: '8px', paddingBottom: '10px' }}>
+          <div className="container-pro">
+            <InfectionDecisionEngine
+              detectedConditions={
+                analysisResult?.condition
+                  ? [analysisResult.condition]
+                  : ['Swine Erysipelas (Diamond Skin)', 'Sarcoptic Mange']
+              }
+              contextLabel="AI SCANNER • SINGLE & MULTI-INFECTION TRIAGE ENGINE"
+            />
           </div>
         </section>
 

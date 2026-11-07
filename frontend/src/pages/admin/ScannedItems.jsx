@@ -21,7 +21,7 @@ import { API_BASE_URL } from '../../config/api';
 import './ScannedItems.css';
 import './Admin.css';
 
-const AUTO_REFRESH_MS = 5000;
+const AUTO_REFRESH_MS = 20000;
 
 const formatDateTime = (value) => {
   if (!value) return '-';
@@ -228,7 +228,9 @@ const ScannedItems = () => {
   useEffect(() => {
     fetchScans();
     const intervalId = setInterval(() => {
-      fetchScans({ silent: true });
+      if (document.visibilityState === 'visible') {
+        fetchScans({ silent: true });
+      }
     }, AUTO_REFRESH_MS);
 
     return () => clearInterval(intervalId);

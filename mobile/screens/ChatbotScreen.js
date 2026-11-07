@@ -45,6 +45,16 @@ const THEME = {
 const STORAGE_KEY_BASE = 'chat_history_swine_v1';
 const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
+function cleanAsterisks(rawText) {
+  if (!rawText) return '';
+  let text = String(rawText);
+  text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+  text = text.replace(/\*(.*?)\*/g, '$1');
+  text = text.replace(/^\s*\*\s+/gm, '• ');
+  text = text.replace(/\*/g, '');
+  return text.trim();
+}
+
 const TypingIndicator = () => {
   const d1 = useRef(new Animated.Value(0.2)).current;
   const d2 = useRef(new Animated.Value(0.2)).current;
@@ -93,10 +103,14 @@ const TypingIndicator = () => {
 };
 
 const QUICK_PROMPTS = [
-  'Swine skin rash treatment?',
-  'Pen heat stress ventilation?',
-  'Diamond skin disease (Erysipelas)?',
-  'Piglet diarrhea clinical protocol?',
+  'What is the Pigify study about?',
+  'Who are the Pigify researchers?',
+  'What 6 swine conditions are monitored?',
+  'How does the YOLO lesion scanner work?',
+  'Swine Erysipelas (Diamond Skin) signs?',
+  'Sarcoptic Mange vs Greasy Pig Disease?',
+  'Pen heat stress & THI telemetry?',
+  'Backyard biosecurity & quarantine protocol?',
 ];
 
 export default function ChatbotScreen({ user }) {
@@ -124,7 +138,7 @@ export default function ChatbotScreen({ user }) {
         const welcomeMessage = {
           id: makeId(),
           sender: 'bot',
-          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Operator'}! I am your Pigify Swine AI Vet Assistant. You can ask me about pig skin lesions, biosecurity protocols, fever signs, or pen climate management. How can I help your herd today?`,
+          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Farmer'}! I am Dr. Pigify AI, specialized exclusively in the Pigify Study: "A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".\n\nAsk me about our thesis research, authors (Axel, Joenabelle, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, severity grading, or backyard pen biosecurity!`,
           timestamp: new Date().toISOString(),
         };
         setMessages([welcomeMessage]);
@@ -161,11 +175,15 @@ export default function ChatbotScreen({ user }) {
     setIsTyping(true);
 
     try {
-      const response = await ChatbotService.sendMessage(text, { user });
+      const history = updated.slice(-8).map((m) => ({
+        role: m.sender === 'user' ? 'user' : 'model',
+        text: m.text,
+      }));
+      const response = await ChatbotService.sendMessage(text, { user, history });
       const botMessage = {
         id: makeId(),
         sender: 'bot',
-        text: response.reply || 'I have reviewed your query regarding swine biosecurity. Maintain clean pen ventilation and isolate any pigs displaying progressive lesions.',
+        text: cleanAsterisks(response.reply) || 'I am Dr. Pigify AI. How can I assist with questions about the Pigify study or swine health triage?',
         timestamp: new Date().toISOString(),
       };
       const finalMessages = [...updated, botMessage];
@@ -175,7 +193,7 @@ export default function ChatbotScreen({ user }) {
       const fallback = {
         id: makeId(),
         sender: 'bot',
-        text: 'I could not reach the clinical veterinary server. For acute skin lesions or fever, isolate the animal immediately and inspect feed and water supply.',
+        text: 'I could not reach the clinical veterinary server. Remember that the Pigify study focuses on early detection of African Swine Fever, Erysipelas, Sarcoptic Mange, Greasy Pig, and PDNS for backyard farms. Please isolate any pigs showing progressive lesions and consult your municipal veterinarian.',
         timestamp: new Date().toISOString(),
       };
       const finalMessages = [...updated, fallback];
@@ -191,7 +209,7 @@ export default function ChatbotScreen({ user }) {
       {
         id: makeId(),
         sender: 'bot',
-        text: 'Chat history cleared. How can I assist with your swine herd telemetry today?',
+        text: 'Chat history cleared. How can I assist with your questions regarding the Pigify swine study today?',
         timestamp: new Date().toISOString(),
       },
     ];
@@ -242,10 +260,10 @@ export default function ChatbotScreen({ user }) {
             <Ionicons name="medkit" size={20} color={THEME.primaryHover} />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.headerTitle}>Swine AI Vet Assistant</Text>
+            <Text style={styles.headerTitle}>Dr. Pigify AI • Research Assistant</Text>
             <View style={styles.statusRow}>
               <View style={styles.onlineDot} />
-              <Text style={styles.statusText}>Clinical Consultation Active</Text>
+              <Text style={styles.statusText}>Pigify Study Knowledge Active</Text>
             </View>
           </View>
         </View>
@@ -304,7 +322,7 @@ export default function ChatbotScreen({ user }) {
             <TextInput
               value={inputText}
               onChangeText={setInputText}
-              placeholder="Ask about swine symptoms, dosage, or pen climate..."
+              placeholder="Ask about Pigify study, swine diseases, or YOLO..."
               placeholderTextColor={THEME.textFaint}
               style={styles.textInput}
               multiline

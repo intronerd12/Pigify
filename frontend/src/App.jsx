@@ -1,4 +1,4 @@
-import { useEffect, useRef, lazy, Suspense } from 'react'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import toast from 'react-hot-toast'
@@ -11,19 +11,26 @@ import './theme.css'
 import './components/marketing/MarketingNav.css'
 import './App.css'
 
-// Robust Lazy Loader with automatic retry for resilience against network glitches
-const lazyWithRetry = (componentImport, retries = 2) =>
-  lazy(async () => {
+// Robust Lazy Loader with proper async retry loop and preload support
+const lazyWithRetry = (componentImport, retries = 2) => {
+  const load = async (attempt = 0) => {
     try {
       return await componentImport()
     } catch (error) {
-      if (retries > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 500))
-        return lazyWithRetry(componentImport, retries - 1)
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 400 * (attempt + 1)))
+        return load(attempt + 1)
       }
       throw error
     }
-  })
+  }
+  const LazyComponent = lazy(() => load(0))
+  LazyComponent.preload = componentImport
+  return LazyComponent
+}
+
+// Lazy-load Floating Chatbot so it never blocks initial page render
+const PigifyChatbot = lazyWithRetry(() => import('./components/chatbot/PigifyChatbot'))
 
 // Public & Marketing Pages (Lazy-loaded with retry)
 const Landing = lazyWithRetry(() => import('./pages/Landing'))
@@ -41,6 +48,7 @@ const Environment = lazyWithRetry(() => import('./pages/Environment'))
 const CommunityForum = lazyWithRetry(() => import('./pages/CommunityForum'))
 const DiseaseMap = lazyWithRetry(() => import('./pages/DiseaseMap'))
 const UserProfile = lazyWithRetry(() => import('./pages/UserProfile'))
+const ChatbotPage = lazyWithRetry(() => import('./pages/ChatbotPage'))
 
 // Admin Pages (Lazy-loaded with retry)
 const AdminLayout = lazyWithRetry(() => import('./components/admin/AdminLayout'))
@@ -57,9 +65,38 @@ const EnvironmentalData = lazyWithRetry(() => import('./pages/admin/environmenta
 
 function App() {
   const forcedLogoutRef = useRef(false)
+  const [mountChatbot, setMountChatbot] = useState(false)
+
+  // Defer floating chatbot & prefetch high-frequency route chunks during browser idle time
+  useEffect(() => {
+    const scheduleIdle =
+      typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback
+        : (cb) => window.setTimeout(cb, 1200)
+
+    const cancelIdle =
+      typeof window.cancelIdleCallback === 'function'
+        ? window.cancelIdleCallback
+        : window.clearTimeout
+
+    const idleId = scheduleIdle(() => {
+      setMountChatbot(true)
+      // Prefetch core user routes in the background when browser is idle so tab switching is instant
+      const rawUser = localStorage.getItem('user')
+      if (rawUser) {
+        Home.preload?.()
+        DiseaseMap.preload?.()
+        AiAnalysis.preload?.()
+        ChatbotPage.preload?.()
+      }
+    })
+
+    return () => cancelIdle(idleId)
+  }, [])
 
   useEffect(() => {
     const checkSession = async () => {
+      if (document.visibilityState === 'hidden') return
       const rawUser = localStorage.getItem('user')
       if (!rawUser) {
         forcedLogoutRef.current = false
@@ -111,7 +148,7 @@ function App() {
     }
 
     checkSession()
-    const intervalId = window.setInterval(checkSession, 30000)
+    const intervalId = window.setInterval(checkSession, 60000)
     window.addEventListener('focus', checkSession)
     document.addEventListener('visibilitychange', visibilityHandler)
 
@@ -142,6 +179,7 @@ function App() {
               <Route path="/environment" element={<Environment />} />
               <Route path="/disease-map" element={<DiseaseMap />} />
               <Route path="/community" element={<CommunityForum />} />
+              <Route path="/chatbot" element={<ChatbotPage />} />
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/settings" element={<Navigate to="/profile" replace />} />
               <Route path="/user-features" element={<Navigate to="/community" replace />} />
@@ -169,6 +207,11 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
+        {mountChatbot && (
+          <Suspense fallback={null}>
+            <PigifyChatbot />
+          </Suspense>
+        )}
       </BrowserRouter>
     </ThemeProvider>
   )

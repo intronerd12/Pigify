@@ -8,6 +8,8 @@ const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
 const normalizeKey = (s) => (s || '').toString().trim().toLowerCase();
 
 const provinceCenters = {
+  'la union': { lat: 16.8530, lng: 120.3802, zoom: 13 },
+  'luna, la union': { lat: 16.8530, lng: 120.3802, zoom: 14 },
   'metro manila': { lat: 14.5995, lng: 120.9842, zoom: 10 },
   manila: { lat: 14.5995, lng: 120.9842, zoom: 10 },
   cebu: { lat: 10.3157, lng: 123.8854, zoom: 10 },
@@ -18,8 +20,8 @@ const provinceCenters = {
 const getMapCenter = (provinceName) => {
   const key = normalizeKey(provinceName);
   if (provinceCenters[key]) return { ...provinceCenters[key], label: provinceName };
-  const fallback = { lat: 12.8797, lng: 121.774, zoom: 6 };
-  return { ...fallback, label: provinceName || 'Philippines' };
+  const fallback = { lat: 16.8530, lng: 120.3802, zoom: 13 };
+  return { ...fallback, label: provinceName || 'Luna, La Union' };
 };
 
 const badgeFor = (color) => {
@@ -33,7 +35,7 @@ const MAX_MAP_ZOOM = 18;
 
 const EnvironmentalData = () => {
   const [provinces, setProvinces] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState('Metro Manila');
+  const [selectedProvince, setSelectedProvince] = useState('La Union');
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingList, setLoadingList] = useState(true);

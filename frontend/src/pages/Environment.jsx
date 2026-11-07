@@ -115,7 +115,7 @@ function Environment() {
     const fetchWeather = async () => {
       setLoadingWeather(true)
       try {
-        const res = await fetch(`${API_BASE_URL}/api/weather?province=Laguna`)
+        const res = await fetch(`${API_BASE_URL}/api/weather?province=La%20Union`)
         if (res.ok) {
           const data = await res.json()
           setWeather(data)

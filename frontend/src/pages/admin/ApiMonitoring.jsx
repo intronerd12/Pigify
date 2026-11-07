@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { API_BASE_URL } from '../../config/api';
 import './Admin.css';
 
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 15000;
 const MAX_POINTS = 60;
 
 const ApiMonitoring = () => {

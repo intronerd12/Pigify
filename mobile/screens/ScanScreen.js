@@ -25,6 +25,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
 import { ScanService } from '../services/ScanService';
+import InfectionDecisionCard from '../components/InfectionDecisionCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -265,15 +266,15 @@ export default function ScanScreen({ user }) {
 
   const handleAlertPvo = () => {
     Alert.alert(
-      'Alert Provincial Veterinary Office (PVO)',
-      'Emergency notification to PVO Laguna & Batangas Epidemiology Unit.\n\n' +
-      'Incident Ref: PVO-ASF-2026-ALERT\n' +
-      'Authority: PVO is statutory responsible for tracking disease spread between municipalities.',
+      'Alert MAO Luna & OPVet La Union',
+      'Emergency notification to Municipal Agriculture Office - Luna (MAO Luna) & Office of the Provincial Veterinarian - La Union.\n\n' +
+      'Incident Ref: PVO-LU-2026-ALERT\n' +
+      'Study Site: Municipality of Luna, La Union (16.8530°N, 120.3802°E).',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Call PVO Hotline (0917-838-5847)',
-          onPress: () => Linking.openURL('tel:09178385847'),
+          text: 'Call MAO Luna (0917-842-5510)',
+          onPress: () => Linking.openURL('tel:09178425510'),
           style: 'destructive',
         },
       ]
@@ -628,7 +629,7 @@ export default function ScanScreen({ user }) {
                 >
                   <Ionicons name="warning" size={15} color="#f43f5e" style={{ marginRight: 6 }} />
                   <Text style={{ fontSize: 12, fontWeight: '800', color: '#f43f5e' }}>
-                    Alert Provincial Veterinary Office (PVO Laguna)
+                    Alert MAO Luna & OPVet La Union (0917-842-5510)
                   </Text>
                 </TouchableOpacity>
               )}
@@ -658,6 +659,13 @@ export default function ScanScreen({ user }) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* What To Do First: Single & Multi-Infection Priority Decision Engine */}
+          <InfectionDecisionCard
+            detectedConditions={[scanResult]}
+            navigation={navigation}
+            contextTitle="AI SCAN RESULT • WHAT TO DO FIRST GUIDE"
+          />
 
           {/* Action Buttons */}
           <View style={styles.actionRow}>
@@ -1096,6 +1104,13 @@ export default function ScanScreen({ user }) {
                 <Text style={{ fontSize: 11, color: '#94A3B8', lineHeight: 16 }}>{p.triage_recommendation}</Text>
               </TouchableOpacity>
             ))}
+
+            {/* What To Do First: Multi-Infection Decision Engine */}
+            <InfectionDecisionCard
+              detectedConditions={NATIVE_PIG_PRESETS}
+              navigation={navigation}
+              contextTitle="PEN MONITORING • MULTI-INFECTION PRIORITY GUIDE"
+            />
           </ScrollView>
         )}
       </View>
@@ -1316,7 +1331,7 @@ export default function ScanScreen({ user }) {
                       </Text>
                       <TouchableOpacity onPress={handleAlertPvo} style={styles.emergencyCallBtn}>
                         <Ionicons name="call" size={14} color="#FFFFFF" style={{ marginRight: 6 }} />
-                        <Text style={styles.emergencyCallBtnText}>Call PVO Hotline (0917-838-5847)</Text>
+                        <Text style={styles.emergencyCallBtnText}>Call MAO Luna Hotline (0917-842-5510)</Text>
                       </TouchableOpacity>
                     </View>
                   )}

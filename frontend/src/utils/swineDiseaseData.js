@@ -294,6 +294,14 @@ export const SICK_PIG_ACTION_PROTOCOL = {
 // ── 5. PROVINCIAL VETERINARY OFFICE (PVO) EMERGENCY DIRECTORY ─────────────────
 export const PVO_DIRECTORY = [
   {
+    province: 'La Union (Luna Study Site)',
+    officeName: 'Municipal Agriculture Office - Luna & OPVet La Union',
+    hotline: '(072) 607-1124 / 0917-842-5510',
+    email: 'mao.luna@launion.gov.ph / opvet@launion.gov.ph',
+    location: 'Municipal Hall Compound, Brgy. Magallanes, Luna & Capitol Site, San Fernando City, La Union',
+    municipalitiesCovered: ['Luna (All 40 Barangays)', 'Balaoan', 'Bangar', 'Santol', 'Sudipen', 'Bacnotan', 'San Juan', 'San Fernando City'],
+  },
+  {
     province: 'Laguna',
     officeName: 'Provincial Veterinary Office - Laguna',
     hotline: '(049) 501-1823 / 0917-838-5847',

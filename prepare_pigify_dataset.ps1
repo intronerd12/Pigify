@@ -1,14 +1,15 @@
-$source = "dataset_1000"
-$target = "pigify_swine_dataset_1000.zip"
+$source = "roboflow_dataset_500"
+$target = "pigify_roboflow_dataset_500_per_class.zip"
 
 if (!(Test-Path $source)) {
-    throw "Source folder not found: $source"
+    Write-Host "Generating 500-per-folder Roboflow dataset via backend/generate_roboflow_dataset_500.py..."
+    python backend/generate_roboflow_dataset_500.py
 }
 
-Write-Host "Creating training zip from '$source'..."
-if (Test-Path $target) {
-    Remove-Item $target -Force
+if (!(Test-Path $target)) {
+    Write-Host "Creating Roboflow zip archive from '$source'..."
+    Compress-Archive -Path "$source\*" -DestinationPath $target -Force
 }
-Compress-Archive -Path "$source\*" -DestinationPath $target -Force
+
 Write-Host "Successfully packaged: $target"
-Write-Host "File size: $((Get-Item $target).Length / 1MB) MB"
+Write-Host ("File size: {0:N2} MB" -f ((Get-Item $target).Length / 1MB))

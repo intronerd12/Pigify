@@ -72,8 +72,8 @@ const weatherCodeToLabel = (code) => {
 };
 
 const DEFAULT_FARM_COORDS = {
-  latitude: 14.2817,
-  longitude: 121.4173,
+  latitude: 16.8530,
+  longitude: 120.3802,
 };
 
 const getCoords = async () => {
@@ -106,7 +106,7 @@ const getCoords = async () => {
       longitude: pos.coords.longitude,
     };
   } catch (err) {
-    console.log('Location acquisition fallback to Laguna farm coords:', err?.message);
+    console.log('Location acquisition fallback to Luna, La Union study coords:', err?.message);
     return DEFAULT_FARM_COORDS;
   }
 };

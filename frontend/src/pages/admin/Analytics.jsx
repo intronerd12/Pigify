@@ -1,6 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import {
   Area,
   AreaChart,
@@ -126,7 +124,11 @@ const Analytics = () => {
     return { value: thi, status, color };
   }, [weather]);
 
-  const generatePdfReport = useCallback(() => {
+  const generatePdfReport = useCallback(async () => {
+    const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF('p', 'pt', 'a4');
     const margin = 36;
     const now = lastUpdated || new Date();
@@ -270,7 +272,11 @@ const Analytics = () => {
     };
 
     run(true);
-    const intervalId = setInterval(() => run(false), 5000);
+    const intervalId = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        run(false);
+      }
+    }, 30000);
     return () => {
       cancelled = true;
       clearInterval(intervalId);

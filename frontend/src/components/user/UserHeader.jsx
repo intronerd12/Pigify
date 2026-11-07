@@ -10,6 +10,7 @@ import {
   Users2,
   Settings,
   LogOut,
+  Bot,
 } from 'lucide-react'
 import BrandMark from '../BrandMark'
 import ThemeToggle from '../ThemeToggle'
@@ -68,6 +69,13 @@ export const USER_NAV_ITEMS = [
     icon: Users2,
     description: 'Discussion & Tips',
   },
+  {
+    path: '/chatbot',
+    label: 'Dr. Pigify AI',
+    shortLabel: 'AI Chat',
+    icon: Bot,
+    description: 'Pigify Study Research Assistant',
+  },
 ]
 
 const PREFETCH_MAP = {
@@ -78,6 +86,7 @@ const PREFETCH_MAP = {
   '/disease-map': () => import('../../pages/DiseaseMap'),
   '/environment': () => import('../../pages/Environment'),
   '/community': () => import('../../pages/CommunityForum'),
+  '/chatbot': () => import('../../pages/ChatbotPage'),
   '/profile': () => import('../../pages/UserProfile'),
 }
 
@@ -210,6 +219,17 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
               <span className="user-header-engine-text">AI ONLINE</span>
             </div>
           )}
+
+          {/* Dr. Pigify AI Dedicated Page Link */}
+          <Link
+            to="/chatbot"
+            className="user-header-ai-chat-btn"
+            title="Open Dr. Pigify AI Research Assistant"
+            aria-label="Open Dr. Pigify AI"
+          >
+            <Bot size={14} className="user-header-ai-icon" />
+            <span className="user-header-ai-text">Dr. Pigify AI</span>
+          </Link>
 
           {/* Theme Toggle */}
           <ThemeToggle />
