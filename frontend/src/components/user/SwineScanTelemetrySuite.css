@@ -1,0 +1,237 @@
+/* ============================================================================
+   SWINE SCAN TELEMETRY SUITE
+   Addresses Panel Evaluation Requirements:
+   - Body Part Localization & Exact Date/Time (Sir Nestor Valdez)
+   - Pig Body Temperature Sensor Hardware MLX90614 (Ma'am Pops Madriaga)
+   - Abnormal Behavior & Loss of Appetite Detection (Sir Nestor Valdez)
+   - 2-Camera Architecture, Pig ID & Immediate Alert Trigger (Sir Julius Silang)
+   ============================================================================ */
+
+.sst-wrapper {
+  border-radius: 24px;
+  background: var(--surface-card, rgba(13, 19, 32, 0.9));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.sst-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sst-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 4px 11px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+
+.sst-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 1.38rem;
+  font-weight: 800;
+  color: var(--text-main, #ffffff);
+  margin: 0 0 6px 0;
+  line-height: 1.25;
+}
+
+.sst-subtitle {
+  font-size: 0.86rem;
+  color: var(--text-muted, #94a3b8);
+  margin: 0;
+  max-width: 780px;
+  line-height: 1.5;
+}
+
+/* Tab Switcher */
+.sst-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.sst-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sst-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sst-tab-btn.active {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: #f43f5e;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(244, 63, 94, 0.18);
+}
+
+.sst-tab-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sst-tab-btn.active .sst-tab-icon {
+  background: rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
+
+.sst-tab-title {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-main, #ffffff);
+  display: block;
+}
+
+.sst-tab-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted, #94a3b8);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Top Live Telemetry Strip */
+.sst-live-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.sst-metric-pill {
+  background: rgba(10, 15, 28, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.sst-metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sst-metric-val {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 5px;
+}
+
+.sst-metric-note {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Anatomical Body Part Grid */
+.sst-body-grid {
+  display: grid;
+  grid-template-columns: minmax(290px, 1.05fr) minmax(290px, 0.95fr);
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .sst-body-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sst-zone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sst-zone-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  text-align: left;
+}
+
+.sst-zone-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sst-zone-card.selected {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: #06b6d4;
+}
+
+/* Behavior Checklist */
+.sst-behavior-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.sst-behavior-card {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.sst-behavior-card.active {
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.45);
+}
+
+/* Alert Banner */
+.sst-alert-flash {
+  border-radius: 16px;
+  padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.22) 0%, rgba(190, 18, 60, 0.16) 100%);
+  border: 1.5px solid #f43f5e;
+  margin-top: 16px;
+}

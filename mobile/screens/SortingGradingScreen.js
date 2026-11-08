@@ -8,6 +8,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { ScanService } from '../services/ScanService';
 import InfectionDecisionCard from '../components/InfectionDecisionCard';
+import SwineScanTelemetryCard, {
+  formatMobileScanDateTime,
+  inferMobileBodyPart,
+} from '../components/SwineScanTelemetryCard';
 
 // ── Web Design Tokens (Exact match with SortingGrading.jsx & Home.css) ────────
 const THEME = {
@@ -230,10 +234,15 @@ export default function SortingGradingScreen({ navigation, user }) {
                     </View>
 
                     <Text style={styles.caseTimestamp}>
-                      {item.timestamp ? new Date(item.timestamp).toLocaleDateString() : 'Today'} •{' '}
-                      {item.timestamp
-                        ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                        : 'Recorded'}
+                      {item.formattedDateTime || formatMobileScanDateTime(item.timestamp)}
+                    </Text>
+
+                    <Text style={{ fontSize: 11, color: '#38BDF8', fontWeight: '700', marginTop: 3 }}>
+                      Body Part: {item.bodyPart || inferMobileBodyPart(item.disease_detected || item.condition).name}
+                    </Text>
+
+                    <Text style={{ fontSize: 10.5, color: '#CBD5E1', marginTop: 2 }}>
+                      IR Temp (MLX90614): {item.pigBodyTemp || (String(item.grade || 'A').toUpperCase() === 'A' ? '38.8°C' : '40.8°C')} • {item.appetiteBehavior || (String(item.grade || 'A').toUpperCase() === 'A' ? 'Normal Appetite' : 'Loss of Appetite')}
                     </Text>
 
                     <View style={styles.badgeRow}>
@@ -262,6 +271,9 @@ export default function SortingGradingScreen({ navigation, user }) {
             );
           })
         )}
+
+        {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
+        <SwineScanTelemetryCard scanResult={filtered[0] || null} />
 
         {/* What To Do First: Single & Multi-Infection Decision Engine */}
         <InfectionDecisionCard

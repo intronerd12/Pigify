@@ -391,6 +391,84 @@ function Environment() {
                 </div>
               </div>
             </div>
+
+            {/* ================================================================
+                3. PIG BODY TEMPERATURE HARDWARE (MLX90614) & 2-CAMERA SPEC
+                ================================================================ */}
+            <div
+              style={{
+                marginTop: '24px',
+                borderRadius: '24px',
+                background: 'var(--surface-card, rgba(13, 19, 32, 0.88))',
+                border: '1px solid rgba(56, 189, 248, 0.28)',
+                padding: '26px',
+                boxShadow: 'var(--shadow-card, 0 16px 40px rgba(0, 0, 0, 0.28))',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <Thermometer size={20} color="#f43f5e" />
+                  <h3 style={{ margin: 0, fontFamily: 'Sora', fontSize: '1.22rem', fontWeight: 800, color: '#ffffff' }}>
+                    Swine Body Temperature &amp; Dual-Camera Sensor Hardware Specification
+                  </h3>
+                </div>
+                <span
+                  style={{
+                    fontFamily: 'JetBrains Mono',
+                    fontSize: '0.72rem',
+                    fontWeight: 800,
+                    color: '#38bdf8',
+                    background: 'rgba(56, 189, 248, 0.14)',
+                    border: '1px solid rgba(56, 189, 248, 0.35)',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                  }}
+                >
+                  RASPBERRY PI 5 EDGE SENSOR SUITE
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                  <div style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', color: '#fb7185', fontWeight: 800 }}>
+                    1. PIG BODY TEMPERATURE SENSOR
+                  </div>
+                  <div style={{ fontFamily: 'Sora', fontSize: '0.96rem', fontWeight: 800, color: '#ffffff', margin: '4px 0 6px 0' }}>
+                    Melexis MLX90614ESF-DCI Non-Contact IR Thermometer + DS18B20 Probe
+                  </div>
+                  <p style={{ fontSize: '0.79rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+                    Connected via <strong>I2C Bus (GPIO2 SDA / GPIO3 SCL)</strong> on the Raspberry Pi 5. Aimed at the pig&apos;s{' '}
+                    <strong>Ear Base (Tympanic Window) &amp; Periorbital Zone</strong> at the feeder trough (15–40 cm distance, ±0.2°C medical accuracy).
+                    Normal swine temperature: <strong>38.5°C–39.5°C</strong>; Acute Pyrexia Alert: <strong>≥ 40.5°C</strong>.
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                  <div style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', color: '#38bdf8', fontWeight: 800 }}>
+                    2. DUAL-CAMERA PEN VISION (2 CAMERAS)
+                  </div>
+                  <div style={{ fontFamily: 'Sora', fontSize: '0.96rem', fontWeight: 800, color: '#ffffff', margin: '4px 0 6px 0' }}>
+                    2× Raspberry Pi Camera Module v3 (Sony IMX708 12MP)
+                  </div>
+                  <p style={{ fontSize: '0.79rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+                    <strong>Camera #1 (Overhead 120° Wide @ 2.2m):</strong> Monitors whole-pen posture, feeder trough visits (detecting <strong>loss of appetite</strong>), and fever huddling.<br />
+                    <strong>Camera #2 (Feeder-Level 75° AF @ 0.55m):</strong> Scans individual <strong>Ear-Tag ID</strong> and captures close-up lesions on the <em>Ears, Flank, Belly, Snout, and Limbs</em>.
+                  </p>
+                </div>
+
+                <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                  <div style={{ fontSize: '0.7rem', fontFamily: 'JetBrains Mono', color: '#10b981', fontWeight: 800 }}>
+                    3. AMBIENT PEN MICROCLIMATE SENSOR
+                  </div>
+                  <div style={{ fontFamily: 'Sora', fontSize: '0.96rem', fontWeight: 800, color: '#ffffff', margin: '4px 0 6px 0' }}>
+                    DHT22 / SHT31 Digital Temp-Humidity + MQ-137 Ammonia Sensor
+                  </div>
+                  <p style={{ fontSize: '0.79rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+                    Separates <strong>ambient pen heat stress</strong> (&gt;30°C pen air) from <strong>true infectious pig fever</strong> (≥40.5°C MLX90614 ear-base reading), preventing false fever alarms during hot afternoons in Luna, La Union.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>

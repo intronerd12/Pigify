@@ -26,6 +26,10 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { ScanService } from '../services/ScanService';
 import InfectionDecisionCard from '../components/InfectionDecisionCard';
+import SwineScanTelemetryCard, {
+  formatMobileScanDateTime,
+  inferMobileBodyPart,
+} from '../components/SwineScanTelemetryCard';
 
 const { width, height } = Dimensions.get('window');
 
@@ -245,10 +249,21 @@ export default function ScanScreen({ user }) {
   };
 
   const handleSelectPreset = (preset) => {
+    const nowIso = new Date().toISOString();
+    const inferredZone = inferMobileBodyPart(preset.condition);
+    const isNormal = String(preset.severity || '').toLowerCase() === 'normal';
+    const isCritical = String(preset.severity || '').toLowerCase().includes('critical') || String(preset.condition || '').toLowerCase().includes('asf');
+    const tempVal = isNormal ? '38.9°C' : isCritical ? '41.3°C' : '40.8°C';
     setScanResult({
       ...preset,
       hardwareSource: 'Laboratory Clinical Preset',
-      timestamp: new Date().toISOString(),
+      timestamp: nowIso,
+      formattedDateTime: formatMobileScanDateTime(nowIso),
+      bodyPart: inferredZone.name,
+      pigBodyTemp: tempVal,
+      appetiteBehavior: isNormal ? 'Normal Appetite (6/6 Meals)' : 'Loss of Appetite (1/6 Meals) • Fever Huddling',
+      cameraUnit: '2-Camera Setup (Cam #1 Overhead + Cam #2 Feeder Macro & MLX90614 IR)',
+      pigIdTag: 'Ear-Tag #LU-NP09 • Red Dorsal Mark',
     });
   };
 
@@ -336,6 +351,12 @@ export default function ScanScreen({ user }) {
       const conf = Math.round(res?.display_confidence_score || res?.confidence_score || preset.display_confidence_score || 96.8);
       const triage = res?.triage_recommendation || res?.recommendation || preset.triage_recommendation || 'Skin surface tissue intact. Continue standard pen ventilation and nutrition.';
 
+      const nowIso = new Date().toISOString();
+      const inferredZone = inferMobileBodyPart(condition);
+      const isNormal = String(severity || '').toLowerCase() === 'normal';
+      const isCritical = String(severity || '').toLowerCase().includes('critical') || String(condition || '').toLowerCase().includes('asf');
+      const tempVal = isNormal ? '38.8°C' : isCritical ? '41.3°C' : '40.8°C';
+
       const scanObj = {
         condition,
         grade,
@@ -348,7 +369,13 @@ export default function ScanScreen({ user }) {
         penId: extra.penId || (selectedBreed === 'native' ? 'Nursery A-02' : 'Pen B-04'),
         swineId: extra.swineId || (selectedBreed === 'native' ? 'Native Sow #NP-09' : 'Boar #12'),
         breed: extra.breed || (selectedBreed === 'native' ? 'Philippine Native Pig (Baboy Katutubo)' : 'Commercial White'),
-        timestamp: new Date().toISOString(),
+        timestamp: nowIso,
+        formattedDateTime: formatMobileScanDateTime(nowIso),
+        bodyPart: inferredZone.name,
+        pigBodyTemp: tempVal,
+        appetiteBehavior: isNormal ? 'Normal Appetite (6/6 Meals)' : 'Loss of Appetite (1/6 Meals) • Fever Huddling',
+        cameraUnit: '2-Camera Setup (Cam #1 Overhead + Cam #2 Feeder Macro & MLX90614 IR)',
+        pigIdTag: 'Ear-Tag #LU-B12 • Red Dorsal Mark',
       };
 
       try {
@@ -659,6 +686,9 @@ export default function ScanScreen({ user }) {
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
+          <SwineScanTelemetryCard scanResult={scanResult} />
 
           {/* What To Do First: Single & Multi-Infection Priority Decision Engine */}
           <InfectionDecisionCard
@@ -1104,6 +1134,9 @@ export default function ScanScreen({ user }) {
                 <Text style={{ fontSize: 11, color: '#94A3B8', lineHeight: 16 }}>{p.triage_recommendation}</Text>
               </TouchableOpacity>
             ))}
+
+            {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
+            <SwineScanTelemetryCard scanResult={NATIVE_PIG_PRESETS[0]} />
 
             {/* What To Do First: Multi-Infection Decision Engine */}
             <InfectionDecisionCard

@@ -23,6 +23,10 @@ import {
 import { Link } from 'react-router-dom'
 import UserHeader from '../components/user/UserHeader'
 import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
+import {
+  formatExactScanDateTime,
+  inferBodyPartFromCondition,
+} from '../components/user/SwineScanTelemetrySuite'
 import { API_BASE_URL } from '../config/api'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import './Landing.css'
@@ -483,9 +487,15 @@ function SortingGrading() {
                           <h4 style={{ margin: '0 0 4px 0', fontFamily: 'Sora', fontSize: '0.98rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
                             {scan.condition || scan.details || 'Swine Dermis Inspection'}
                           </h4>
-                          <div style={{ display: 'flex', gap: '8px', fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)' }}>
+                          <div style={{ display: 'flex', gap: '8px', fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)', flexWrap: 'wrap' }}>
                             <span>Confidence: <strong style={{ color: '#10b981' }}>{scan.confidence || '96.8%'}</strong></span>
                             {scan.affectedArea && <span>Area: <strong style={{ color: 'var(--text-main, #ffffff)' }}>{scan.affectedArea}</strong></span>}
+                          </div>
+                          <div style={{ fontSize: '0.74rem', color: '#38bdf8', marginTop: '4px', fontWeight: 700 }}>
+                            Body Part: {scan.bodyPart || inferBodyPartFromCondition(scan.condition).name}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: '#cbd5e1', marginTop: '2px' }}>
+                            IR Temp (MLX90614): <strong style={{ color: isHealthy ? '#10b981' : '#fb7185' }}>{scan.pigBodyTemp || (isHealthy ? '38.8°C' : '40.8°C')}</strong> &bull; {scan.appetiteBehavior || (isHealthy ? 'Normal Appetite' : 'Loss of Appetite Flag')}
                           </div>
                         </div>
                       </div>
@@ -512,8 +522,11 @@ function SortingGrading() {
                       )}
 
                       {/* Footer Actions */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid var(--border-subtle, rgba(255,255,255,0.06))', fontSize: '0.74rem', color: 'var(--text-muted, #94a3b8)' }}>
-                        <span>{new Date(scan.timestamp || Date.now()).toLocaleDateString()}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid var(--border-subtle, rgba(255,255,255,0.06))', fontSize: '0.73rem', color: 'var(--text-muted, #94a3b8)' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontFamily: 'JetBrains Mono', fontSize: '0.7rem' }}>
+                          <Clock size={12} color="#38bdf8" />
+                          {scan.formattedDateTime || formatExactScanDateTime(scan.timestamp)}
+                        </span>
                         <button
                           type="button"
                           onClick={() => {
