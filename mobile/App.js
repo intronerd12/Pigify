@@ -220,7 +220,17 @@ function AppContent() {
     try {
       const userData = await AsyncStorage.getItem('user');
       if (userData) {
-        setUser(JSON.parse(userData));
+        const parsed = JSON.parse(userData);
+        if (!parsed.avatar && parsed.email) {
+          const cleanEmail = parsed.email.trim().toLowerCase();
+          const cached =
+            (await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`)) ||
+            (parsed.id && (await AsyncStorage.getItem(`@pigify_saved_avatar_${parsed.id}`)));
+          if (cached) {
+            parsed.avatar = cached;
+          }
+        }
+        setUser(parsed);
       }
     } catch (error) {
       console.error('Error loading user:', error);
@@ -230,9 +240,27 @@ function AppContent() {
     }
   };
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-    AsyncStorage.setItem('user', JSON.stringify(userData));
+  const handleLogin = async (userData) => {
+    let finalUser = { ...userData };
+    const cleanEmail = String(userData?.email || '').trim().toLowerCase();
+    const userId = String(userData?.id || userData?._id || '').trim();
+    if (!finalUser.avatar) {
+      const cached =
+        (cleanEmail && (await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`))) ||
+        (userId && (await AsyncStorage.getItem(`@pigify_saved_avatar_${userId}`)));
+      if (cached) {
+        finalUser.avatar = cached;
+      }
+    } else if (finalUser.avatar) {
+      if (cleanEmail) {
+        AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, finalUser.avatar).catch(() => {});
+      }
+      if (userId) {
+        AsyncStorage.setItem(`@pigify_saved_avatar_${userId}`, finalUser.avatar).catch(() => {});
+      }
+    }
+    setUser(finalUser);
+    AsyncStorage.setItem('user', JSON.stringify(finalUser));
   };
 
   const handleLogout = async () => {
@@ -246,6 +274,16 @@ function AppContent() {
   const handleUpdateUser = async (updatedUser) => {
     setUser(updatedUser);
     await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+    const cleanEmail = String(updatedUser?.email || '').trim().toLowerCase();
+    const userId = String(updatedUser?.id || updatedUser?._id || '').trim();
+    if (updatedUser?.avatar) {
+      if (cleanEmail) {
+        AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, updatedUser.avatar).catch(() => {});
+      }
+      if (userId) {
+        AsyncStorage.setItem(`@pigify_saved_avatar_${userId}`, updatedUser.avatar).catch(() => {});
+      }
+    }
   };
 
   useEffect(() => {

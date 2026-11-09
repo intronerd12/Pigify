@@ -147,9 +147,28 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
             })
             .eq('id', targetId);
         }
+        // Also update Supabase auth metadata so session and JWT always contain avatar_url
+        await supabase.auth.updateUser({
+          data: {
+            avatar_url: currentAvatarUrl,
+            full_name: updateData.name,
+          },
+        });
       } catch (sbErr) {
         console.log('[Supabase Direct Sync]:', sbErr?.message);
       }
+
+      // Save persistent avatar cache keys by email and ID so logout/login keeps it
+      try {
+        const cleanEmail = String(email || user.email || '').trim().toLowerCase();
+        const targetId = String(user.id || user._id || '').trim();
+        if (cleanEmail && currentAvatarUrl) {
+          await AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, currentAvatarUrl);
+        }
+        if (targetId && currentAvatarUrl) {
+          await AsyncStorage.setItem(`@pigify_saved_avatar_${targetId}`, currentAvatarUrl);
+        }
+      } catch {}
 
       if (typeof onUpdateUser === 'function') {
         await onUpdateUser(finalUser);

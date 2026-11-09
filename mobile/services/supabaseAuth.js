@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from './supabase';
 import { buildApiUrl } from './api';
 
@@ -61,8 +62,18 @@ export async function syncWithBackend(supabaseToken, nameHint = '', emailHint = 
     }
 
     if (res.ok && data?.id) {
+      const cleanEmail = String(emailHint || data.email || '').trim().toLowerCase();
+      let avatar = data.avatar;
+      if (!avatar && cleanEmail) {
+        avatar = (await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`)) || '';
+      }
+      if (avatar && cleanEmail) {
+        AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, avatar).catch(() => {});
+        AsyncStorage.setItem(`@pigify_saved_avatar_${data.id}`, avatar).catch(() => {});
+      }
       return {
         ...data,
+        avatar: avatar || '',
         supabaseToken,
         token: supabaseToken,
       };
@@ -73,12 +84,20 @@ export async function syncWithBackend(supabaseToken, nameHint = '', emailHint = 
   }
 
   // Resilient fallback profile matching web schema when backend is offline or cold-starting
+  const cleanEmail = String(emailHint || '').trim().toLowerCase();
+  let cachedAvatar = '';
+  if (cleanEmail) {
+    try {
+      cachedAvatar = (await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`)) || '';
+    } catch {}
+  }
+
   return {
     _id: 'usr_' + Date.now(),
     id: 'usr_' + Date.now(),
     name: nameHint || (emailHint ? emailHint.split('@')[0] : 'Pigify Operator'),
     email: emailHint,
-    avatar: '',
+    avatar: cachedAvatar || '',
     role: 'user',
     status: 'active',
     status_reason: '',
@@ -158,6 +177,38 @@ export async function signInWithSupabase(email, password) {
 
     const nameHint = data.user?.user_metadata?.full_name || cleanEmail.split('@')[0];
     const syncedUser = await syncWithBackend(data.session.access_token, nameHint, cleanEmail);
+
+    // Direct Supabase database profile query to ensure avatar is 100% loaded across re-logins
+    try {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('id, name, avatar, role, status')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      if (prof?.avatar) {
+        syncedUser.avatar = prof.avatar;
+        await AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, prof.avatar);
+        await AsyncStorage.setItem(`@pigify_saved_avatar_${data.user.id}`, prof.avatar);
+      } else {
+        const cached = await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`);
+        if (cached) {
+          syncedUser.avatar = cached;
+          await supabase.from('profiles').update({ avatar: cached }).eq('id', data.user.id);
+          await supabase.auth.updateUser({ data: { avatar_url: cached } });
+        }
+      }
+    } catch (sbProfErr) {
+      console.warn('[supabaseAuth] Direct profile query notice:', sbProfErr?.message);
+    }
+
+    if (syncedUser.avatar) {
+      await AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, syncedUser.avatar);
+      if (syncedUser.id) {
+        await AsyncStorage.setItem(`@pigify_saved_avatar_${syncedUser.id}`, syncedUser.avatar);
+      }
+    }
+
     return syncedUser;
   } catch (err) {
     if (err.needsVerification) throw err;

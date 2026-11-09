@@ -68,17 +68,26 @@ const supabaseSync = async (req, res) => {
     user_metadata?.name ||
     req.body?.name ||
     cleanEmail.split('@')[0];
-  const avatar = user_metadata?.avatar_url || user_metadata?.picture || '';
+  const metaAvatar = user_metadata?.avatar_url || user_metadata?.picture || '';
 
   try {
+    // Check if user already has an existing avatar in profiles to prevent wiping on re-login
+    const { data: existingProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('id, avatar, name')
+      .eq('id', id)
+      .maybeSingle();
+
+    const avatarToSave = metaAvatar || existingProfile?.avatar || '';
+
     // Upsert profile in Supabase profiles table
     const { data: profile, error: upsertError } = await supabaseAdmin
       .from('profiles')
       .upsert(
         {
           id,
-          name,
-          avatar,
+          name: name || existingProfile?.name || cleanEmail.split('@')[0],
+          avatar: avatarToSave,
           email_verified: isEmailVerified,
           last_login_at: new Date().toISOString(),
         },
@@ -209,13 +218,22 @@ const socialLogin = async (req, res) => {
 
     // 2. If we have a Supabase user ID, try upserting into profiles table
     if (supabaseUser?.id) {
+      // Check existing profile to preserve custom avatar on re-login
+      const { data: existingProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('id, avatar, name')
+        .eq('id', supabaseUser.id)
+        .maybeSingle();
+
+      const avatarToSave = fallbackAvatar || existingProfile?.avatar || supabaseUser.user_metadata?.avatar_url || '';
+
       const { data: profile, error: upsertError } = await supabaseAdmin
         .from('profiles')
         .upsert(
           {
             id: supabaseUser.id,
-            name: fallbackName || supabaseUser.user_metadata?.full_name || cleanEmail.split('@')[0],
-            avatar: fallbackAvatar || supabaseUser.user_metadata?.avatar_url || '',
+            name: fallbackName || existingProfile?.name || supabaseUser.user_metadata?.full_name || cleanEmail.split('@')[0],
+            avatar: avatarToSave,
             email_verified: true,
             last_login_at: new Date().toISOString(),
           },

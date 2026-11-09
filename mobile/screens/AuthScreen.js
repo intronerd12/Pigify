@@ -380,12 +380,32 @@ export default function AuthScreen({ onLogin }) {
     setGoogleLoading(true);
     setError('');
 
+    // Retrieve any persistently cached profile picture for this operator
+    let savedAvatar =
+      (await AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`)) ||
+      (await AsyncStorage.getItem(`@pigify_saved_avatar_${googleId}`)) ||
+      selectedProfile.avatar ||
+      '';
+
+    // Direct Supabase probe to fetch existing avatar if available
+    try {
+      const { supabase } = require('../services/supabase');
+      const { data: sbProf } = await supabase
+        .from('profiles')
+        .select('avatar')
+        .eq('id', googleId)
+        .maybeSingle();
+      if (sbProf?.avatar) {
+        savedAvatar = sbProf.avatar;
+      }
+    } catch {}
+
     let finalUser = {
       _id: googleId,
       id: googleId,
       name: displayName,
       email: cleanEmail,
-      avatar: selectedProfile.avatar || '',
+      avatar: savedAvatar,
       role: isAdminEmail ? 'admin' : 'user',
       status: 'active',
       status_reason: '',
@@ -400,12 +420,13 @@ export default function AuthScreen({ onLogin }) {
         name: displayName,
         email: cleanEmail,
         googleId,
-        avatar: selectedProfile.avatar || '',
+        avatar: savedAvatar,
       });
       if (res && (res.id || res._id || res.email)) {
         finalUser = {
           ...finalUser,
           ...res,
+          avatar: res.avatar || savedAvatar || finalUser.avatar,
           token: res.token || socialToken,
           supabaseToken: res.supabaseToken || res.token || socialToken,
         };
@@ -414,6 +435,11 @@ export default function AuthScreen({ onLogin }) {
       // Backend offline or unreachable; proceed with verified Firebase Google session
     } finally {
       setGoogleLoading(false);
+    }
+
+    if (finalUser.avatar) {
+      await AsyncStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, finalUser.avatar);
+      await AsyncStorage.setItem(`@pigify_saved_avatar_${googleId}`, finalUser.avatar);
     }
 
     await AsyncStorage.setItem('user', JSON.stringify(finalUser));
