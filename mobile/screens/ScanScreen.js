@@ -58,6 +58,11 @@ const getGradeColor = (grade) => {
   return '#94A3B8';
 };
 
+// Swine Pen & Disease Visual Assets
+const SWINE_HEALTH_SCAN = require('./assets/swine-health-scan.jpg');
+const SWINE_BIOSECURITY_PEN = require('./assets/swine-biosecurity-pen.jpg');
+const SWINE_SCAN_SUBJECT = require('./assets/swine-scan-subject.jpg');
+
 // Raspberry Pi 5 & Pi Camera Module v3 Pen Feeds
 const RASPI_PENS = [
   {
@@ -71,7 +76,8 @@ const RASPI_PENS = [
     severity: 'Moderate',
     display_confidence_score: 97.4,
     triage_recommendation: 'Isolate boar in Pen B-04 immediately. Raised diamond urticaria on flank. Clean pen water trough and consult veterinarian for Penicillin G therapy.',
-    imageUri: 'https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=800&q=80',
+    imageSource: SWINE_HEALTH_SCAN,
+    imageUri: Image.resolveAssetSource(SWINE_HEALTH_SCAN)?.uri || 'https://images.unsplash.com/photo-1580682777666-24a7b3024e24?auto=format&fit=crop&w=1200&q=80',
     telemetry: {
       fps: 30,
       cpuTemp: '47.6°C',
@@ -92,7 +98,8 @@ const RASPI_PENS = [
     severity: 'Mild',
     display_confidence_score: 95.2,
     triage_recommendation: 'Clean bamboo pen bedding and monitor pen humidity. Check for rough floor abrasions. Re-scan in 48 hours.',
-    imageUri: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=800&q=80',
+    imageSource: SWINE_SCAN_SUBJECT,
+    imageUri: Image.resolveAssetSource(SWINE_SCAN_SUBJECT)?.uri || 'https://images.unsplash.com/photo-1793115140300-098c899fe197?auto=format&fit=crop&w=1200&q=80',
     telemetry: {
       fps: 30,
       cpuTemp: '48.2°C',
@@ -113,7 +120,8 @@ const RASPI_PENS = [
     severity: 'Normal',
     display_confidence_score: 98.6,
     triage_recommendation: 'Dermal tissue healthy. No active lesion segmentation triggers. Continue routine farm biosecurity protocols.',
-    imageUri: 'https://images.unsplash.com/photo-1594732832278-abd644401426?auto=format&fit=crop&w=800&q=80',
+    imageSource: SWINE_BIOSECURITY_PEN,
+    imageUri: Image.resolveAssetSource(SWINE_BIOSECURITY_PEN)?.uri || 'https://images.unsplash.com/photo-1712732249476-83f7568a0b70?auto=format&fit=crop&w=1200&q=80',
     telemetry: {
       fps: 30,
       cpuTemp: '46.9°C',
@@ -135,7 +143,8 @@ const NATIVE_PIG_PRESETS = [
     breed: 'Philippine Native Pig (Baboy Katutubo)',
     susceptibility: 'Native pigs have thick dark dermis. Raised rhomboid geometric plaques may appear darker and obscured by coarse bristles.',
     triage_recommendation: 'Isolate native sow immediately. Disinfect pen with 2% Virkon S or slaked lime whitewash. Consult veterinarian for Penicillin G therapy.',
-    imageUri: 'https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=600&q=80',
+    imageSource: SWINE_HEALTH_SCAN,
+    imageUri: Image.resolveAssetSource(SWINE_HEALTH_SCAN)?.uri || 'https://images.unsplash.com/photo-1580682777666-24a7b3024e24?auto=format&fit=crop&w=800&q=80',
   },
   {
     name: 'Native Pig: Sarcoptic Mange',
@@ -146,7 +155,8 @@ const NATIVE_PIG_PRESETS = [
     breed: 'Philippine Native Pig (Ilocos Strain)',
     susceptibility: 'Endemic in free-range native pigs. Rubbing on rough bamboo posts causes thick asbestos-like grey ear crusts.',
     triage_recommendation: 'Subcutaneous Ivermectin (300 µg/kg) injection; repeat after 14 days. Apply mineral oil debridement to ear canals. Spray wooden pen posts with acaricidal solution.',
-    imageUri: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=600&q=80',
+    imageSource: SWINE_BIOSECURITY_PEN,
+    imageUri: Image.resolveAssetSource(SWINE_BIOSECURITY_PEN)?.uri || 'https://images.unsplash.com/photo-1712732249476-83f7568a0b70?auto=format&fit=crop&w=800&q=80',
   },
   {
     name: 'Native Pig: ASF-Suspect',
@@ -157,7 +167,8 @@ const NATIVE_PIG_PRESETS = [
     breed: 'Philippine Native Pig (Batangas Native)',
     susceptibility: 'CRITICAL ALERT: Native pigs have 0% genetic resistance to ASF. Look for cyanotic purple ears, high pyrexia (>40.5°C), and sudden death.',
     triage_recommendation: 'EMERGENCY: Report immediately to Provincial Veterinary Office (PVO). Halt all animal transport, slaughter, or farm visitors. Disinfect perimeter with 2% Virkon S and slaked lime.',
-    imageUri: 'https://images.unsplash.com/photo-1594732832278-abd644401426?auto=format&fit=crop&w=600&q=80',
+    imageSource: SWINE_SCAN_SUBJECT,
+    imageUri: Image.resolveAssetSource(SWINE_SCAN_SUBJECT)?.uri || 'https://images.unsplash.com/photo-1793115140300-098c899fe197?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -357,6 +368,7 @@ export default function ScanScreen({ user }) {
         display_confidence_score: conf,
         triage_recommendation: triage,
         imageUri: uri,
+        imageSource: extra.presetData?.imageSource || activePen.imageSource,
         source: extra.source || (sourceMode === 'raspi' ? 'raspberry_pi_5' : 'mobile_app'),
         hardwareSource: extra.hardware || (sourceMode === 'raspi' ? 'Raspberry Pi 5 (Pi Cam Module v3 IMX708)' : 'Mobile Phone Camera'),
         penId: extra.penId || (selectedBreed === 'native' ? 'Nursery A-02' : 'Pen B-04'),
@@ -384,6 +396,7 @@ export default function ScanScreen({ user }) {
         display_confidence_score: 97.4,
         triage_recommendation: 'Skin surface tissue intact. Continue standard pen ventilation and nutrition.',
         imageUri: uri,
+        imageSource: extra.presetData?.imageSource || activePen.imageSource,
         hardwareSource: extra.hardware || (sourceMode === 'raspi' ? 'Raspberry Pi 5 (Pi Cam v3)' : 'Mobile Phone Camera'),
       };
       setScanResult(fallback);
@@ -518,7 +531,14 @@ export default function ScanScreen({ user }) {
             <View style={styles.cornerBL} />
             <View style={styles.cornerBR} />
 
-            <Image source={{ uri: scanResult.imageUri }} style={styles.previewImage} resizeMode="cover" />
+            <Image
+              source={
+                scanResult.imageSource ||
+                (scanResult.imageUri ? { uri: scanResult.imageUri } : SWINE_HEALTH_SCAN)
+              }
+              style={styles.previewImage}
+              resizeMode="cover"
+            />
             <View style={[styles.gradeTag, { backgroundColor: `${gradeColor}25`, borderColor: gradeColor }]}>
               <Text style={[styles.gradeTagText, { color: gradeColor }]}>GRADE {grade}</Text>
             </View>
@@ -820,7 +840,10 @@ export default function ScanScreen({ user }) {
           {/* Camera Frame with Viewfinder & Simulated Detection HUD */}
           <View style={styles.cameraFrame}>
             <Image
-              source={{ uri: activePen.imageUri }}
+              source={
+                activePen.imageSource ||
+                (activePen.imageUri ? { uri: activePen.imageUri } : SWINE_HEALTH_SCAN)
+              }
               style={StyleSheet.absoluteFillObject}
               resizeMode="cover"
             />

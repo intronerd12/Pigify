@@ -10,3 +10,4 @@ export const CLOUDINARY_API_KEY =
   '677317515911799';
 
 export const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+

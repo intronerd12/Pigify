@@ -106,7 +106,7 @@ AsyncStorage.getItem(ACTIVE_BACKEND_STORAGE_KEY)
       }
     }
   })
-  .catch(() => {});
+  .catch(() => { });
 
 const getBaseOrder = () => {
   const currentCandidates = buildBaseCandidates();
@@ -153,7 +153,7 @@ export const setActiveApiUrl = async (newUrl, persist = true) => {
   if (persist) {
     try {
       await AsyncStorage.setItem(ACTIVE_BACKEND_STORAGE_KEY, normalized);
-    } catch {}
+    } catch { }
   }
 };
 
@@ -166,7 +166,7 @@ export const resetActiveApiUrl = async () => {
   activeBaseUrl = baseCandidates[0] || 'http://localhost:5000';
   try {
     await AsyncStorage.removeItem(ACTIVE_BACKEND_STORAGE_KEY);
-  } catch {}
+  } catch { }
 };
 
 /**
@@ -226,7 +226,7 @@ export const checkBackendHealth = async (urlToCheck) => {
     let data = {};
     try {
       data = await response.json();
-    } catch {}
+    } catch { }
 
     return {
       ok: response.ok,
@@ -319,7 +319,7 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
       if (response.ok || !shouldRetryResponse(response.status) || isLast) {
         if (activeBaseUrl !== baseUrl) {
           activeBaseUrl = baseUrl;
-          AsyncStorage.setItem(ACTIVE_BACKEND_STORAGE_KEY, baseUrl).catch(() => {});
+          AsyncStorage.setItem(ACTIVE_BACKEND_STORAGE_KEY, baseUrl).catch(() => { });
         }
         return response;
       }
