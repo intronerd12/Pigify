@@ -45,7 +45,11 @@ if (typeof globalThis !== 'undefined') {
   globalThis.useCallback = globalThis.useCallback || useCallback;
   globalThis.useRef = globalThis.useRef || useRef;
 }
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  DefaultTheme as NavigationDefaultTheme,
+  DarkTheme as NavigationDarkTheme,
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider } from 'react-native-paper';
@@ -222,10 +226,13 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const userKey = sanitizeForKey(getUserNamespace(user)) || 'anon';
 
-  const navigationTheme = useMemo(
-    () => ({
+  const navigationTheme = useMemo(() => {
+    const baseNavTheme = isDark ? NavigationDarkTheme : NavigationDefaultTheme;
+    return {
+      ...baseNavTheme,
       dark: isDark,
       colors: {
+        ...baseNavTheme.colors,
         primary: colors.primary,
         background: colors.bgDeep,
         card: colors.navBarBg,
@@ -233,9 +240,14 @@ function AppContent() {
         border: colors.navBarBorder,
         notification: colors.primary,
       },
-    }),
-    [isDark, colors]
-  );
+      fonts: baseNavTheme.fonts || {
+        regular: { fontFamily: 'System', fontWeight: '400' },
+        medium: { fontFamily: 'System', fontWeight: '500' },
+        bold: { fontFamily: 'System', fontWeight: '600' },
+        heavy: { fontFamily: 'System', fontWeight: '700' },
+      },
+    };
+  }, [isDark, colors]);
 
   useEffect(() => {
     checkUser();
