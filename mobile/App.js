@@ -23,6 +23,7 @@ import { getUserNamespace, sanitizeForKey } from './services/storageScope';
 import { getSessionStatus } from './services/api';
 import { signOutSupabase } from './services/supabaseAuth';
 import ErrorBoundary from './components/ErrorBoundary';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 // Direct static screen imports: enables instant zero-latency page transitions without Suspense waterfall
 import AuthScreen from './screens/AuthScreen';
@@ -55,6 +56,7 @@ const NAV_THEME = {
 };
 
 function CenterScanButton({ onPress, accessibilityState }) {
+  const { colors, isDark } = useTheme();
   const focused = Boolean(accessibilityState?.selected);
   return (
     <TouchableOpacity
@@ -64,7 +66,17 @@ function CenterScanButton({ onPress, accessibilityState }) {
       onPress={onPress}
       style={styles.scanBtnWrap}
     >
-      <View style={[styles.scanBtn, focused && styles.scanBtnFocused]}>
+      <View
+        style={[
+          styles.scanBtn,
+          {
+            backgroundColor: colors.primary,
+            borderColor: isDark ? '#0b1220' : '#FFFFFF',
+            shadowColor: colors.primaryGlow,
+          },
+          focused && styles.scanBtnFocused,
+        ]}
+      >
         <Ionicons name={focused ? 'scan' : 'scan-outline'} size={28} color="#FFFFFF" />
       </View>
     </TouchableOpacity>
@@ -72,6 +84,8 @@ function CenterScanButton({ onPress, accessibilityState }) {
 }
 
 function MainTabs({ user, handleLogout }) {
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -92,12 +106,19 @@ function MainTabs({ user, handleLogout }) {
 
           return <Ionicons name={iconName} size={21} color={color} />;
         },
-        tabBarActiveTintColor: NAV_THEME.active,
-        tabBarInactiveTintColor: NAV_THEME.inactive,
+        tabBarActiveTintColor: colors.primaryHover,
+        tabBarInactiveTintColor: isDark ? '#64748b' : '#94a3b8',
         tabBarShowLabel: true,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarHideOnKeyboard: true,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            backgroundColor: colors.navBarBg,
+            borderColor: colors.navBarBorder,
+            shadowColor: colors.shadowColor,
+          },
+        ],
         tabBarItemStyle: styles.tabBarItem,
         headerShown: false,
         lazy: true,
@@ -130,7 +151,8 @@ function MainTabs({ user, handleLogout }) {
   );
 }
 
-export default function App() {
+function AppContent() {
+  const { colors, paperTheme } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const userKey = sanitizeForKey(getUserNamespace(user)) || 'anon';
@@ -213,47 +235,56 @@ export default function App() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <StatusBar style="light" />
-        <ActivityIndicator size="large" color="#f43f5e" />
+      <View style={[styles.loadingContainer, { backgroundColor: colors.bgDeep }]}>
+        <StatusBar style={colors.statusBarStyle} />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
+    <PaperProvider theme={paperTheme}>
+      <StatusBar style={colors.statusBarStyle} />
+      <NavigationContainer>
+        {user ? (
+          <Stack.Navigator
+            key={`user:${userKey}`}
+            screenOptions={{
+              headerShown: false,
+              cardStyle: { backgroundColor: colors.bgDeep },
+              detachInactiveScreens: true,
+            }}
+          >
+            <Stack.Screen name="MainTabs">
+              {props => <MainTabs {...props} user={user} handleLogout={handleLogout} key={`tabs:${userKey}`} />}
+            </Stack.Screen>
+            <Stack.Screen name="Guide" component={GuideScreen} />
+            <Stack.Screen name="Weather" component={WeatherScreen} />
+            <Stack.Screen name="MappingEnvironment">
+              {props => <MappingEnvironmentScreen {...props} user={user} />}
+            </Stack.Screen>
+            <Stack.Screen name="EditProfile">
+              {props => <EditProfileScreen {...props} user={user} onUpdateUser={handleUpdateUser} />}
+            </Stack.Screen>
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="CommunityForum">
+              {props => <CommunityForumScreen {...props} user={user} />}
+            </Stack.Screen>
+          </Stack.Navigator>
+        ) : (
+          <AuthScreen onLogin={handleLogin} />
+        )}
+      </NavigationContainer>
+    </PaperProvider>
+  );
+}
+
+export default function App() {
+  return (
     <ErrorBoundary>
-      <PaperProvider>
-        <NavigationContainer>
-          {user ? (
-            <Stack.Navigator
-              key={`user:${userKey}`}
-              screenOptions={{
-                headerShown: false,
-                cardStyle: { backgroundColor: '#070A13' },
-                detachInactiveScreens: true,
-              }}
-            >
-              <Stack.Screen name="MainTabs">
-                {props => <MainTabs {...props} user={user} handleLogout={handleLogout} key={`tabs:${userKey}`} />}
-              </Stack.Screen>
-              <Stack.Screen name="Guide" component={GuideScreen} />
-              <Stack.Screen name="Weather" component={WeatherScreen} />
-              <Stack.Screen name="MappingEnvironment">
-                {props => <MappingEnvironmentScreen {...props} user={user} />}
-              </Stack.Screen>
-              <Stack.Screen name="EditProfile">
-                {props => <EditProfileScreen {...props} user={user} onUpdateUser={handleUpdateUser} />}
-              </Stack.Screen>
-              <Stack.Screen name="Notifications" component={NotificationsScreen} />
-              <Stack.Screen name="CommunityForum">
-                {props => <CommunityForumScreen {...props} user={user} />}
-              </Stack.Screen>
-            </Stack.Navigator>
-          ) : (
-            <AuthScreen onLogin={handleLogin} />
-          )}
-        </NavigationContainer>
-      </PaperProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

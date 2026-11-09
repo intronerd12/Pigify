@@ -145,7 +145,7 @@ const getPlaceDetailsFromCoords = async ({ latitude, longitude }, { signal } = {
           };
         }
       }
-    } catch {}
+    } catch { }
   }
 
   const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(
