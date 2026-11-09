@@ -68,13 +68,13 @@ const TypingIndicator = () => {
           Animated.timing(v, {
             toValue: 1,
             duration: 350,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
             easing: Easing.inOut(Easing.quad),
           }),
           Animated.timing(v, {
             toValue: 0.2,
             duration: 350,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
             easing: Easing.inOut(Easing.quad),
           }),
         ])

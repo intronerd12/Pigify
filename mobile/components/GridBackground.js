@@ -38,7 +38,6 @@ function GridBackground({ gridSize = 64, style }) {
   return (
     <View
       style={[styles.root, style]}
-      pointerEvents="none"
       renderToHardwareTextureAndroid={true}
       shouldRasterizeIOS={true}
     >
@@ -65,6 +64,7 @@ const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: '#070A13',
+    pointerEvents: 'none',
   },
   vLine: {
     position: 'absolute',

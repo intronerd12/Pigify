@@ -409,13 +409,13 @@ export default function GuideScreen() {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 380,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.spring(slideAnim, {
         toValue: 0,
         friction: 8,
         tension: 40,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, [activeTab]);

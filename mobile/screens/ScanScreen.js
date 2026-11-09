@@ -14,6 +14,7 @@ import {
   Modal,
   TextInput,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button, ActivityIndicator } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -21,8 +22,6 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImagePicker from 'expo-image-picker';
 
 import { ScanService } from '../services/ScanService';
 import SwineScanTelemetryCard, {
@@ -195,12 +194,7 @@ export default function ScanScreen({ user }) {
   const [evaluatingDiff, setEvaluatingDiff] = useState(false);
   const [diffResults, setDiffResults] = useState(null);
 
-  const [permission, requestPermission] = useCameraPermissions();
-  const cameraRef = useRef(null);
-  const [torchEnabled, setTorchEnabled] = useState(false);
-  const [facing, setFacing] = useState('back');
   const [selectedBreed, setSelectedBreed] = useState('native'); // 'native' | 'commercial'
-
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
 
@@ -304,12 +298,12 @@ export default function ScanScreen({ user }) {
         Animated.timing(scanLineAnim, {
           toValue: 240,
           duration: 1800,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(scanLineAnim, {
           toValue: 0,
           duration: 1800,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     ).start();
@@ -721,417 +715,295 @@ export default function ScanScreen({ user }) {
     );
   }
 
-  // ── Camera Viewfinder (Dark Cyber HUD) ──────────────────────────────────────
+  // ── Camera Viewfinder Showcase (RasPi Cam UI Example & Coming Soon Notice) ──
+  const activePen = RASPI_PENS[activePenIndex] || RASPI_PENS[0];
+  const activeIsErysipelas = activePen.id.includes('B-04');
+  const activeIsDermatitis = activePen.id.includes('A-02');
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
+      <View style={styles.glowTopLeft} />
 
-      {/* Camera Feed Layer */}
-      {sourceMode === 'phone' ? (
-        permission?.granted ? (
-          <CameraView
-            ref={cameraRef}
-            style={StyleSheet.absoluteFill}
-            facing={facing}
-            enableTorch={torchEnabled}
-          />
-        ) : (
-          <View style={[styles.container, styles.center, { paddingTop: insets.top + 60 }]}>
-            <View style={styles.permissionCard}>
-              <Ionicons name="camera-outline" size={54} color={THEME.primary} />
-              <Text style={styles.permissionTitle}>Camera Permission Required</Text>
-              <Text style={styles.permissionDesc}>
-                Pigify needs access to your camera to scan swine lesions directly from your phone.
-              </Text>
-              <Button
-                mode="contained"
-                buttonColor={THEME.primary}
-                style={{ width: '100%', borderRadius: 14, marginTop: 16 }}
-                onPress={requestPermission}
-              >
-                Grant Camera Access
-              </Button>
-              <Button
-                mode="outlined"
-                textColor={THEME.primaryHover}
-                style={{ width: '100%', borderRadius: 14, marginTop: 10, borderColor: THEME.primary }}
-                onPress={handlePickGallery}
-              >
-                Upload from Gallery
-              </Button>
-            </View>
-          </View>
-        )
-      ) : sourceMode === 'raspi' ? (
-        <View style={StyleSheet.absoluteFill}>
-          <Image
-            source={{ uri: RASPI_PENS[activePenIndex].imageUri }}
-            style={StyleSheet.absoluteFill}
-            resizeMode="cover"
-          />
-          <View
-            style={[
-              StyleSheet.absoluteFill,
-              { backgroundColor: 'rgba(7, 10, 19, 0.45)' },
-            ]}
-          />
-        </View>
-      ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: THEME.bgDeep }]} />
-      )}
-
-      {/* UI Overlay on top */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+      <ScrollView
+        contentContainerStyle={[
+          styles.mainScrollContainer,
+          {
+            paddingTop: insets.top + 12,
+            paddingBottom: bottomClearance + 20,
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Top Control Bar */}
-        <View style={[styles.topBar, { paddingTop: insets.top + 12 }]}>
-          <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.glassBtn}>
-            <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+        <View style={styles.showcaseTopBar}>
+          <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.darkActionBtn}>
+            <Ionicons name="arrow-back" size={22} color={THEME.textMain} />
           </TouchableOpacity>
 
-          <View style={styles.topTitleBox}>
-            <Text style={styles.topBarTitle}>
-              {sourceMode === 'raspi' ? 'RPI 5 EDGE CAMERA' : 'YOLOv11-VET SCANNER'}
-            </Text>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={styles.showcaseTopTitle}>RPI 5 AI CAM SCANNER</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 2 }}>
+              <View style={styles.livePulseDot} />
+              <Text style={styles.showcaseTopSubtitle}>AUTONOMOUS PEN VISION</Text>
+            </View>
           </View>
 
-          <View style={styles.topActions}>
-            {sourceMode === 'raspi' ? (
-              <>
-                <TouchableOpacity onPress={() => testRaspiPing()} style={styles.glassBtn} title="Test Connection">
-                  <Ionicons name="radio" size={17} color="#10B981" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setDifferentialModal(true)}
-                  style={[styles.glassBtn, { marginLeft: 6 }]}
-                  title="Differential Triage"
-                >
-                  <Ionicons name="medkit" size={17} color="#EC4899" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setRaspiGuideModal(true)}
-                  style={[styles.glassBtn, { marginLeft: 6 }]}
-                  title="RPi 5 Hardware Guide"
-                >
-                  <Ionicons name="hardware-chip-outline" size={17} color="#F59E0B" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setTempHost(raspiHost);
-                    setRaspiConfigModal(true);
-                  }}
-                  style={[styles.glassBtn, { marginLeft: 6 }]}
-                  title="Configure IP"
-                >
-                  <Ionicons name="settings-sharp" size={17} color="#38BDF8" />
-                </TouchableOpacity>
-              </>
-            ) : sourceMode === 'phone' ? (
-              <>
-                <TouchableOpacity
-                  onPress={() => setTorchEnabled(!torchEnabled)}
-                  style={[styles.glassBtn, torchEnabled && styles.glassBtnActive]}
-                >
-                  <Ionicons name={torchEnabled ? 'flash' : 'flash-off'} size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setFacing(facing === 'back' ? 'front' : 'back')}
-                  style={[styles.glassBtn, { marginLeft: 8 }]}
-                >
-                  <Ionicons name="camera-reverse" size={20} color="#FFFFFF" />
-                </TouchableOpacity>
-              </>
-            ) : (
-              <View style={{ width: 40 }} />
-            )}
-          </View>
-        </View>
-
-        {/* Source Mode Tabs (RPi 5 Cam vs Phone Cam vs Presets) */}
-        <View style={styles.sourceTabContainer}>
           <TouchableOpacity
-            onPress={() => setSourceMode('raspi')}
-            style={[styles.sourceTab, sourceMode === 'raspi' && styles.sourceTabActive]}
+            onPress={() => setRaspiGuideModal(true)}
+            style={styles.darkActionBtn}
+            title="RPi Hardware Guide"
           >
-            <Text style={[styles.sourceTabText, sourceMode === 'raspi' && styles.sourceTabTextActive]}>
-              🍓 RPi 5 Cam
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setSourceMode('phone')}
-            style={[styles.sourceTab, sourceMode === 'phone' && styles.sourceTabActive]}
-          >
-            <Text style={[styles.sourceTabText, sourceMode === 'phone' && styles.sourceTabTextActive]}>
-              📱 Phone Cam
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setSourceMode('presets')}
-            style={[styles.sourceTab, sourceMode === 'presets' && styles.sourceTabActive]}
-          >
-            <Text style={[styles.sourceTabText, sourceMode === 'presets' && styles.sourceTabTextActive]}>
-              🧪 Presets
-            </Text>
+            <Ionicons name="hardware-chip-outline" size={20} color={THEME.primaryHover} />
           </TouchableOpacity>
         </View>
 
-        {/* Content according to mode */}
-        {sourceMode === 'raspi' ? (
-          <>
-            {/* RPi 5 Telemetry HUD Bar */}
-            <View style={styles.raspiHudBar}>
-              <View style={styles.hudLeft}>
-                <View style={styles.livePulseDot} />
-                <Text style={styles.hudTitle}>RPi 5 Online (1080p@30fps)</Text>
+        {/* ── 1. PROMINENT COMING SOON WARNING BANNER ── */}
+        <View style={styles.comingSoonBanner}>
+          <View style={styles.comingSoonHeaderRow}>
+            <View style={styles.comingSoonIconWrap}>
+              <Ionicons name="warning" size={18} color="#F59E0B" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={styles.comingSoonBadge}>
+                <Text style={styles.comingSoonBadgeText}>FEATURE COMING SOON • IN PROGRESS</Text>
               </View>
-              <Text style={styles.hudMeta}>
-                BCM2712 • IMX708 AF • {raspiTemp} • {raspiLatency}ms
-              </Text>
+              <Text style={styles.comingSoonTitle}>Mobile Scanner Not Yet Available</Text>
             </View>
+          </View>
 
-            {/* Auto-Surveillance & Diagnostic Quick Bar */}
-            <View style={styles.raspiToolRow}>
-              <TouchableOpacity
-                onPress={() => setAutoSurveillance(!autoSurveillance)}
-                style={[styles.autoSurveillancePill, autoSurveillance && styles.autoSurveillancePillActive]}
-                activeOpacity={0.8}
-              >
-                <View style={[styles.surveillanceDot, autoSurveillance && styles.surveillanceDotActive]} />
-                <Text style={[styles.surveillanceText, autoSurveillance && styles.surveillanceTextActive]}>
-                  {autoSurveillance ? `Auto-Surveillance (${autoCountdown}s)` : 'Auto-Surveillance: OFF'}
-                </Text>
-              </TouchableOpacity>
+          <Text style={styles.comingSoonBody}>
+            Direct phone camera scanning is currently locked during on-ground field deployment. Swine health is monitored autonomously via stationary <Text style={{ color: '#F8FAFC', fontWeight: '700' }}>Raspberry Pi 5 dual-camera pen rigs</Text> equipped with MLX90614 infrared thermal sensors to avoid stressful chasing of pigs.
+          </Text>
 
-              <TouchableOpacity
-                onPress={() => setDifferentialModal(true)}
-                style={styles.diffTriageBtn}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="medkit-outline" size={13} color="#38BDF8" style={{ marginRight: 5 }} />
-                <Text style={styles.diffTriageBtnText}>Differential Triage</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Pen Sector Pills */}
-            <View style={styles.penPillRow}>
-              {RASPI_PENS.map((pen, idx) => (
-                <TouchableOpacity
-                  key={pen.id}
-                  onPress={() => setActivePenIndex(idx)}
-                  style={[styles.penPill, activePenIndex === idx && styles.penPillActive]}
-                >
-                  <Text style={[styles.penPillText, activePenIndex === idx && styles.penPillTextActive]}>
-                    {pen.id}
-                  </Text>
-                  <Text style={styles.penPillSub}>
-                    {pen.breed.includes('Native') ? 'Native' : 'White'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* Central Viewfinder Reticle with Laser Animation */}
-            <View style={styles.viewfinderContainer} pointerEvents="none">
-              <View style={styles.viewfinderBox}>
-                <View style={[styles.corner, styles.cornerTL]} />
-                <View style={[styles.corner, styles.cornerTR]} />
-                <View style={[styles.corner, styles.cornerBL]} />
-                <View style={[styles.corner, styles.cornerBR]} />
-
-                <Animated.View
-                  style={[
-                    styles.laserLine,
-                    { transform: [{ translateY: scanLineAnim }] },
-                  ]}
-                />
-              </View>
-              <Text style={styles.viewfinderHint}>
-                {RASPI_PENS[activePenIndex].name} &bull; {RASPI_PENS[activePenIndex].telemetry.focus}
-              </Text>
-            </View>
-
-            {/* Bottom Controls */}
-            <View style={[styles.bottomBar, { paddingBottom: bottomClearance }]}>
-              <TouchableOpacity
-                style={styles.actionBtnWrap}
-                onPress={handlePickGallery}
-                disabled={scanning}
-                activeOpacity={0.78}
-              >
-                <View style={styles.actionIconCircle}>
-                  <Ionicons name="images" size={24} color="#FFFFFF" />
-                </View>
-                <Text style={styles.actionBtnText}>Gallery</Text>
-              </TouchableOpacity>
-
-              {/* RPi 5 Capture Shutter Trigger */}
-              <TouchableOpacity
-                style={styles.captureBtnOuter}
-                onPress={handleCaptureRaspi}
-                disabled={scanning}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={[THEME.primary, THEME.primaryDark]}
-                  style={styles.captureBtnGradient}
-                >
-                  {scanning ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <Ionicons name="camera" size={28} color="#FFFFFF" />
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionBtnWrap}
-                onPress={() => navigation.navigate('Guide')}
-                disabled={scanning}
-                activeOpacity={0.78}
-              >
-                <View style={styles.actionIconCircle}>
-                  <Ionicons name="book" size={24} color="#FFFFFF" />
-                </View>
-                <Text style={styles.actionBtnText}>Guide</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : sourceMode === 'phone' ? (
-          <>
-            {/* Breed Selector Pill Strip */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 }}>
-              <TouchableOpacity
-                onPress={() => setSelectedBreed('native')}
-                style={{
-                  paddingVertical: 5,
-                  paddingHorizontal: 12,
-                  borderRadius: 20,
-                  backgroundColor: selectedBreed === 'native' ? 'rgba(6, 182, 212, 0.3)' : 'rgba(0, 0, 0, 0.5)',
-                  borderWidth: 1,
-                  borderColor: selectedBreed === 'native' ? '#06B6D4' : 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: selectedBreed === 'native' ? '#38BDF8' : '#94A3B8' }}>
-                  🐖 Native Pig (Baboy Katutubo)
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setSelectedBreed('commercial')}
-                style={{
-                  paddingVertical: 5,
-                  paddingHorizontal: 12,
-                  borderRadius: 20,
-                  backgroundColor: selectedBreed === 'commercial' ? 'rgba(244, 63, 94, 0.3)' : 'rgba(0, 0, 0, 0.5)',
-                  borderWidth: 1,
-                  borderColor: selectedBreed === 'commercial' ? '#F43F5E' : 'rgba(255, 255, 255, 0.2)',
-                }}
-              >
-                <Text style={{ fontSize: 11, fontWeight: '800', color: selectedBreed === 'commercial' ? '#FB7185' : '#94A3B8' }}>
-                  Commercial White
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Central Viewfinder Reticle */}
-            <View style={styles.viewfinderContainer} pointerEvents="none">
-              <View style={styles.viewfinderBox}>
-                <View style={[styles.corner, styles.cornerTL]} />
-                <View style={[styles.corner, styles.cornerTR]} />
-                <View style={[styles.corner, styles.cornerBL]} />
-                <View style={[styles.corner, styles.cornerBR]} />
-
-                <Animated.View
-                  style={[
-                    styles.laserLine,
-                    { transform: [{ translateY: scanLineAnim }] },
-                  ]}
-                />
-              </View>
-              <Text style={styles.viewfinderHint}>Align swine skin, rash or lesion in frame</Text>
-            </View>
-
-            {/* Bottom Shutter Controls */}
-            <View style={[styles.bottomBar, { paddingBottom: bottomClearance }]}>
-              <TouchableOpacity
-                style={styles.actionBtnWrap}
-                onPress={handlePickGallery}
-                disabled={scanning}
-                activeOpacity={0.78}
-              >
-                <View style={styles.actionIconCircle}>
-                  <Ionicons name="images" size={24} color="#FFFFFF" />
-                </View>
-                <Text style={styles.actionBtnText}>Gallery</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.captureBtnOuter}
-                onPress={handleCapture}
-                disabled={scanning}
-                activeOpacity={0.85}
-              >
-                <LinearGradient
-                  colors={[THEME.primary, THEME.primaryDark]}
-                  style={styles.captureBtnGradient}
-                >
-                  {scanning ? (
-                    <ActivityIndicator size="small" color="#FFFFFF" />
-                  ) : (
-                    <View style={styles.captureBtnInner} />
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.actionBtnWrap}
-                onPress={() => navigation.navigate('Guide')}
-                disabled={scanning}
-                activeOpacity={0.78}
-              >
-                <View style={styles.actionIconCircle}>
-                  <Ionicons name="book" size={24} color="#FFFFFF" />
-                </View>
-                <Text style={styles.actionBtnText}>Guide</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        ) : (
-          /* Presets Mode */
-          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: bottomClearance + 20 }}>
-            <Text style={{ fontSize: 13, fontWeight: '800', color: '#94a3b8', textTransform: 'uppercase', marginBottom: 12 }}>
-              Clinical Benchmark Evaluation Cases:
+          <View style={styles.comingSoonFooter}>
+            <Ionicons name="videocam-outline" size={15} color="#38BDF8" style={{ marginRight: 6 }} />
+            <Text style={styles.comingSoonFooterText}>
+              Below is an interactive UI example of an active Raspberry Pi Cam scan:
             </Text>
-            {NATIVE_PIG_PRESETS.map((p, idx) => (
+          </View>
+        </View>
+
+        {/* ── 2. RASPI CAM LIVE VIEWPORT EXAMPLE ── */}
+        <View style={styles.raspiShowcaseCard}>
+          {/* Viewport Header */}
+          <View style={styles.viewportHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="camera" size={16} color={THEME.primary} />
+              <Text style={styles.viewportTitle}>Cam #2: Feeder Macro View</Text>
+            </View>
+            <View style={styles.viewportStreamPill}>
+              <View style={styles.recordingDot} />
+              <Text style={styles.viewportStreamPillText}>1080P @ 30FPS</Text>
+            </View>
+          </View>
+
+          {/* Pen Selector Tabs */}
+          <View style={styles.penTabsRow}>
+            {RASPI_PENS.map((pen, idx) => (
               <TouchableOpacity
-                key={idx}
-                onPress={() => handleSelectPreset(p)}
-                style={{
-                  backgroundColor: THEME.bgCard,
-                  borderColor: THEME.borderCard,
-                  borderWidth: 1,
-                  borderRadius: 16,
-                  padding: 16,
-                  marginBottom: 12,
-                }}
+                key={pen.id}
+                onPress={() => setActivePenIndex(idx)}
+                style={[styles.penTabBtn, activePenIndex === idx && styles.penTabBtnActive]}
+                activeOpacity={0.8}
               >
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                  <Text style={{ fontSize: 15, fontWeight: '800', color: '#FFFFFF' }}>{p.name}</Text>
-                  <View style={{ backgroundColor: 'rgba(244, 63, 94, 0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '800', color: THEME.primaryHover }}>GRADE {p.grade}</Text>
-                  </View>
-                </View>
-                <Text style={{ fontSize: 12, color: '#38BDF8', marginBottom: 4 }}>{p.condition}</Text>
-                <Text style={{ fontSize: 11, color: '#94A3B8', lineHeight: 16 }}>{p.triage_recommendation}</Text>
+                <Text style={[styles.penTabBtnText, activePenIndex === idx && styles.penTabBtnTextActive]}>
+                  {pen.id}
+                </Text>
+                <Text style={[styles.penTabBtnSub, activePenIndex === idx && styles.penTabBtnSubActive]}>
+                  {pen.breed.includes('Native') ? 'Native Pig' : 'Commercial'}
+                </Text>
               </TouchableOpacity>
             ))}
+          </View>
 
-            {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
-            <SwineScanTelemetryCard scanResult={NATIVE_PIG_PRESETS[0]} />
-          </ScrollView>
-        )}
-      </View>
+          {/* Camera Frame with Viewfinder & Simulated Detection HUD */}
+          <View style={styles.cameraFrame}>
+            <Image
+              source={{ uri: activePen.imageUri }}
+              style={StyleSheet.absoluteFillObject}
+              resizeMode="cover"
+            />
+            {/* Dark contrast scrim */}
+            <View style={styles.cameraFrameScrim} />
+
+            {/* Viewfinder Corners */}
+            <View style={styles.cornerTL} />
+            <View style={styles.cornerTR} />
+            <View style={styles.cornerBL} />
+            <View style={styles.cornerBR} />
+
+            {/* Animated Laser Scanline */}
+            <Animated.View
+              style={[
+                styles.laserLine,
+                { transform: [{ translateY: scanLineAnim }] },
+              ]}
+            />
+
+            {/* Simulated YOLO Detection Bounding Box on Subject */}
+            <View
+              style={[
+                styles.simulatedBBox,
+                activeIsErysipelas
+                  ? styles.simulatedBBoxAlert
+                  : activeIsDermatitis
+                  ? styles.simulatedBBoxWarning
+                  : styles.simulatedBBoxHealthy,
+              ]}
+            >
+              <View
+                style={[
+                  styles.bboxPill,
+                  activeIsErysipelas
+                    ? styles.bboxPillAlert
+                    : activeIsDermatitis
+                    ? styles.bboxPillWarning
+                    : styles.bboxPillHealthy,
+                ]}
+              >
+                <Text style={styles.bboxPillText}>
+                  {activeIsErysipelas
+                    ? 'YOLO: Erysipelas Plaque [97.4%]'
+                    : activeIsDermatitis
+                    ? 'YOLO: Mild Dermatitis [95.2%]'
+                    : 'YOLO: Healthy Dermis [98.6%]'}
+                </Text>
+              </View>
+            </View>
+
+            {/* Top Stream Telemetry Stamp */}
+            <View style={styles.frameTopTelemetry}>
+              <Text style={styles.frameTelemetryText}>
+                LATENCY: {raspiLatency}ms &bull; CPU: {raspiTemp} &bull; SONY IMX708 AF
+              </Text>
+            </View>
+
+            {/* Bottom Hardware Telemetry Bar */}
+            <View style={styles.frameBottomTelemetry}>
+              <View style={styles.sensorItem}>
+                <Ionicons name="thermometer-outline" size={13} color="#F43F5E" />
+                <Text style={styles.sensorItemText}>
+                  MLX90614: {activeIsErysipelas ? '40.8°C' : activeIsDermatitis ? '39.8°C' : '38.9°C'}
+                </Text>
+              </View>
+              <View style={styles.sensorItem}>
+                <Ionicons name="pricetag-outline" size={13} color="#38BDF8" />
+                <Text style={styles.sensorItemText}>{activePen.swineId}</Text>
+              </View>
+              <View style={styles.sensorItem}>
+                <Ionicons name="locate-outline" size={13} color="#10B981" />
+                <Text style={styles.sensorItemText}>Flank / Ear Base</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Interactive Simulation Shutter Action */}
+          <View style={styles.shutterActionBox}>
+            <TouchableOpacity
+              style={styles.simulateScanBtn}
+              onPress={() => handleCaptureRaspi(false)}
+              disabled={scanning}
+              activeOpacity={0.85}
+            >
+              <LinearGradient
+                colors={['#F43F5E', '#BE123C']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.simulateScanGradient}
+              >
+                {scanning ? (
+                  <>
+                    <ActivityIndicator size="small" color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.simulateScanBtnText}>Processing RasPi Feed...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="scan" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+                    <Text style={styles.simulateScanBtnText}>
+                      Run Example RasPi Scan ({activePen.id})
+                    </Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Auxiliary Tools Row */}
+            <View style={styles.auxToolsRow}>
+              <TouchableOpacity
+                onPress={() => setDifferentialModal(true)}
+                style={styles.auxToolBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="medkit-outline" size={15} color="#EC4899" />
+                <Text style={styles.auxToolBtnText}>Differential Triage</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setRaspiGuideModal(true)}
+                style={styles.auxToolBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="hardware-chip-outline" size={15} color="#F59E0B" />
+                <Text style={styles.auxToolBtnText}>Hardware Specs</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setTempHost(raspiHost);
+                  setRaspiConfigModal(true);
+                }}
+                style={styles.auxToolBtn}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="settings-outline" size={15} color="#38BDF8" />
+                <Text style={styles.auxToolBtnText}>RPi Node IP</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* ── 3. WHY STATIONARY PEN VISION CARDS ── */}
+        <View style={styles.whySection}>
+          <Text style={styles.whySectionHeading}>AUTOMATED PEN RIG ADVANTAGES</Text>
+
+          <View style={styles.whyCard}>
+            <View style={[styles.whyCardIconBox, { backgroundColor: 'rgba(16, 185, 129, 0.15)' }]}>
+              <Ionicons name="heart" size={18} color="#10B981" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.whyCardTitle}>Zero Animal Stress</Text>
+              <Text style={styles.whyCardDesc}>
+                Swine are naturally monitored during feeding without stress from human handlers chasing them with mobile phones.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.whyCard}>
+            <View style={[styles.whyCardIconBox, { backgroundColor: 'rgba(244, 63, 94, 0.15)' }]}>
+              <Ionicons name="thermometer" size={18} color="#F43F5E" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.whyCardTitle}>Non-Contact IR Thermometry</Text>
+              <Text style={styles.whyCardDesc}>
+                Co-axial Melexis MLX90614 sensors log ear-base tympanic temperatures at 20–40 cm distance, flagging fever chills (pyrexia) early.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.whyCard}>
+            <View style={[styles.whyCardIconBox, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+              <Ionicons name="git-network" size={18} color="#38BDF8" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.whyCardTitle}>1-Click MAO &amp; OPVet Escalation</Text>
+              <Text style={styles.whyCardDesc}>
+                Critical symptoms trigger instantaneous alerts with BAI Form 1 incident reports dispatched to MAO Luna &amp; OPVet La Union.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
 
       {/* Raspberry Pi 5 IP Configuration Modal */}
       <Modal visible={raspiConfigModal} transparent animationType="fade">
@@ -2135,5 +2007,344 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     fontStyle: 'italic',
     lineHeight: 15,
+  },
+  mainScrollContainer: {
+    paddingHorizontal: 16,
+  },
+  showcaseTopBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  showcaseTopTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 0.8,
+  },
+  showcaseTopSubtitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#10B981',
+    letterSpacing: 0.6,
+  },
+  comingSoonBanner: {
+    backgroundColor: 'rgba(245, 158, 11, 0.10)',
+    borderWidth: 1.2,
+    borderColor: 'rgba(245, 158, 11, 0.40)',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 18,
+  },
+  comingSoonHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 8,
+  },
+  comingSoonIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: 'rgba(245, 158, 11, 0.20)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  comingSoonBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(245, 158, 11, 0.25)',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+    marginBottom: 3,
+  },
+  comingSoonBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    color: '#F59E0B',
+    letterSpacing: 0.5,
+  },
+  comingSoonTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#F8FAFC',
+  },
+  comingSoonBody: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    lineHeight: 17,
+    marginBottom: 10,
+  },
+  comingSoonFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.20)',
+  },
+  comingSoonFooterText: {
+    fontSize: 11,
+    color: '#38BDF8',
+    fontWeight: '600',
+    flex: 1,
+  },
+  raspiShowcaseCard: {
+    backgroundColor: THEME.bgCard,
+    borderRadius: 20,
+    borderWidth: 1.2,
+    borderColor: 'rgba(56, 189, 248, 0.35)',
+    padding: 14,
+    marginBottom: 18,
+  },
+  viewportHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  viewportTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  viewportStreamPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: 'rgba(244, 63, 94, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
+  },
+  recordingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#F43F5E',
+  },
+  viewportStreamPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FB7185',
+  },
+  penTabsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  penTabBtn: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.10)',
+    alignItems: 'center',
+  },
+  penTabBtnActive: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: '#38BDF8',
+  },
+  penTabBtnText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#94A3B8',
+  },
+  penTabBtnTextActive: {
+    color: '#38BDF8',
+  },
+  penTabBtnSub: {
+    fontSize: 9.5,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  penTabBtnSubActive: {
+    color: '#E0F2FE',
+  },
+  cameraFrame: {
+    height: 250,
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+    backgroundColor: '#020617',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+  },
+  cameraFrameScrim: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(7, 10, 19, 0.35)',
+  },
+  simulatedBBox: {
+    position: 'absolute',
+    top: '25%',
+    left: '20%',
+    width: '60%',
+    height: '50%',
+    borderWidth: 2,
+    borderRadius: 8,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    padding: 4,
+  },
+  simulatedBBoxAlert: {
+    borderColor: '#F43F5E',
+    backgroundColor: 'rgba(244, 63, 94, 0.08)',
+  },
+  simulatedBBoxWarning: {
+    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+  },
+  simulatedBBoxHealthy: {
+    borderColor: '#10B981',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+  },
+  bboxPill: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  bboxPillAlert: {
+    backgroundColor: '#F43F5E',
+  },
+  bboxPillWarning: {
+    backgroundColor: '#F59E0B',
+  },
+  bboxPillHealthy: {
+    backgroundColor: '#10B981',
+  },
+  bboxPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  frameTopTelemetry: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  frameTelemetryText: {
+    fontSize: 9.5,
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#A7F3D0',
+    fontWeight: '700',
+  },
+  frameBottomTelemetry: {
+    position: 'absolute',
+    bottom: 8,
+    left: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sensorItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sensorItemText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#F8FAFC',
+  },
+  shutterActionBox: {
+    gap: 10,
+  },
+  simulateScanBtn: {
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  simulateScanGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  simulateScanBtnText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.4,
+  },
+  auxToolsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  auxToolBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.12)',
+    paddingVertical: 9,
+    borderRadius: 10,
+  },
+  auxToolBtnText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#CBD5E1',
+  },
+  whySection: {
+    marginTop: 4,
+  },
+  whySectionHeading: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94A3B8',
+    letterSpacing: 0.8,
+    marginBottom: 10,
+  },
+  whyCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    backgroundColor: 'rgba(13, 20, 36, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 8,
+  },
+  whyCardIconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  whyCardTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#F8FAFC',
+    marginBottom: 3,
+  },
+  whyCardDesc: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    lineHeight: 16,
   },
 });

@@ -1039,7 +1039,6 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
               <>
                 {/* 10 KM Yellow Surveillance Ring */}
                 <View
-                  pointerEvents="none"
                   style={[
                     styles.quarantineRing,
                     {
@@ -1057,7 +1056,6 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
                 />
                 {/* 7 KM Pink Buffer Ring */}
                 <View
-                  pointerEvents="none"
                   style={[
                     styles.quarantineRing,
                     {
@@ -1075,7 +1073,6 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
                 />
                 {/* 1 KM Red Infected Ring */}
                 <View
-                  pointerEvents="none"
                   style={[
                     styles.quarantineRing,
                     {
@@ -2029,6 +2026,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderWidth: 1.5,
     borderStyle: 'dashed',
+    pointerEvents: 'none',
   },
   maoHubPin: {
     position: 'absolute',

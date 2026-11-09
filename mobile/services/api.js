@@ -278,8 +278,8 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
     const baseUrl = urls[i];
     const isLast = i === urls.length - 1;
 
-    // Fast failover (1800ms) for initial probes when multiple fallback candidates exist
-    const effectiveTimeout = !isLast && urls.length > 1 ? Math.min(timeoutMs, 1800) : timeoutMs;
+    // Failover timeout (4000ms) for initial probes when multiple fallback candidates exist
+    const effectiveTimeout = !isLast && urls.length > 1 ? Math.min(timeoutMs, 4000) : timeoutMs;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), effectiveTimeout);
 
@@ -291,19 +291,20 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
 
       if (response.ok || !shouldRetryResponse(response.status) || isLast) {
         if (activeBaseUrl !== baseUrl) {
-          console.log('[api] switched active base URL to:', baseUrl);
           activeBaseUrl = baseUrl;
           AsyncStorage.setItem(ACTIVE_BACKEND_STORAGE_KEY, baseUrl).catch(() => {});
         }
         return response;
       }
 
-      console.warn(`[api] ${baseUrl} returned ${response.status}, trying fallback...`);
+      if (isLast) {
+        console.warn(`[api] ${baseUrl} returned ${response.status}`);
+      }
       lastError = new Error(`API request failed with status ${response.status}`);
     } catch (error) {
       lastError = error;
-      console.warn(`[api] ${baseUrl} request failed, trying fallback...`, error?.message || error);
       if (isLast) {
+        console.warn(`[api] All backend endpoints failed:`, error?.message || error);
         throw error;
       }
     } finally {

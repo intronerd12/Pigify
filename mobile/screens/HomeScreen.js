@@ -151,13 +151,13 @@ export default function HomeScreen({ user, onLogout }) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 400,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.spring(slideAnim, {
         toValue: 0,
         friction: 8,
         tension: 40,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
@@ -169,12 +169,12 @@ export default function HomeScreen({ user, onLogout }) {
         Animated.timing(pulseAnim, {
           toValue: 1.35,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -190,13 +190,13 @@ export default function HomeScreen({ user, onLogout }) {
           toValue: 1.35,
           duration: 2200,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(radarOpacityAnim, {
           toValue: 0,
           duration: 2200,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -212,13 +212,13 @@ export default function HomeScreen({ user, onLogout }) {
           toValue: 1.04,
           duration: 1500,
           easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(scaleAnim, {
           toValue: 1,
           duration: 1500,
           easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -232,7 +232,7 @@ export default function HomeScreen({ user, onLogout }) {
       toValue: 0.92,
       friction: 6,
       tension: 120,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   };
 
@@ -241,7 +241,7 @@ export default function HomeScreen({ user, onLogout }) {
       toValue: 1,
       friction: 5,
       tension: 60,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   };
 
@@ -428,14 +428,13 @@ export default function HomeScreen({ user, onLogout }) {
                     opacity: radarOpacityAnim,
                   },
                 ]}
-                pointerEvents="none"
               />
 
               {/* Layer 2: Deep Ambient Glow Aura */}
-              <View style={styles.scanAmbientAura} pointerEvents="none" />
+              <View style={styles.scanAmbientAura} />
 
               {/* Layer 3: Precision Aperture Telemetry Ring with Cardinal Reticles */}
-              <View style={styles.telemetryApertureRing} pointerEvents="none">
+              <View style={styles.telemetryApertureRing}>
                 <View style={styles.tickNorth} />
                 <View style={styles.tickSouth} />
                 <View style={styles.tickEast} />
@@ -949,6 +948,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: 'rgba(244, 63, 94, 0.45)',
     backgroundColor: 'rgba(244, 63, 94, 0.04)',
+    pointerEvents: 'none',
   },
   scanAmbientAura: {
     position: 'absolute',
@@ -956,6 +956,7 @@ const styles = StyleSheet.create({
     height: 172,
     borderRadius: 86,
     backgroundColor: 'rgba(244, 63, 94, 0.16)',
+    pointerEvents: 'none',
   },
   telemetryApertureRing: {
     position: 'absolute',
@@ -966,6 +967,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(244, 63, 94, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
+    pointerEvents: 'none',
   },
   tickNorth: {
     position: 'absolute',

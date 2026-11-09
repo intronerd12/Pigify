@@ -139,12 +139,12 @@ export default function AuthScreen({ onLogin }) {
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 380,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 380,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start();
   }, [fadeAnim, slideAnim]);
@@ -156,12 +156,12 @@ export default function AuthScreen({ onLogin }) {
         Animated.timing(pulseAnim, {
           toValue: 1.35,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
           duration: 1000,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ])
     );
@@ -181,12 +181,12 @@ export default function AuthScreen({ onLogin }) {
           Animated.timing(btnPulseAnim, {
             toValue: 0.94,
             duration: 650,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
           Animated.timing(btnPulseAnim, {
             toValue: 1,
             duration: 650,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
         ])
       );
@@ -203,7 +203,7 @@ export default function AuthScreen({ onLogin }) {
     if (!loading && !googleLoading) {
       Animated.spring(btnScaleAnim, {
         toValue: 0.96,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }).start();
     }
   };
@@ -213,7 +213,7 @@ export default function AuthScreen({ onLogin }) {
       toValue: 1,
       friction: 4,
       tension: 50,
-      useNativeDriver: true,
+      useNativeDriver: Platform.OS !== 'web',
     }).start();
   };
 
