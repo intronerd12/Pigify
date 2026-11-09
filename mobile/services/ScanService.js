@@ -363,6 +363,17 @@ const uploadScanImageToCloudinary = async (imageUri) => {
     }
   }
 
+  // 1. Direct Cloudinary Upload (Global HTTPS, zero local server dependency)
+  try {
+    const { uploadScanImageToCloudinary: directUpload } = require('./cloudinary');
+    const directRes = await directUpload(uri);
+    if (directRes?.secure_url) {
+      return directRes.secure_url;
+    }
+  } catch (cErr) {
+    console.warn('[ScanService] Direct Cloudinary upload notice, trying fallback:', cErr?.message || cErr);
+  }
+
   try {
     const { mime, fileName } = getUploadMeta(uri);
     const { uriToBase64DataUrl } = require('./api');

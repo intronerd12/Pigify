@@ -45,6 +45,21 @@ const uploadScanImage = async (imageUri) => {
   const cleanUri = normalizeText(imageUri);
   if (!cleanUri) return null;
 
+  // 1. Direct Cloudinary Upload (Global HTTPS, zero local server dependency)
+  try {
+    const { uploadCommunityScanImageToCloudinary: directUpload } = require('./cloudinary');
+    const directRes = await directUpload(cleanUri);
+    if (directRes?.secure_url) {
+      return {
+        imageUrl: directRes.secure_url,
+        secure_url: directRes.secure_url,
+        publicId: directRes.public_id,
+      };
+    }
+  } catch (cErr) {
+    console.warn('[CommunityService] Direct Cloudinary upload notice, trying fallback:', cErr?.message || cErr);
+  }
+
   const { mime, fileName } = getUploadMeta(cleanUri);
   try {
     const { uriToBase64DataUrl } = require('./api');

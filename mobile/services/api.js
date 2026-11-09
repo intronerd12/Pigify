@@ -467,6 +467,28 @@ export const uriToBase64DataUrl = async (imageUri, mimeType = 'image/jpeg') => {
 
 export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
   try {
+    // 1. Primary: Direct Cloudinary Upload (Global CDN HTTPS, works on all networks & devices)
+    try {
+      const { uploadAvatarToCloudinary } = require('./cloudinary');
+      const directRes = await uploadAvatarToCloudinary(imageUri);
+      if (directRes?.secure_url) {
+        // Fire-and-forget sync to backend if reachable
+        try {
+          if (userId) {
+            updateUser(userId, { avatar: directRes.secure_url }, explicitToken).catch(() => {});
+          }
+        } catch {}
+
+        return {
+          avatar: directRes.secure_url,
+          secure_url: directRes.secure_url,
+          ...directRes,
+        };
+      }
+    } catch (cloudErr) {
+      console.warn('[Avatar Upload] Direct Cloudinary notice, trying fallback:', cloudErr?.message);
+    }
+
     const filename = imageUri.split('/').pop() || 'avatar.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
@@ -478,7 +500,7 @@ export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
       headers.Authorization = `Bearer ${explicitToken}`;
     }
 
-    // 1. Primary on native: Base64 JSON upload (immune to FormData / multipart streaming drops)
+    // 2. Base64 JSON upload to backend fallback
     const base64DataUrl = await uriToBase64DataUrl(imageUri, type);
     if (base64DataUrl) {
       const response = await apiFetch(
@@ -501,7 +523,7 @@ export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
       return data;
     }
 
-    // 2. Fallback / Web: Multipart FormData
+    // 3. Fallback / Web: Multipart FormData
     const formData = new FormData();
     if (Platform.OS === 'web') {
       const res = await fetch(imageUri);

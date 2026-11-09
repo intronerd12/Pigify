@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const communityStore = require('../services/communityStore');
 const { cloudinary } = require('../config/cloudinary');
 const { supabaseAdmin } = require('../config/supabase');
