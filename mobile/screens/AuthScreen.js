@@ -803,10 +803,10 @@ export default function AuthScreen({ onLogin }) {
                   badge: 'Leader & ML Architect',
                 },
                 {
-                  name: 'Joenabelle Adora',
-                  email: 'adora.joenabelle@gmail.com',
-                  googleId: 'g-joenabelle-adora',
-                  badge: 'Dataset & Annotation',
+                  name: 'John Michael Danque',
+                  email: 'danque.johnmichael@gmail.com',
+                  googleId: 'g-john-danque',
+                  badge: 'Dataset Verification & QA',
                 },
                 {
                   name: 'Luna Backyard Swine Farmer',

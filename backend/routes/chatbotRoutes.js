@@ -16,9 +16,8 @@ const PIGIFY_SYSTEM_INSTRUCTION = `You are Dr. Pigify, the dedicated AI Research
 
 RESEARCH TEAM & AUTHORS:
 1. Axel Jillian Bumatay: Leader & Full-Stack/ML Architect
-2. Joenabelle Adora: Dataset Collection & Annotation
-3. John Michael Danque: Dataset Verification & Evaluation
-4. Davimher Landas: System Implementation & Device Testing
+2. John Michael Danque: Dataset Verification & Evaluation
+3. Davimher Landas: System Implementation & Device Testing
 
 PROJECT PURPOSE & OBJECTIVES:
 - Designed specifically to assist smallholder swine raisers and backyard hog farms in the Philippines with accessible, real-time computer vision disease detection on mobile phones and web browsers.
@@ -81,9 +80,8 @@ function getLocalPigifyKnowledge(query) {
     return [
       'Pigify Research Team & Authors:',
       '1. Axel Jillian Bumatay: Leader & Full-Stack/ML Architect',
-      '2. Joenabelle Adora: Dataset Collection & Annotation',
-      '3. John Michael Danque: Dataset Verification & Evaluation',
-      '4. Davimher Landas: System Implementation & Device Testing',
+      '2. John Michael Danque: Dataset Verification & Evaluation',
+      '3. Davimher Landas: System Implementation & Device Testing',
       '',
       'The study is titled: "Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".',
     ].join('\n');
@@ -163,7 +161,7 @@ function getLocalPigifyKnowledge(query) {
     'I am Dr. Pigify, the dedicated AI assistant for the research study: "Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".',
     '',
     'I can assist you with:',
-    '1. Pigify Study Overview: Research objectives, authors (Axel Bumatay, Joenabelle Adora, John Michael Danque, Davimher Landas), and system capabilities.',
+    '1. Pigify Study Overview: Research objectives, authors (Axel Bumatay, John Michael Danque, Davimher Landas), and system capabilities.',
     '2. Swine Skin Diseases: ASF, Swine Erysipelas (Diamond Skin), Sarcoptic Mange, Greasy Pig Disease, and PDNS.',
     '3. AI Scanner & YOLO: How YOLOv8/v11 detect swine lesions and assign severity grades.',
     '4. Backyard Farm Biosecurity: Pen quarantine, footbath disinfection, and THI heat stress management.',
