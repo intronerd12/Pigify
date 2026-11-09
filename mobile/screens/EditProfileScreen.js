@@ -8,8 +8,9 @@ import {
   Platform,
   Alert,
   KeyboardAvoidingView,
+  ActivityIndicator,
 } from 'react-native';
-import { Text, TextInput, ActivityIndicator, Surface } from 'react-native-paper';
+import { Text, TextInput, Surface } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';

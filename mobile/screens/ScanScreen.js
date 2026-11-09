@@ -13,9 +13,10 @@ import {
   Linking,
   Modal,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Button, ActivityIndicator } from 'react-native-paper';
+import { Button } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';

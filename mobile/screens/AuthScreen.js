@@ -12,8 +12,9 @@ import {
   Alert,
   Modal,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
-import { TextInput, Button, Surface, ActivityIndicator } from 'react-native-paper';
+import { TextInput, Button, Surface } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -656,7 +657,7 @@ export default function AuthScreen({ onLogin }) {
                   style={[
                     styles.submitBtnWrapper,
                     {
-                      transform: [{ scale: Animated.multiply(btnScaleAnim, loading ? btnPulseAnim : 1) }],
+                      transform: [{ scale: btnScaleAnim }],
                     },
                     loading && styles.submitBtnWrapperLoading,
                   ]}
@@ -1075,7 +1076,6 @@ export default function AuthScreen({ onLogin }) {
                   mode="outlined"
                   textColor="#38BDF8"
                   compact
-                  loading={testingBackend}
                   disabled={testingBackend}
                   onPress={() => handleTestBackend()}
                   style={{ borderColor: '#38BDF8', flex: 1, marginRight: 6 }}

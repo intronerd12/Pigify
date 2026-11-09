@@ -9,8 +9,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
-import { ActivityIndicator, Surface, Text } from 'react-native-paper';
+import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';

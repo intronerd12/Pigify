@@ -10,8 +10,9 @@ import {
   Image,
   Alert,
   Share,
+  ActivityIndicator,
 } from 'react-native';
-import { Text, Surface, ActivityIndicator, Portal, Dialog, Button } from 'react-native-paper';
+import { Text, Surface, Portal, Dialog, Button } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
