@@ -61,3 +61,4 @@ try {
 }
 
 module.exports = polyfillInteractionManager;
+

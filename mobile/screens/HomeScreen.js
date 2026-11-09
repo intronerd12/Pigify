@@ -626,7 +626,12 @@ export default function HomeScreen({ user, onLogout }) {
         <Dialog
           visible={logoutVisible}
           onDismiss={() => setLogoutVisible(false)}
-          style={{ backgroundColor: '#0D1424', borderRadius: 20, borderWidth: 1, borderColor: THEME.borderCard }}
+          style={{
+            backgroundColor: isDark ? '#0D1424' : '#FFFFFF',
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: THEME.borderCard,
+          }}
         >
           <Dialog.Icon icon="alert-circle-outline" color={THEME.primary} size={36} />
           <Dialog.Title style={{ textAlign: 'center', color: THEME.textMain, fontWeight: '700' }}>
@@ -638,7 +643,7 @@ export default function HomeScreen({ user, onLogout }) {
             </Paragraph>
           </Dialog.Content>
           <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16 }}>
-            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textFaint}>
+            <Button onPress={() => setLogoutVisible(false)} textColor={THEME.textMuted}>
               Cancel
             </Button>
             <Button
@@ -648,6 +653,7 @@ export default function HomeScreen({ user, onLogout }) {
               }}
               mode="contained"
               buttonColor={THEME.primary}
+              textColor="#FFFFFF"
             >
               Sign Out
             </Button>

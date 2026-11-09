@@ -1058,9 +1058,9 @@ export default function ScanScreen({ user }) {
           <View style={styles.modalCard}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
               <Ionicons name="hardware-chip" size={22} color={THEME.primary} style={{ marginRight: 8 }} />
-              <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>Raspberry Pi 5 Node Config</Text>
+              <Text style={{ fontSize: 16, fontWeight: '800', color: THEME.textMain }}>Raspberry Pi 5 Node Config</Text>
             </View>
-            <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12 }}>
+            <Text style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 12 }}>
               Enter the local IP and port of the Raspberry Pi 5 node in your swine facility.
             </Text>
 
@@ -1123,15 +1123,15 @@ export default function ScanScreen({ user }) {
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="hardware-chip" size={22} color="#F59E0B" style={{ marginRight: 8 }} />
-                <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>RPi 5 Hardware Installation</Text>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: THEME.textMain }}>RPi 5 Hardware Installation</Text>
               </View>
               <TouchableOpacity onPress={() => setRaspiGuideModal(false)}>
-                <Ionicons name="close" size={20} color="#94A3B8" />
+                <Ionicons name="close" size={20} color={THEME.textMuted} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 14, lineHeight: 18 }}>
+              <Text style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 14, lineHeight: 18 }}>
                 Hardware connection diagram and streaming setup for physical Raspberry Pi 5 and Camera Module v3 in swine pens.
               </Text>
 
@@ -1191,15 +1191,15 @@ export default function ScanScreen({ user }) {
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Ionicons name="medkit" size={22} color="#EC4899" style={{ marginRight: 8 }} />
-                <Text style={{ fontSize: 16, fontWeight: '800', color: '#FFFFFF' }}>Differential Triage Engine</Text>
+                <Text style={{ fontSize: 16, fontWeight: '800', color: THEME.textMain }}>Differential Triage Engine</Text>
               </View>
               <TouchableOpacity onPress={() => setDifferentialModal(false)}>
-                <Ionicons name="close" size={20} color="#94A3B8" />
+                <Ionicons name="close" size={20} color={THEME.textMuted} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={{ fontSize: 12, color: '#94A3B8', marginBottom: 12, lineHeight: 17 }}>
+              <Text style={{ fontSize: 12, color: THEME.textMuted, marginBottom: 12, lineHeight: 17 }}>
                 Select observed swine clinical symptoms to evaluate differential diagnosis across African Swine Fever, Erysipelas, PRRS, and mange.
               </Text>
 
@@ -1806,18 +1806,18 @@ const createStyles = (THEME, colors, isDark) =>
   },
   modalCard: {
     width: '100%',
-    backgroundColor: '#0F172A',
+    backgroundColor: isDark ? '#0F172A' : '#FFFFFF',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: THEME.borderCard,
     padding: 22,
   },
   modalInput: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.5)' : '#F1F5F9',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
+    borderColor: THEME.borderCard,
     borderRadius: 12,
-    color: '#FFFFFF',
+    color: THEME.textMain,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -1839,11 +1839,11 @@ const createStyles = (THEME, colors, isDark) =>
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : '#F1F5F9',
     alignItems: 'center',
   },
   modalCancelBtnText: {
-    color: '#94A3B8',
+    color: THEME.textMuted,
     fontWeight: '700',
     fontSize: 13,
   },

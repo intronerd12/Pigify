@@ -825,7 +825,7 @@ export default function UserScreen({ navigation, user, onLogout }) {
           visible={logoutVisible}
           onDismiss={() => setLogoutVisible(false)}
           style={{
-            backgroundColor: colors.dialogBg,
+            backgroundColor: isDark ? '#0D1424' : '#FFFFFF',
             borderRadius: 20,
             borderWidth: 1,
             borderColor: colors.borderCard,
@@ -849,10 +849,15 @@ export default function UserScreen({ navigation, user, onLogout }) {
               paddingBottom: 16,
             }}
           >
-            <Button onPress={() => setLogoutVisible(false)} textColor={colors.textFaint}>
+            <Button onPress={() => setLogoutVisible(false)} textColor={colors.textMuted}>
               Cancel
             </Button>
-            <Button onPress={handleLogoutConfirm} mode="contained" buttonColor="#EF4444">
+            <Button
+              onPress={handleLogoutConfirm}
+              mode="contained"
+              buttonColor="#EF4444"
+              textColor="#FFFFFF"
+            >
               Sign Out
             </Button>
           </Dialog.Actions>

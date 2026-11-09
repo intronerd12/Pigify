@@ -121,11 +121,24 @@ export const ThemeProvider = ({ children }) => {
     const base = isDark ? MD3DarkTheme : MD3LightTheme;
     return {
       ...base,
+      dark: isDark,
       colors: {
         ...base.colors,
         primary: colors.primary,
         background: colors.bgDeep,
         surface: colors.dialogBg,
+        surfaceVariant: colors.surfaceMuted,
+        onSurface: colors.textMain,
+        onSurfaceVariant: colors.textMuted,
+        elevation: {
+          ...(base.colors?.elevation || {}),
+          level0: colors.bgDeep,
+          level1: colors.bgCardSolid,
+          level2: colors.bgCardSolid,
+          level3: colors.dialogBg,
+          level4: colors.dialogBg,
+          level5: colors.dialogBg,
+        },
       },
     };
   }, [isDark, colors]);
