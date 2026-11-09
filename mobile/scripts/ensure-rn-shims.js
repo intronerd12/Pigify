@@ -114,27 +114,29 @@ if (fs.existsSync(rnRoot)) {
     }
   } catch (err) {}
 
-  // Patch expo/build/winter/runtime.native.js to use React Native's native XHR fetch
-  // so FormData with { uri, name, type } never throws "Unsupported FormDataPart implementation"
+  // Patch expo/build/winter/fetch/convertFormData.js so { uri, name, type } objects
+  // are automatically read via expo-file-system File.bytes() instead of throwing
+  // "Unsupported FormDataPart implementation"
   try {
-    const expoWinterRuntime = path.resolve(
+    const convertFormDataFile = path.resolve(
       __dirname,
       '..',
       'node_modules',
       'expo',
       'build',
       'winter',
-      'runtime.native.js'
+      'fetch',
+      'convertFormData.js'
     );
-    if (fs.existsSync(expoWinterRuntime)) {
-      const src = fs.readFileSync(expoWinterRuntime, 'utf8');
-      if (src.includes('process.env.EXPO_PUBLIC_USE_RN_FETCH')) {
+    if (fs.existsSync(convertFormDataFile)) {
+      const src = fs.readFileSync(convertFormDataFile, 'utf8');
+      if (!src.includes("typeof entry.uri === 'string'")) {
         const patched = src.replace(
-          /const useRnFetch = [^;]+;/,
-          'const useRnFetch = true;'
+          /results\.push\(await entry\.bytes\(\)\);\s*\}\s*else\s*\{\s*throw new Error\('Unsupported FormDataPart implementation'\);/,
+          `results.push(await entry.bytes());\n        } else if (typeof entry === 'object' && entry && typeof entry.uri === 'string') {\n            const { File } = require('expo-file-system');\n            const f = new File(entry.uri);\n            results.push(await f.bytes());\n        } else {\n            throw new Error('Unsupported FormDataPart implementation');`
         );
         if (patched !== src) {
-          fs.writeFileSync(expoWinterRuntime, patched, 'utf8');
+          fs.writeFileSync(convertFormDataFile, patched, 'utf8');
         }
       }
     }

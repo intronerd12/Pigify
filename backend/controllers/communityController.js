@@ -332,28 +332,31 @@ const toggleCommunityReaction = async (req, res) => {
 // @access  Public
 const uploadCommunityScanImage = async (req, res) => {
   try {
-    if (!req.file?.path) {
+    const rawBase64 = req.body?.imageBase64 || req.body?.image;
+    const uploadSource = req.file?.path || (typeof rawBase64 === 'string' && rawBase64.trim() ? rawBase64.trim() : null);
+
+    if (!uploadSource) {
       return res.status(400).json({ message: 'Please upload an image file' });
     }
 
     if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      cleanupLocalFile(req.file.path);
+      if (req.file?.path) cleanupLocalFile(req.file.path);
       return res.status(503).json({ message: 'Cloud image storage is not configured' });
     }
 
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    const result = await cloudinary.uploader.upload(uploadSource, {
       folder: 'pigify/community-scans',
       resource_type: 'image',
       quality: 'auto:good',
     });
 
-    cleanupLocalFile(req.file.path);
+    if (req.file?.path) cleanupLocalFile(req.file.path);
     return res.status(201).json({
       imageUrl: result.secure_url,
       publicId: result.public_id,
     });
   } catch (error) {
-    cleanupLocalFile(req.file?.path);
+    if (req.file?.path) cleanupLocalFile(req.file.path);
     return res.status(500).json({ message: error.message || 'Failed to upload community image' });
   }
 };

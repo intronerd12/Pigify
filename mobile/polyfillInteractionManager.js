@@ -1,13 +1,30 @@
 const RN = require('react-native');
 
-// Restore React Native's native XHR-backed fetch (whatwg-fetch) on native platforms
-// so FormData with { uri, name, type } works natively instead of throwing
-// "Unsupported FormDataPart implementation" in Expo SDK 58's WinterCG fetch.
-if (RN.Platform && RN.Platform.OS !== 'web') {
+// Enhance FormData.prototype.append on native so { uri, name, type } objects
+// implement .bytes() via expo-file-system's File class for Expo SDK 58's WinterCG fetch.
+if (RN.Platform && RN.Platform.OS !== 'web' && typeof FormData !== 'undefined') {
   try {
-    const whatwgFetch = require('whatwg-fetch');
-    if (whatwgFetch && typeof whatwgFetch.fetch === 'function') {
-      globalThis.fetch = whatwgFetch.fetch;
+    const origAppend = FormData.prototype.append;
+    if (typeof origAppend === 'function' && !FormData.prototype._pigifyPatched) {
+      FormData.prototype.append = function (name, value, ...rest) {
+        if (
+          value &&
+          typeof value === 'object' &&
+          typeof value.uri === 'string' &&
+          typeof value.bytes !== 'function'
+        ) {
+          Object.defineProperty(value, 'bytes', {
+            configurable: true,
+            enumerable: false,
+            value: async function () {
+              const { File } = require('expo-file-system');
+              return await new File(value.uri).bytes();
+            },
+          });
+        }
+        return origAppend.call(this, name, value, ...rest);
+      };
+      FormData.prototype._pigifyPatched = true;
     }
   } catch {}
 }

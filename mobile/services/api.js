@@ -121,6 +121,10 @@ const getBaseOrder = () => {
     }
   }
 
+  if (activeBaseUrl && baseCandidates.includes(activeBaseUrl)) {
+    return [activeBaseUrl, ...baseCandidates.filter((u) => u !== activeBaseUrl)];
+  }
+
   return [...baseCandidates];
 };
 
@@ -311,22 +315,7 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
     const timer = setTimeout(() => controller.abort(), effectiveTimeout);
 
     try {
-      const isNativeFormData =
-        Platform.OS !== 'web' &&
-        effectiveOptions.body &&
-        (effectiveOptions.body instanceof FormData ||
-          typeof effectiveOptions.body?.getParts === 'function');
-      let fetchFn = fetch;
-      if (isNativeFormData) {
-        try {
-          const whatwg = require('whatwg-fetch');
-          if (whatwg && typeof whatwg.fetch === 'function') {
-            fetchFn = whatwg.fetch;
-          }
-        } catch {}
-      }
-
-      const response = await fetchFn(buildApiUrlInternal(baseUrl, path), {
+      const response = await fetch(buildApiUrlInternal(baseUrl, path), {
         ...effectiveOptions,
         signal: controller.signal,
       });
@@ -458,13 +447,62 @@ export const updateUser = async (userId, userData, explicitToken) => {
   }
 };
 
+export const uriToBase64DataUrl = async (imageUri, mimeType = 'image/jpeg') => {
+  const cleanUri = String(imageUri || '').trim();
+  if (!cleanUri) return null;
+  if (cleanUri.startsWith('data:image/')) return cleanUri;
+
+  if (Platform.OS !== 'web') {
+    try {
+      const { File } = require('expo-file-system');
+      const file = new File(cleanUri);
+      const b64 = await file.base64();
+      if (b64) {
+        return `data:${mimeType};base64,${b64}`;
+      }
+    } catch {}
+  }
+  return null;
+};
+
 export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
   try {
-    const formData = new FormData();
     const filename = imageUri.split('/').pop() || 'avatar.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
 
+    const headers = {
+      Accept: 'application/json',
+    };
+    if (explicitToken) {
+      headers.Authorization = `Bearer ${explicitToken}`;
+    }
+
+    // 1. Primary on native: Base64 JSON upload (immune to FormData / multipart streaming drops)
+    const base64DataUrl = await uriToBase64DataUrl(imageUri, type);
+    if (base64DataUrl) {
+      const response = await apiFetch(
+        `/api/users/${userId}/avatar`,
+        {
+          method: 'POST',
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageBase64: base64DataUrl }),
+        },
+        15000
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Avatar upload failed');
+      }
+      return data;
+    }
+
+    // 2. Fallback / Web: Multipart FormData
+    const formData = new FormData();
     if (Platform.OS === 'web') {
       const res = await fetch(imageUri);
       const blob = await res.blob();
@@ -477,18 +515,15 @@ export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
       });
     }
 
-    const headers = {
-      Accept: 'application/json',
-    };
-    if (explicitToken) {
-      headers.Authorization = `Bearer ${explicitToken}`;
-    }
-
-    const response = await apiFetch(`/api/users/${userId}/avatar`, {
-      method: 'POST',
-      body: formData,
-      headers,
-    });
+    const response = await apiFetch(
+      `/api/users/${userId}/avatar`,
+      {
+        method: 'POST',
+        body: formData,
+        headers,
+      },
+      15000
+    );
 
     const data = await response.json();
 

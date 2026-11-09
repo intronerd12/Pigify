@@ -113,28 +113,39 @@ router.post('/raspi/capture', async (req, res) => {
   });
 });
 
+const optionalScanUpload = (req, res, next) => {
+  const ct = String(req.headers['content-type'] || '').toLowerCase();
+  if (ct.includes('multipart/form-data')) {
+    return upload.single('image')(req, res, next);
+  }
+  return next();
+};
+
 // @desc    Upload scan image directly to Cloudinary
 // @route   POST /api/scan/upload-image
-router.post('/upload-image', upload.single('image'), async (req, res) => {
-  if (!req.file) {
+router.post('/upload-image', optionalScanUpload, async (req, res) => {
+  const rawBase64 = req.body?.imageBase64 || req.body?.image;
+  const uploadSource = req.file?.path || (typeof rawBase64 === 'string' && rawBase64.trim() ? rawBase64.trim() : null);
+
+  if (!uploadSource) {
     return res.status(400).json({ message: 'No image file uploaded' });
   }
 
-  const filePath = req.file.path;
+  const filePath = req.file?.path;
   try {
-    const result = await cloudinary.uploader.upload(filePath, {
+    const result = await cloudinary.uploader.upload(uploadSource, {
       folder: 'pigify/scans',
       resource_type: 'image',
       quality: 'auto:good',
     });
 
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
     return res.status(201).json({
       imageUrl: result.secure_url,
       publicId: result.public_id,
     });
   } catch (err) {
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
     console.error('Scan image upload error:', err);
     return res.status(500).json({ message: err.message || 'Failed to upload image to Cloudinary' });
   }

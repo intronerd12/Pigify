@@ -365,6 +365,27 @@ const uploadScanImageToCloudinary = async (imageUri) => {
 
   try {
     const { mime, fileName } = getUploadMeta(uri);
+    const { uriToBase64DataUrl } = require('./api');
+    const base64DataUrl = await uriToBase64DataUrl(uri, mime);
+    if (base64DataUrl) {
+      const res = await apiFetch(
+        '/api/scan/upload-image',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageBase64: base64DataUrl }),
+        },
+        15000
+      );
+      if (res.ok) {
+        const data = await safeReadJson(res);
+        if (data?.imageUrl) return data.imageUrl;
+      }
+    }
+
     const formData = new FormData();
 
     if (Platform.OS === 'web') {
@@ -379,11 +400,15 @@ const uploadScanImageToCloudinary = async (imageUri) => {
       });
     }
 
-    const res = await apiFetch('/api/scan/upload-image', {
-      method: 'POST',
-      headers: { Accept: 'application/json' },
-      body: formData,
-    });
+    const res = await apiFetch(
+      '/api/scan/upload-image',
+      {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: formData,
+      },
+      15000
+    );
 
     if (res.ok) {
       const data = await safeReadJson(res);

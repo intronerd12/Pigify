@@ -294,14 +294,17 @@ const updateUser = async (req, res) => {
 // @access  Private
 const uploadAvatar = async (req, res) => {
   try {
-    if (!req.file) {
+    const rawBase64 = req.body?.imageBase64 || req.body?.avatarBase64 || req.body?.avatar;
+    const uploadSource = req.file?.path || (typeof rawBase64 === 'string' && rawBase64.trim() ? rawBase64.trim() : null);
+
+    if (!uploadSource) {
       return res.status(400).json({ message: 'Please upload a file' });
     }
 
     const { id } = req.params;
 
     // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(req.file.path, {
+    const result = await cloudinary.uploader.upload(uploadSource, {
       folder: 'pigify/avatars',
       width: 300,
       crop: 'scale',

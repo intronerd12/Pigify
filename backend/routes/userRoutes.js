@@ -25,10 +25,18 @@ const requireAdminOrSelf = (req, res, next) => {
   return res.status(403).json({ message: 'Access denied. You can only update your own profile.' });
 };
 
+const optionalAvatarUpload = (req, res, next) => {
+  const ct = String(req.headers['content-type'] || '').toLowerCase();
+  if (ct.includes('multipart/form-data')) {
+    return upload.single('avatar')(req, res, next);
+  }
+  return next();
+};
+
 // All user management routes require authentication
 router.get('/', protect, ensureActiveAccount, requireAdmin, getUsers);
 router.put('/:id', protect, ensureActiveAccount, requireAdminOrSelf, updateUser);
-router.post('/:id/avatar', protect, ensureActiveAccount, requireAdminOrSelf, upload.single('avatar'), uploadAvatar);
+router.post('/:id/avatar', protect, ensureActiveAccount, requireAdminOrSelf, optionalAvatarUpload, uploadAvatar);
 router.delete('/:id', protect, ensureActiveAccount, requireAdmin, deleteUser);
 
 module.exports = router;

@@ -46,6 +46,29 @@ const uploadScanImage = async (imageUri) => {
   if (!cleanUri) return null;
 
   const { mime, fileName } = getUploadMeta(cleanUri);
+  try {
+    const { uriToBase64DataUrl } = require('./api');
+    const base64DataUrl = await uriToBase64DataUrl(cleanUri, mime);
+    if (base64DataUrl) {
+      const res = await apiFetch(
+        '/api/community/upload-scan-image',
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ imageBase64: base64DataUrl }),
+        },
+        15000
+      );
+      const data = await safeReadJson(res);
+      if (res.ok && data?.imageUrl) {
+        return data;
+      }
+    }
+  } catch {}
+
   const formData = new FormData();
   if (Platform.OS === 'web') {
     const res = await fetch(cleanUri);
@@ -59,11 +82,15 @@ const uploadScanImage = async (imageUri) => {
     });
   }
 
-  const res = await apiFetch('/api/community/upload-scan-image', {
-    method: 'POST',
-    headers: { Accept: 'application/json' },
-    body: formData,
-  });
+  const res = await apiFetch(
+    '/api/community/upload-scan-image',
+    {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    },
+    15000
+  );
 
   const data = await safeReadJson(res);
   if (!res.ok) {
