@@ -22,6 +22,7 @@ import { clearEnvironmentCaches } from './services/EnvironmentService';
 import { getUserNamespace, sanitizeForKey } from './services/storageScope';
 import { getSessionStatus } from './services/api';
 import { signOutSupabase } from './services/supabaseAuth';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Direct static screen imports: enables instant zero-latency page transitions without Suspense waterfall
 import AuthScreen from './screens/AuthScreen';
@@ -220,38 +221,40 @@ export default function App() {
   }
 
   return (
-    <PaperProvider>
-      <NavigationContainer>
-        {user ? (
-          <Stack.Navigator
-            key={`user:${userKey}`}
-            screenOptions={{
-              headerShown: false,
-              cardStyle: { backgroundColor: '#070A13' },
-              detachInactiveScreens: true,
-            }}
-          >
-            <Stack.Screen name="MainTabs">
-              {props => <MainTabs {...props} user={user} handleLogout={handleLogout} key={`tabs:${userKey}`} />}
-            </Stack.Screen>
-            <Stack.Screen name="Guide" component={GuideScreen} />
-            <Stack.Screen name="Weather" component={WeatherScreen} />
-            <Stack.Screen name="MappingEnvironment">
-              {props => <MappingEnvironmentScreen {...props} user={user} />}
-            </Stack.Screen>
-            <Stack.Screen name="EditProfile">
-              {props => <EditProfileScreen {...props} user={user} onUpdateUser={handleUpdateUser} />}
-            </Stack.Screen>
-            <Stack.Screen name="Notifications" component={NotificationsScreen} />
-            <Stack.Screen name="CommunityForum">
-              {props => <CommunityForumScreen {...props} user={user} />}
-            </Stack.Screen>
-          </Stack.Navigator>
-        ) : (
-          <AuthScreen onLogin={handleLogin} />
-        )}
-      </NavigationContainer>
-    </PaperProvider>
+    <ErrorBoundary>
+      <PaperProvider>
+        <NavigationContainer>
+          {user ? (
+            <Stack.Navigator
+              key={`user:${userKey}`}
+              screenOptions={{
+                headerShown: false,
+                cardStyle: { backgroundColor: '#070A13' },
+                detachInactiveScreens: true,
+              }}
+            >
+              <Stack.Screen name="MainTabs">
+                {props => <MainTabs {...props} user={user} handleLogout={handleLogout} key={`tabs:${userKey}`} />}
+              </Stack.Screen>
+              <Stack.Screen name="Guide" component={GuideScreen} />
+              <Stack.Screen name="Weather" component={WeatherScreen} />
+              <Stack.Screen name="MappingEnvironment">
+                {props => <MappingEnvironmentScreen {...props} user={user} />}
+              </Stack.Screen>
+              <Stack.Screen name="EditProfile">
+                {props => <EditProfileScreen {...props} user={user} onUpdateUser={handleUpdateUser} />}
+              </Stack.Screen>
+              <Stack.Screen name="Notifications" component={NotificationsScreen} />
+              <Stack.Screen name="CommunityForum">
+                {props => <CommunityForumScreen {...props} user={user} />}
+              </Stack.Screen>
+            </Stack.Navigator>
+          ) : (
+            <AuthScreen onLogin={handleLogin} />
+          )}
+        </NavigationContainer>
+      </PaperProvider>
+    </ErrorBoundary>
   );
 }
 

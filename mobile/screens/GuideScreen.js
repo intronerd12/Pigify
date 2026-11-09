@@ -43,7 +43,7 @@ const CLINICAL_GUIDES = {
     severity: 'High / Critical',
     severityColor: '#f43f5e',
     badge: 'Class I Alert',
-    icon: 'shield-alert',
+    icon: 'warning',
     overview:
       'Acute, subacute, or chronic systemic bacterial disease characterized by raised rhomboid (diamond-shaped) erythematous or purplish skin plaques, high pyrexia (40-42°C), and potential endocarditis or arthritis.',
     quickStats: [

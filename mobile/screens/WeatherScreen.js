@@ -180,11 +180,11 @@ export default function WeatherScreen() {
             coords = loc?.coords;
           }
 
-          if (coords) {
+          if (coords && Platform.OS !== 'web') {
             const address = await Location.reverseGeocodeAsync({
               latitude: coords.latitude,
               longitude: coords.longitude,
-            });
+            }).catch(() => null);
             if (address && address.length > 0) {
               province = address[0].region || address[0].city || 'Laguna';
             }
@@ -398,7 +398,7 @@ export default function WeatherScreen() {
                     },
                   ]}
                 >
-                  <Ionicons name="shield-alert" size={14} color={weatherData.heatStress.color} />
+                  <Ionicons name="warning" size={14} color={weatherData.heatStress.color} />
                   <Text
                     style={[styles.advisoryPillText, { color: weatherData.heatStress.color }]}
                   >

@@ -118,7 +118,7 @@ export default function NotificationsScreen({ navigation }) {
         {/* Urgent Veterinary & Herd Disease Alerts */}
         <Surface style={styles.section} elevation={0}>
           <View style={styles.sectionTitleRow}>
-            <Ionicons name="shield-alert" size={16} color="#f43f5e" />
+            <Ionicons name="shield-half" size={16} color="#f43f5e" />
             <Text style={styles.sectionHeader}>Veterinary Health & Biosecurity</Text>
           </View>
 
