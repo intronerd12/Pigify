@@ -188,6 +188,7 @@ const BENCHMARK_COMMUNITY_POSTS = [
       swineId: 'Boar #12',
       confidence: '97.4%',
       scanTimestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
+      imageUrl: '/landing/swine-health-scan.jpg',
       notes: 'Diamond plaques palpated on flank; pen trough sanitized.',
     },
   },
@@ -206,10 +207,34 @@ const BENCHMARK_COMMUNITY_POSTS = [
       swineId: 'Native Sow #03',
       confidence: '96.8%',
       scanTimestamp: new Date(Date.now() - 3600000 * 7).toISOString(),
+      imageUrl: '/landing/swine-biosecurity-pen.jpg',
       notes: 'Inner ear canal crusts identified with dark melanin compensation.',
     },
   },
 ]
+
+const resolveScanImageUrl = (scan, post) => {
+  const direct =
+    scan?.imageUrl ||
+    scan?.imageUri ||
+    scan?.image ||
+    scan?.photo ||
+    scan?.thumbnail ||
+    post?.imageUrl ||
+    post?.imageUri ||
+    post?.image
+  if (direct && typeof direct === 'string' && direct.trim()) {
+    return direct.trim()
+  }
+  const cond = String(scan?.condition || scan?.details || post?.text || '').toLowerCase()
+  if (cond.includes('erysipelas') || cond.includes('diamond') || cond.includes('urticaria')) {
+    return '/landing/swine-health-scan.jpg'
+  }
+  if (cond.includes('mange') || cond.includes('scabies') || cond.includes('crust') || cond.includes('ear') || cond.includes('native')) {
+    return '/landing/swine-biosecurity-pen.jpg'
+  }
+  return '/landing/swine-scan-subject.jpg'
+}
 
 function CommunityForum() {
   const navigate = useNavigate()
@@ -220,6 +245,7 @@ function CommunityForum() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [postText, setPostText] = useState('')
   const [selectedScanId, setSelectedScanId] = useState('')
+  const [customImage, setCustomImage] = useState(null)
   const [commentDrafts, setCommentDrafts] = useState({})
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
@@ -339,7 +365,7 @@ function CommunityForum() {
       swineId: asText(scan?.swineId || 'Swine'),
       confidence: asText(scan?.confidence || '96.8%'),
       scanTimestamp: scan?.timestamp || scan?.createdAt || new Date().toISOString(),
-      imageUrl: asText(scan?.imageUrl),
+      imageUrl: asText(resolveScanImageUrl(scan)),
       notes: asText(scan?.recommendation || scan?.details || 'Shared diagnostic scan'),
     }
   }
@@ -348,11 +374,25 @@ function CommunityForum() {
     event.preventDefault()
     if (posting) return
 
-    const scanSnapshot = buildScanSnapshot(selectedScan)
+    let scanSnapshot = buildScanSnapshot(selectedScan)
+    if (!scanSnapshot && customImage) {
+      scanSnapshot = {
+        localScanId: `custom-pic-${Date.now()}`,
+        condition: 'Clinical Swine Observation',
+        severity: 'OBSERVED',
+        penId: 'Backyard Pen',
+        swineId: 'Observed Swine',
+        confidence: '95.0%',
+        scanTimestamp: new Date().toISOString(),
+        imageUrl: customImage,
+        notes: asText(postText) || 'Clinical field photo shared by farmer.',
+      }
+    }
+
     const cleanText = asText(postText)
 
     if (!cleanText && !scanSnapshot) {
-      setFormError('Please add a message or attach a swine diagnostic scan.')
+      setFormError('Please add a message or attach a swine diagnostic scan/photo.')
       return
     }
 
@@ -385,6 +425,7 @@ function CommunityForum() {
       setPosts((prev) => [data, ...prev])
       setPostText('')
       setSelectedScanId('')
+      setCustomImage(null)
       toast.success('Posted to Swine Community!')
       void loadNotifications()
     } catch (error) {
@@ -553,12 +594,48 @@ function CommunityForum() {
 
                 {/* Attach Scan Selector */}
                 <div style={{ marginTop: '14px' }}>
-                  <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)', marginBottom: '6px' }}>
-                    Attach Diagnostic Scan (Optional)
-                  </label>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main, #ffffff)' }}>
+                      Attach Diagnostic Scan (Optional)
+                    </label>
+                    <label
+                      htmlFor="community-photo-upload"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '0.74rem',
+                        fontWeight: 700,
+                        color: 'var(--accent-rose, #f43f5e)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <ImageIcon size={13} />
+                      <span>Upload Photo</span>
+                    </label>
+                    <input
+                      id="community-photo-upload"
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        const reader = new FileReader()
+                        reader.onload = (ev) => {
+                          setCustomImage(ev.target?.result)
+                          setSelectedScanId('')
+                        }
+                        reader.readAsDataURL(file)
+                      }}
+                    />
+                  </div>
                   <select
                     value={selectedScanId}
-                    onChange={(e) => setSelectedScanId(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedScanId(e.target.value)
+                      if (e.target.value) setCustomImage(null)
+                    }}
                     style={{
                       width: '100%',
                       borderRadius: '10px',
@@ -584,6 +661,47 @@ function CommunityForum() {
                   </select>
                 </div>
 
+                {/* Custom Photo Preview Pill */}
+                {customImage && (
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      padding: '8px 12px',
+                      borderRadius: '10px',
+                      background: 'rgba(244, 63, 94, 0.08)',
+                      border: '1px solid rgba(244, 63, 94, 0.25)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img
+                        src={customImage}
+                        alt="Custom swine upload"
+                        style={{ width: '42px', height: '42px', borderRadius: '6px', objectFit: 'cover' }}
+                      />
+                      <div>
+                        <strong style={{ color: 'var(--accent-rose, #f43f5e)', fontSize: '0.82rem' }}>Swine Field Photo</strong>
+                        <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.74rem' }}>Ready to attach to post</div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setCustomImage(null)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        padding: '4px',
+                      }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                )}
+
                 {/* Selected Scan Preview Pill */}
                 {selectedScan && (
                   <div
@@ -594,11 +712,34 @@ function CommunityForum() {
                       background: 'rgba(244, 63, 94, 0.08)',
                       border: '1px solid rgba(244, 63, 94, 0.25)',
                       fontSize: '0.82rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
                     }}
                   >
-                    <strong style={{ color: 'var(--accent-rose, #f43f5e)' }}>{selectedScan.condition || 'Swine Scan'}</strong>
-                    <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.76rem', marginTop: '2px' }}>
-                      {selectedScan.penId || 'Pen B-12'} • Tier {selectedScan.severity || selectedScan.grade || 'A'}
+                    <img
+                      src={resolveScanImageUrl(selectedScan)}
+                      alt="Scan Preview"
+                      style={{
+                        width: '46px',
+                        height: '46px',
+                        borderRadius: '8px',
+                        objectFit: 'cover',
+                        border: '1px solid rgba(244, 63, 94, 0.3)',
+                        flexShrink: 0,
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null
+                        e.currentTarget.src = '/landing/swine-health-scan.jpg'
+                      }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <strong style={{ color: 'var(--accent-rose, #f43f5e)', display: 'block' }}>
+                        {selectedScan.condition || 'Swine Scan'}
+                      </strong>
+                      <div style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.76rem', marginTop: '2px' }}>
+                        {selectedScan.penId || 'Pen B-12'} • Tier {selectedScan.severity || selectedScan.grade || 'A'}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -717,7 +858,7 @@ function CommunityForum() {
                 <div style={{ display: 'grid', gap: '16px' }}>
                   {posts.map((post) => {
                     const id = String(post?._id || post?.id)
-                    const scan = post?.scanSnapshot || null
+                    const scan = post?.scanSnapshot || post?.scan_snapshot || null
                     const comments = Array.isArray(post?.comments) ? post.comments : []
                     const reactions = Array.isArray(post?.reactions) ? post.reactions : []
                     const heartCount = reactions.filter((r) => r.type === 'heart').length
@@ -737,7 +878,7 @@ function CommunityForum() {
                       >
                         {/* Author Header */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                          <UserAvatar url={post?.user?.avatar} name={post?.authorName} size={36} />
+                          <UserAvatar url={post?.user?.avatar || post?.authorAvatar} name={post?.authorName} size={36} />
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--text-main, #ffffff)', fontSize: '0.92rem' }}>
                               {post?.authorName || 'Backyard Farmer'}
@@ -755,49 +896,163 @@ function CommunityForum() {
                           </p>
                         )}
 
+                        {/* Direct Image Attachment if no scan */}
+                        {!scan && (post.imageUrl || post.imageUri) && (
+                          <div
+                            style={{
+                              position: 'relative',
+                              width: '100%',
+                              maxHeight: '280px',
+                              borderRadius: '12px',
+                              overflow: 'hidden',
+                              marginBottom: '12px',
+                              background: '#090d16',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
+                            }}
+                          >
+                            <img
+                              src={post.imageUrl || post.imageUri}
+                              alt="Clinical Attachment"
+                              loading="lazy"
+                              decoding="async"
+                              style={{
+                                width: '100%',
+                                maxHeight: '280px',
+                                objectFit: 'cover',
+                                display: 'block',
+                              }}
+                              onError={(e) => {
+                                e.currentTarget.onerror = null
+                                e.currentTarget.src = '/landing/swine-health-scan.jpg'
+                              }}
+                            />
+                          </div>
+                        )}
+
                         {/* Attached Swine Scan Card */}
                         {scan && (
                           <div
                             style={{
-                              borderRadius: '12px',
-                              padding: '12px',
-                              background: 'rgba(255, 255, 255, 0.025)',
-                              border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))',
+                              borderRadius: '14px',
+                              padding: '14px',
+                              background: 'rgba(255, 255, 255, 0.03)',
+                              border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.09))',
                               marginBottom: '12px',
+                              overflow: 'hidden',
                             }}
                           >
-                            {scan.imageUrl && (
-                              <img
-                                src={scan.imageUrl}
-                                alt="Attached Swine Scan"
-                                loading="lazy"
-                                decoding="async"
-                                style={{ width: '100%', maxHeight: '240px', objectFit: 'cover', borderRadius: '8px', marginBottom: '8px' }}
-                              />
+                            {/* Diagnostic Scan Image */}
+                            {resolveScanImageUrl(scan, post) && (
+                              <div
+                                style={{
+                                  position: 'relative',
+                                  width: '100%',
+                                  maxHeight: '280px',
+                                  borderRadius: '10px',
+                                  overflow: 'hidden',
+                                  marginBottom: '12px',
+                                  background: '#090d16',
+                                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                                }}
+                              >
+                                <img
+                                  src={resolveScanImageUrl(scan, post)}
+                                  alt={scan.condition || 'Swine Diagnostic Scan'}
+                                  loading="lazy"
+                                  decoding="async"
+                                  style={{
+                                    width: '100%',
+                                    maxHeight: '280px',
+                                    objectFit: 'cover',
+                                    display: 'block',
+                                  }}
+                                  onError={(e) => {
+                                    e.currentTarget.onerror = null
+                                    e.currentTarget.src = '/landing/swine-health-scan.jpg'
+                                  }}
+                                />
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    left: '10px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    padding: '4px 10px',
+                                    borderRadius: '999px',
+                                    background: 'rgba(11, 18, 32, 0.85)',
+                                    backdropFilter: 'blur(6px)',
+                                    border: '1px solid rgba(244, 63, 94, 0.4)',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 800,
+                                    color: '#f8fafc',
+                                    letterSpacing: '0.5px',
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      width: '6px',
+                                      height: '6px',
+                                      borderRadius: '50%',
+                                      backgroundColor: '#10b981',
+                                      display: 'inline-block',
+                                    }}
+                                  />
+                                  <ScanLine size={12} color="#f43f5e" />
+                                  <span>YOLOv11-VET SCAN</span>
+                                </div>
+
+                                <div
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: '10px',
+                                    right: '10px',
+                                    background: 'rgba(11, 18, 32, 0.85)',
+                                    backdropFilter: 'blur(6px)',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    border: '1px solid rgba(255, 255, 255, 0.12)',
+                                    fontSize: '0.72rem',
+                                    color: '#94a3b8',
+                                    fontFamily: 'JetBrains Mono, monospace',
+                                  }}
+                                >
+                                  {scan.penId || 'Pen'} • {scan.confidence || '97.4%'}
+                                </div>
+                              </div>
                             )}
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
                               <div>
-                                <strong style={{ fontSize: '0.88rem', color: 'var(--text-main, #ffffff)' }}>
+                                <strong style={{ fontSize: '0.92rem', color: 'var(--text-main, #ffffff)', display: 'block' }}>
                                   {scan.condition || 'Swine Scan Inspection'}
                                 </strong>
-                                <div style={{ fontSize: '0.76rem', color: 'var(--text-muted, #94a3b8)', marginTop: '2px' }}>
-                                  {scan.penId || 'Backyard Pen'} • Confidence: {scan.confidence || '96.8%'}
+                                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted, #94a3b8)', marginTop: '3px' }}>
+                                  {scan.penId || 'Backyard Pen'} • Swine: {scan.swineId || 'Herd Member'} • Confidence: {scan.confidence || '96.8%'}
                                 </div>
                               </div>
                               <span
                                 style={{
-                                  padding: '3px 8px',
-                                  borderRadius: '6px',
+                                  padding: '4px 10px',
+                                  borderRadius: '8px',
                                   fontFamily: 'JetBrains Mono',
-                                  fontSize: '0.74rem',
+                                  fontSize: '0.75rem',
                                   fontWeight: 800,
                                   color: 'var(--accent-rose, #f43f5e)',
                                   background: 'rgba(244, 63, 94, 0.15)',
+                                  border: '1px solid rgba(244, 63, 94, 0.3)',
                                 }}
                               >
-                                {String(scan.severity || 'TIER A').toUpperCase()}
+                                {String(scan.severity || scan.grade || 'MODERATE').toUpperCase()}
                               </span>
                             </div>
+
+                            {scan.notes && (
+                              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted, #94a3b8)', marginTop: '8px', fontStyle: 'italic', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '6px' }}>
+                                "{scan.notes}"
+                              </div>
+                            )}
                           </div>
                         )}
 

@@ -196,7 +196,7 @@ const BENCHMARK_COMMUNITY_POSTS = [
       confidence: '97.4%',
       scanTimestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
       notes: 'Diamond plaques palpated on flank; pen trough sanitized.',
-      imageUrl: 'https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?auto=format&fit=crop&w=800&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1580682777666-24a7b3024e24?auto=format&fit=crop&w=800&q=80',
     },
   },
   {
@@ -222,7 +222,7 @@ const BENCHMARK_COMMUNITY_POSTS = [
       confidence: '96.8%',
       scanTimestamp: new Date(Date.now() - 3600000 * 7).toISOString(),
       notes: 'Inner ear canal crusts identified with dark melanin compensation.',
-      imageUrl: 'https://images.unsplash.com/photo-1516467508483-a7212febe31a?auto=format&fit=crop&w=800&q=80',
+      imageUrl: 'https://images.unsplash.com/photo-1712732249476-83f7568a0b70?auto=format&fit=crop&w=800&q=80',
     },
   },
   {
@@ -239,6 +239,30 @@ const BENCHMARK_COMMUNITY_POSTS = [
 ];
 
 const FORUM_CACHE_KEY = '@pigify_forum_cached_posts_v1';
+
+const getMobileScanImageUrl = (scan, item) => {
+  const direct = scan?.imageUrl || scan?.imageUri || scan?.image || item?.imageUrl || item?.imageUri;
+  if (direct && typeof direct === 'string' && direct.trim()) {
+    const trimmed = direct.trim();
+    if (trimmed.includes('swine-health-scan') || trimmed.includes('erysipelas')) {
+      return 'https://images.unsplash.com/photo-1580682777666-24a7b3024e24?auto=format&fit=crop&w=800&q=80';
+    }
+    if (trimmed.includes('swine-biosecurity-pen') || trimmed.includes('mange')) {
+      return 'https://images.unsplash.com/photo-1712732249476-83f7568a0b70?auto=format&fit=crop&w=800&q=80';
+    }
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('file://') || trimmed.startsWith('data:')) {
+      return trimmed;
+    }
+  }
+  const cond = String(scan?.condition || scan?.details || item?.text || '').toLowerCase();
+  if (cond.includes('erysipelas') || cond.includes('diamond')) {
+    return 'https://images.unsplash.com/photo-1580682777666-24a7b3024e24?auto=format&fit=crop&w=800&q=80';
+  }
+  if (cond.includes('mange') || cond.includes('crust') || cond.includes('native')) {
+    return 'https://images.unsplash.com/photo-1712732249476-83f7568a0b70?auto=format&fit=crop&w=800&q=80';
+  }
+  return 'https://images.unsplash.com/photo-1570779782559-fb9b3e1d6706?auto=format&fit=crop&w=800&q=80';
+};
 
 export default function CommunityForumScreen({ route, navigation, user }) {
   const insets = useSafeAreaInsets();
@@ -656,13 +680,25 @@ export default function CommunityForumScreen({ route, navigation, user }) {
               )}
             </View>
 
-            {scan.imageUrl ? (
-              <Image source={{ uri: scan.imageUrl }} style={styles.scanImagePreview} />
-            ) : null}
+            {(() => {
+              const imgUrl = getMobileScanImageUrl(scan, item);
+              return imgUrl ? (
+                <Image source={{ uri: imgUrl }} style={styles.scanImagePreview} resizeMode="cover" />
+              ) : null;
+            })()}
 
             {scan.notes ? <Text style={styles.scanNotesText}>"{scan.notes}"</Text> : null}
           </View>
         )}
+
+        {/* Direct photo attachment if no scan snapshot */}
+        {!scan && (item.imageUrl || item.imageUri) ? (
+          <Image
+            source={{ uri: item.imageUrl || item.imageUri }}
+            style={[styles.scanImagePreview, { marginBottom: 10 }]}
+            resizeMode="cover"
+          />
+        ) : null}
 
         {/* Reactions & Actions Row */}
         <View style={styles.reactionsBar}>
