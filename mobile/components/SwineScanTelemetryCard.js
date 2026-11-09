@@ -178,12 +178,12 @@ export default function SwineScanTelemetryCard({ scanResult = null }) {
     Alert.alert(
       'IMMEDIATE BIOSECURITY ALERT TRIGGERED (<2.1s)',
       `• Scan Date & Time: ${formattedDateTime}\n` +
-        `• Affected Pig ID: ${scanResult?.swineId || 'Boar #12'} (Ear-Tag #LU-B12 • Red Dorsal Mark)\n` +
-        `• Body Part Detected: ${currentZone.name}\n` +
-        `• Pig Body Temp: ${pigTempC.toFixed(1)}°C (${pigTempF}°F) via Melexis MLX90614 IR Sensor\n` +
-        `• Appetite & Behavior: ${mealsToday}/6 Meals • ${selectedBehaviors.length} Abnormal Sign(s)\n` +
-        `• Camera Setup: 2x Sony IMX708 (Overhead Cam #1 + Feeder Cam #2)\n\n` +
-        `Immediate Pen Quarantine Locked & MAO Luna / OPVet La Union Notification Ready.`,
+      `• Affected Pig ID: ${scanResult?.swineId || 'Boar #12'} (Ear-Tag #LU-B12 • Red Dorsal Mark)\n` +
+      `• Body Part Detected: ${currentZone.name}\n` +
+      `• Pig Body Temp: ${pigTempC.toFixed(1)}°C (${pigTempF}°F) via Melexis MLX90614 IR Sensor\n` +
+      `• Appetite & Behavior: ${mealsToday}/6 Meals • ${selectedBehaviors.length} Abnormal Sign(s)\n` +
+      `• Camera Setup: 2x Sony IMX708 (Overhead Cam #1 + Feeder Cam #2)\n\n` +
+      `Immediate Pen Quarantine Locked & MAO Luna / OPVet La Union Notification Ready.`,
       [
         { text: 'Acknowledge', style: 'cancel' },
         {
