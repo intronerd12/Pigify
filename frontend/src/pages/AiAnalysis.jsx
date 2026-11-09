@@ -41,7 +41,6 @@ import {
   Wifi,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
-import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import SwineScanTelemetrySuite, {
   SWINE_ANATOMICAL_ZONES,
   formatExactScanDateTime,
@@ -2281,22 +2280,6 @@ function AiAnalysis() {
                 analysisResult?.pigIdTag ||
                 `Ear-Tag #${String(swineId || 'LU-12').replace(/[^a-zA-Z0-9-]/g, '')} (Red Dorsal Mark)`
               }
-            />
-          </div>
-        </section>
-
-        {/* ================================================================
-            2B. WHAT TO DO FIRST: SINGLE & MULTI-INFECTION DECISION ENGINE
-            ================================================================ */}
-        <section className="mk-section" style={{ paddingTop: '8px', paddingBottom: '10px' }}>
-          <div className="container-pro">
-            <InfectionDecisionEngine
-              detectedConditions={
-                analysisResult?.condition
-                  ? [analysisResult.condition]
-                  : ['Swine Erysipelas (Diamond Skin)', 'Sarcoptic Mange']
-              }
-              contextLabel="AI SCANNER • SINGLE & MULTI-INFECTION TRIAGE ENGINE"
             />
           </div>
         </section>

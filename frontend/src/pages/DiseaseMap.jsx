@@ -27,7 +27,6 @@ import {
   Eye,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
-import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import { API_BASE_URL } from '../config/api'
 import { BRAND_NAME } from '../config/brand'
 import {
@@ -2031,14 +2030,6 @@ function DiseaseMap() {
                     )
                   })}
                 </div>
-              </div>
-
-              {/* What To Do First: Single & Multi-Infection Decision Engine for Luna, La Union */}
-              <div style={{ marginTop: '24px' }}>
-                <InfectionDecisionEngine
-                  detectedConditions={farms}
-                  contextLabel="LUNA, LA UNION GIS • MULTI-INFECTION PRIORITY RESPONSE"
-                />
               </div>
             </div>
           </section>
