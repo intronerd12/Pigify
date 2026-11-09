@@ -334,9 +334,9 @@ export default function CommunityForumScreen({ route, navigation, user }) {
             setPosts(cached);
             setLoading(false);
           }
-        } catch {}
+        } catch { }
       }
-    }).catch(() => {});
+    }).catch(() => { });
   }, []);
 
   const selectedScan = useMemo(
@@ -371,7 +371,7 @@ export default function CommunityForumScreen({ route, navigation, user }) {
         setPosts(BENCHMARK_COMMUNITY_POSTS);
       } else {
         setPosts(freshPosts);
-        AsyncStorage.setItem(FORUM_CACHE_KEY, JSON.stringify(freshPosts)).catch(() => {});
+        AsyncStorage.setItem(FORUM_CACHE_KEY, JSON.stringify(freshPosts)).catch(() => { });
       }
       setFeedError('');
     } else {
@@ -447,7 +447,7 @@ export default function CommunityForumScreen({ route, navigation, user }) {
         setCustomImageUri(res.assets[0].uri);
         setSelectedScanId(null);
       }
-    } catch {}
+    } catch { }
   };
 
   const handleDeletePost = (post) => {
@@ -484,7 +484,7 @@ export default function CommunityForumScreen({ route, navigation, user }) {
         message: `Pigify Swine Community: Case shared by ${author}${condition}\n\n"${text}"\n\nShared via Pigify Swine Health Platform.`,
         title: 'Pigify Swine Case',
       });
-    } catch {}
+    } catch { }
   };
 
   const handleOpenNotifications = async () => {
