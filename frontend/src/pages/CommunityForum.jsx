@@ -140,7 +140,10 @@ const isPigRelatedText = (text, hasScan = false) => {
 }
 
 const UserAvatar = ({ url, name, size = 32 }) => {
+  const [imgError, setImgError] = React.useState(false)
   const initial = name ? name.charAt(0).toUpperCase() : '?'
+  const showImage = Boolean(url && !imgError)
+
   return (
     <div
       style={{
@@ -148,9 +151,6 @@ const UserAvatar = ({ url, name, size = 32 }) => {
         height: size,
         borderRadius: '50%',
         backgroundColor: 'rgba(244, 63, 94, 0.2)',
-        backgroundImage: url ? `url(${url})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -159,9 +159,21 @@ const UserAvatar = ({ url, name, size = 32 }) => {
         fontSize: size * 0.45,
         flexShrink: 0,
         border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.15))',
+        overflow: 'hidden',
+        position: 'relative',
       }}
     >
-      {!url && initial}
+      {showImage ? (
+        <img
+          src={url}
+          alt={name || 'User'}
+          referrerPolicy="no-referrer"
+          onError={() => setImgError(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      ) : (
+        initial
+      )}
     </div>
   )
 }

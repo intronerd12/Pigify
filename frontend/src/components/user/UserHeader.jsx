@@ -107,19 +107,37 @@ const cancelPrefetch = (path) => {
 
 function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlot = null }) {
   const [currentUser, setCurrentUser] = useState(null)
+  const [avatarError, setAvatarError] = useState(false)
   const [settings, setSettings] = useState(() => getUserSettings(null))
   const navigate = useNavigate()
 
   useEffect(() => {
-    try {
-      const u = localStorage.getItem('user')
-      if (u) {
-        const parsed = JSON.parse(u)
-        setCurrentUser(parsed)
-        const userKey = parsed.id || parsed.userId || parsed.email
-        setSettings(getUserSettings(userKey))
-      }
-    } catch {}
+    setAvatarError(false)
+  }, [currentUser?.avatar])
+
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const u = localStorage.getItem('user')
+        if (u) {
+          const parsed = JSON.parse(u)
+          if (!parsed.avatar) {
+            const cached =
+              (parsed.email ? localStorage.getItem(`@pigify_saved_avatar_${String(parsed.email).trim().toLowerCase()}`) : '') ||
+              (parsed.id ? localStorage.getItem(`@pigify_saved_avatar_${parsed.id}`) : '') ||
+              ''
+            if (cached) parsed.avatar = cached
+          }
+          setCurrentUser(parsed)
+          const userKey = parsed.id || parsed.userId || parsed.email
+          setSettings(getUserSettings(userKey))
+        } else {
+          setCurrentUser(null)
+        }
+      } catch {}
+    }
+
+    loadUser()
 
     const handleSettingsUpdated = (e) => {
       if (e?.detail?.settings) {
@@ -127,8 +145,22 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
       }
     }
 
+    const handleUserUpdated = (e) => {
+      if (e?.detail?.user) {
+        setCurrentUser(e.detail.user)
+      } else {
+        loadUser()
+      }
+    }
+
     window.addEventListener('pigify:settings-updated', handleSettingsUpdated)
-    return () => window.removeEventListener('pigify:settings-updated', handleSettingsUpdated)
+    window.addEventListener('pigify:user-updated', handleUserUpdated)
+    window.addEventListener('storage', loadUser)
+    return () => {
+      window.removeEventListener('pigify:settings-updated', handleSettingsUpdated)
+      window.removeEventListener('pigify:user-updated', handleUserUpdated)
+      window.removeEventListener('storage', loadUser)
+    }
   }, [])
 
   const handleLogout = async () => {
@@ -232,7 +264,17 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
                 onMouseEnter={() => prefetchRoute('/profile')}
               >
                 <div className="user-header-user-avatar">
-                  {String(currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()}
+                  {currentUser?.avatar && !avatarError ? (
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser?.name || 'User'}
+                      referrerPolicy="no-referrer"
+                      className="user-header-user-avatar-img"
+                      onError={() => setAvatarError(true)}
+                    />
+                  ) : (
+                    String(currentUser?.name || currentUser?.email || 'U').charAt(0).toUpperCase()
+                  )}
                 </div>
                 <span className="user-header-user-name">
                   {currentUser.name ? currentUser.name.split(' ')[0] : 'Operator'}

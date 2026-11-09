@@ -27,6 +27,53 @@ const AdminLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [adminAvatarError, setAdminAvatarError] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const u = localStorage.getItem('user');
+      if (!u) return null;
+      const parsed = JSON.parse(u);
+      if (!parsed.avatar) {
+        const cached =
+          (parsed.email ? localStorage.getItem(`@pigify_saved_avatar_${String(parsed.email).trim().toLowerCase()}`) : '') ||
+          (parsed.id ? localStorage.getItem(`@pigify_saved_avatar_${parsed.id}`) : '') ||
+          '';
+        if (cached) parsed.avatar = cached;
+      }
+      return parsed;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const handleUserUpdate = (e) => {
+      if (e?.detail?.user) {
+        setCurrentUser(e.detail.user);
+      } else {
+        try {
+          const u = localStorage.getItem('user');
+          if (u) {
+            const parsed = JSON.parse(u);
+            if (!parsed.avatar) {
+              const cached =
+                (parsed.email ? localStorage.getItem(`@pigify_saved_avatar_${String(parsed.email).trim().toLowerCase()}`) : '') ||
+                (parsed.id ? localStorage.getItem(`@pigify_saved_avatar_${parsed.id}`) : '') ||
+                '';
+              if (cached) parsed.avatar = cached;
+            }
+            setCurrentUser(parsed);
+          }
+        } catch {}
+      }
+    };
+    window.addEventListener('pigify:user-updated', handleUserUpdate);
+    window.addEventListener('storage', handleUserUpdate);
+    return () => {
+      window.removeEventListener('pigify:user-updated', handleUserUpdate);
+      window.removeEventListener('storage', handleUserUpdate);
+    };
+  }, []);
 
   // Pre-fetch critical admin modules in background idle time
   useEffect(() => {
@@ -39,15 +86,6 @@ const AdminLayout = () => {
       import('../../pages/admin/ApiMonitoring').catch(() => {});
       import('../../pages/admin/AdminAiAnalysis').catch(() => {});
     });
-  }, []);
-
-  const currentUser = React.useMemo(() => {
-    try {
-      const u = localStorage.getItem('user');
-      return u ? JSON.parse(u) : null;
-    } catch {
-      return null;
-    }
   }, []);
 
   const handleLogout = async () => {
@@ -278,9 +316,21 @@ const AdminLayout = () => {
               color: '#34d399',
               fontWeight: 700,
               fontSize: '0.85rem',
-              flexShrink: 0
+              flexShrink: 0,
+              overflow: 'hidden',
+              position: 'relative',
             }}>
-              {(currentUser?.name || currentUser?.email || 'A').charAt(0).toUpperCase()}
+              {currentUser?.avatar && !adminAvatarError ? (
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser?.name || 'Admin'}
+                  referrerPolicy="no-referrer"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '9px', display: 'block' }}
+                  onError={() => setAdminAvatarError(true)}
+                />
+              ) : (
+                (currentUser?.name || currentUser?.email || 'A').charAt(0).toUpperCase()
+              )}
             </div>
             <div style={{ overflow: 'hidden' }}>
               <div style={{ fontSize: '0.82rem', fontWeight: '700', color: '#ffffff', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>

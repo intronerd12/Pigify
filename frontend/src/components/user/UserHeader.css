@@ -436,6 +436,16 @@
   font-size: 0.72rem !important;
   flex-shrink: 0 !important;
   box-shadow: 0 1px 4px rgba(244, 63, 94, 0.3) !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.user-header-user-avatar-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
 }
 
 .user-header-user-name {

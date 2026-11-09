@@ -50,6 +50,8 @@ function UserProfile() {
   const [farmSector, setFarmSector] = useState('')
   const [roleTitle, setRoleTitle] = useState('')
   const [avatarPalette, setAvatarPalette] = useState('rose')
+  const [avatar, setAvatar] = useState('')
+  const [avatarLoadError, setAvatarLoadError] = useState(false)
 
   // Header display settings
   const [navDisplayMode, setNavDisplayMode] = useState('words') // 'words' | 'icons' | 'both'
@@ -71,6 +73,12 @@ function UserProfile() {
       setUserKey(key)
 
       // Initialize profile fields
+      const userAvatar =
+        u.avatar ||
+        (u.email ? localStorage.getItem(`@pigify_saved_avatar_${String(u.email).trim().toLowerCase()}`) : '') ||
+        (u.id ? localStorage.getItem(`@pigify_saved_avatar_${u.id}`) : '') ||
+        ''
+      setAvatar(userAvatar)
       setName(u.name || 'Axel J. Bumatay')
       setEmail(u.email || 'researcher@pigify.com')
       setPhone(u.phone || '+63 917 849 2031')
@@ -130,10 +138,15 @@ function UserProfile() {
       farmSector: farmSector.trim(),
       roleTitle: roleTitle.trim(),
       avatarPalette,
+      avatar: avatar || currentUser?.avatar || '',
     }
 
     localStorage.setItem('user', JSON.stringify(updatedUser))
+    if (updatedUser.avatar && updatedUser.email) {
+      localStorage.setItem(`@pigify_saved_avatar_${String(updatedUser.email).trim().toLowerCase()}`, updatedUser.avatar)
+    }
     setCurrentUser(updatedUser)
+    window.dispatchEvent(new CustomEvent('pigify:user-updated', { detail: { user: updatedUser } }))
 
     // Save associated user settings
     saveUserSettings(userKey, {
@@ -508,7 +521,17 @@ function UserProfile() {
               {/* Profile Card Preview */}
               <div className="profile-card profile-badge-preview-card">
                 <div className="profile-badge-avatar" style={{ background: selectedPaletteObj.gradient }}>
-                  {name ? name.charAt(0).toUpperCase() : 'U'}
+                  {avatar && !avatarLoadError ? (
+                    <img
+                      src={avatar}
+                      alt={name || 'User'}
+                      referrerPolicy="no-referrer"
+                      className="profile-badge-avatar-img"
+                      onError={() => setAvatarLoadError(true)}
+                    />
+                  ) : (
+                    name ? name.charAt(0).toUpperCase() : 'U'
+                  )}
                 </div>
                 <h3 className="profile-badge-name">{name || 'Operator Name'}</h3>
                 <span className="profile-badge-role">{roleTitle || 'Swine Researcher'}</span>

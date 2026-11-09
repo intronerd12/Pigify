@@ -60,7 +60,16 @@ const AUTH_VIDEO_SLIDES = [
  * After Supabase auth succeeds, sync with our backend to get the user profile + role.
  * Includes resilient client-side fallback if the local API server is unreachable.
  */
-async function syncWithBackend(supabaseToken, nameHint, userObj = null) {
+async function syncWithBackend(supabaseToken, nameHint, userObj = null, avatarHint = '') {
+  const cleanEmail = String(userObj?.email || '').trim().toLowerCase();
+  const cachedAvatar =
+    avatarHint ||
+    (cleanEmail ? localStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`) : '') ||
+    (userObj?.id ? localStorage.getItem(`@pigify_saved_avatar_${userObj.id}`) : '') ||
+    userObj?.user_metadata?.avatar_url ||
+    userObj?.user_metadata?.picture ||
+    '';
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/supabase-sync`, {
       method: 'POST',
@@ -68,7 +77,7 @@ async function syncWithBackend(supabaseToken, nameHint, userObj = null) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${supabaseToken}`,
       },
-      body: JSON.stringify({ name: nameHint }),
+      body: JSON.stringify({ name: nameHint, avatar: cachedAvatar }),
     });
 
     const text = await res.text();
@@ -77,19 +86,36 @@ async function syncWithBackend(supabaseToken, nameHint, userObj = null) {
       console.warn('Sync parse error:', text);
     }
 
-    if (res.ok && data && (data._id || data.id || data.email)) return data;
+    if (res.ok && data && (data._id || data.id || data.email)) {
+      if (!data.avatar && cachedAvatar) {
+        data.avatar = cachedAvatar;
+      }
+      if (data.avatar && cleanEmail) {
+        localStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, data.avatar);
+      }
+      return data;
+    }
   } catch (err) {
     console.warn('Backend sync unreachable, using client session fallback:', err);
   }
 
   // Graceful fallback from client Supabase session
-  const cleanEmail = String(userObj?.email || '').trim().toLowerCase();
   const isAdmin = cleanEmail.includes('admin') || cleanEmail === 'admin@pigify.com' || cleanEmail === 'bumatayjilia@gmail.com';
+  const effectiveAvatar =
+    cachedAvatar ||
+    userObj?.user_metadata?.avatar_url ||
+    userObj?.user_metadata?.picture ||
+    '';
+  if (effectiveAvatar && cleanEmail) {
+    localStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, effectiveAvatar);
+  }
+
   return {
     _id: userObj?.id || `usr-${Date.now()}`,
     id: userObj?.id || `usr-${Date.now()}`,
     name: nameHint || userObj?.user_metadata?.full_name || cleanEmail.split('@')[0] || 'Swine Researcher',
     email: cleanEmail || 'researcher@pigify.com',
+    avatar: effectiveAvatar,
     role: isAdmin ? 'admin' : 'user',
     status: 'active',
     status_reason: '',
@@ -307,6 +333,10 @@ function AuthPro() {
       // Sync with backend to get role and user profile
       const synced = await syncWithBackend(data.session.access_token, data.user?.user_metadata?.full_name, data.user);
       localStorage.setItem('user', JSON.stringify(synced));
+      if (synced?.avatar && synced?.email) {
+        localStorage.setItem(`@pigify_saved_avatar_${String(synced.email).trim().toLowerCase()}`, synced.avatar);
+      }
+      window.dispatchEvent(new CustomEvent('pigify:user-updated', { detail: { user: synced } }));
       toast.success(`Welcome back, ${synced.name || 'User'}!`);
       navigate(synced.role === 'admin' ? '/admin' : '/home');
       return synced;
@@ -338,6 +368,10 @@ function AuthPro() {
       if (data.session) {
         const synced = await syncWithBackend(data.session.access_token, name, data.user);
         localStorage.setItem('user', JSON.stringify(synced));
+        if (synced?.avatar && synced?.email) {
+          localStorage.setItem(`@pigify_saved_avatar_${String(synced.email).trim().toLowerCase()}`, synced.avatar);
+        }
+        window.dispatchEvent(new CustomEvent('pigify:user-updated', { detail: { user: synced } }));
         toast.success(`Welcome to Pigify, ${synced.name || name}!`);
         navigate(synced.role === 'admin' ? '/admin' : '/home');
         return synced;
@@ -418,13 +452,26 @@ function AuthPro() {
         cleanEmail === 'bumatayjilia@gmail.com';
       const socialToken = `firebase-google-${user.uid || Date.now()}`;
 
+      // Google user avatar: extract Google photo URL and prioritize as active profile
+      const googlePhoto = user.photoURL || '';
+      const cachedAvatar =
+        (cleanEmail ? localStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`) : '') ||
+        (user.uid ? localStorage.getItem(`@pigify_saved_avatar_${user.uid}`) : '') ||
+        '';
+
+      const effectiveAvatar = googlePhoto || cachedAvatar || '';
+      if (effectiveAvatar) {
+        if (cleanEmail) localStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, effectiveAvatar);
+        if (user.uid) localStorage.setItem(`@pigify_saved_avatar_${user.uid}`, effectiveAvatar);
+      }
+
       // Verified client fallback profile from Firebase Auth
       let finalUser = {
         _id: user.uid || `google-${Date.now()}`,
         id: user.uid || `google-${Date.now()}`,
         name: displayName,
         email: cleanEmail,
-        avatar: user.photoURL || '',
+        avatar: effectiveAvatar,
         role: isAdminEmail ? 'admin' : 'user',
         status: 'active',
         status_reason: '',
@@ -443,7 +490,7 @@ function AuthPro() {
             name: displayName,
             email: cleanEmail,
             googleId: user.uid,
-            avatar: user.photoURL || '',
+            avatar: effectiveAvatar,
           }),
         });
 
@@ -453,6 +500,8 @@ function AuthPro() {
             finalUser = {
               ...finalUser,
               ...data,
+              // Always guarantee Google avatar / effectiveAvatar is retained
+              avatar: data.avatar || effectiveAvatar,
               token: data.token || socialToken,
               supabaseToken: data.supabaseToken || data.token || socialToken,
             };
@@ -462,7 +511,29 @@ function AuthPro() {
         // Backend offline; proceed with verified Firebase Google session
       }
 
+      // Sync with Supabase profiles table directly if initialized
+      try {
+        if (user.uid && supabase) {
+          await supabase.from('profiles').upsert(
+            {
+              id: user.uid,
+              name: displayName,
+              avatar: finalUser.avatar || effectiveAvatar,
+              email_verified: true,
+              last_login_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
+          );
+        }
+      } catch (_sErr) {
+        // Non-blocking
+      }
+
       localStorage.setItem('user', JSON.stringify(finalUser));
+      if (finalUser.avatar && cleanEmail) {
+        localStorage.setItem(`@pigify_saved_avatar_${cleanEmail}`, finalUser.avatar);
+      }
+      window.dispatchEvent(new CustomEvent('pigify:user-updated', { detail: { user: finalUser } }));
       toast.success(`Welcome back, ${finalUser.name}!`);
       navigate(finalUser.role === 'admin' ? '/admin' : '/home');
     } catch (error) {

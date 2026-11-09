@@ -68,7 +68,7 @@ const supabaseSync = async (req, res) => {
     user_metadata?.name ||
     req.body?.name ||
     cleanEmail.split('@')[0];
-  const metaAvatar = user_metadata?.avatar_url || user_metadata?.picture || '';
+  const metaAvatar = user_metadata?.avatar_url || user_metadata?.picture || req.body?.avatar || '';
 
   try {
     // Check if user already has an existing avatar in profiles to prevent wiping on re-login

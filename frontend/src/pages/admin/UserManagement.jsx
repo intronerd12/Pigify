@@ -583,6 +583,7 @@ const UserManagement = () => {
                               alt=""
                               loading="lazy"
                               decoding="async"
+                              referrerPolicy="no-referrer"
                               style={{ width: '100%', height: '100%', borderRadius: '10px', objectFit: 'cover' }}
                             />
                           ) : (
