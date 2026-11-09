@@ -272,6 +272,33 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
     throw new Error('No API URL configured');
   }
 
+  // Auto-inject Authorization header if not explicitly provided
+  const effectiveHeaders = { ...(options.headers || {}) };
+  if (!effectiveHeaders.Authorization && !effectiveHeaders.authorization) {
+    try {
+      const userStr = await AsyncStorage.getItem('user');
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        const t = u?.token || u?.supabaseToken;
+        if (t) {
+          effectiveHeaders.Authorization = `Bearer ${t}`;
+        }
+      }
+      if (!effectiveHeaders.Authorization && !effectiveHeaders.authorization) {
+        const { supabase } = require('./supabase');
+        const { data } = await supabase.auth.getSession();
+        if (data?.session?.access_token) {
+          effectiveHeaders.Authorization = `Bearer ${data.session.access_token}`;
+        }
+      }
+    } catch {}
+  }
+
+  const effectiveOptions = {
+    ...options,
+    headers: effectiveHeaders,
+  };
+
   let lastError = null;
 
   for (let i = 0; i < urls.length; i += 1) {
@@ -285,7 +312,7 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
 
     try {
       const response = await fetch(buildApiUrlInternal(baseUrl, path), {
-        ...options,
+        ...effectiveOptions,
         signal: controller.signal,
       });
 
@@ -389,13 +416,18 @@ export const getSessionStatus = async (token) => {
   }
 };
 
-export const updateUser = async (userId, userData) => {
+export const updateUser = async (userId, userData, explicitToken) => {
   try {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (explicitToken) {
+      headers.Authorization = `Bearer ${explicitToken}`;
+    }
+
     const response = await apiFetch(`/api/users/${userId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(userData),
     });
 
@@ -411,25 +443,36 @@ export const updateUser = async (userId, userData) => {
   }
 };
 
-export const uploadUserAvatar = async (userId, imageUri) => {
+export const uploadUserAvatar = async (userId, imageUri, explicitToken) => {
   try {
     const formData = new FormData();
-    const filename = imageUri.split('/').pop();
+    const filename = imageUri.split('/').pop() || 'avatar.jpg';
     const match = /\.(\w+)$/.exec(filename);
     const type = match ? `image/${match[1]}` : 'image/jpeg';
 
-    formData.append('avatar', {
-      uri: imageUri,
-      name: filename,
-      type,
-    });
+    if (Platform.OS === 'web') {
+      const res = await fetch(imageUri);
+      const blob = await res.blob();
+      formData.append('avatar', blob, filename);
+    } else {
+      formData.append('avatar', {
+        uri: imageUri,
+        name: filename,
+        type,
+      });
+    }
+
+    const headers = {
+      Accept: 'application/json',
+    };
+    if (explicitToken) {
+      headers.Authorization = `Bearer ${explicitToken}`;
+    }
 
     const response = await apiFetch(`/api/users/${userId}/avatar`, {
       method: 'POST',
       body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+      headers,
     });
 
     const data = await response.json();

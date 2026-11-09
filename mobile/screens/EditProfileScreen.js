@@ -72,10 +72,11 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
     setLoading(true);
     try {
       let currentAvatarUrl = user.avatar;
+      const token = user?.token || user?.supabaseToken;
 
       if (avatar && avatar !== user.avatar && !avatar.startsWith('http')) {
         try {
-          const uploadResult = await uploadUserAvatar(user._id || user.id, avatar);
+          const uploadResult = await uploadUserAvatar(user._id || user.id, avatar, token);
           if (uploadResult?.avatar) {
             currentAvatarUrl = uploadResult.avatar;
           }
@@ -95,7 +96,7 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
       let finalUser = { ...user, ...updateData };
       try {
         if (user._id || user.id) {
-          const apiUpdated = await updateUser(user._id || user.id, updateData);
+          const apiUpdated = await updateUser(user._id || user.id, updateData, token);
           if (apiUpdated && typeof apiUpdated === 'object') {
             finalUser = {
               ...user,
@@ -108,7 +109,24 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
           }
         }
       } catch (apiErr) {
-        console.warn('Backend sync failed, saving locally:', apiErr?.message);
+        console.warn('Backend sync notice (offline or local fallback):', apiErr?.message);
+      }
+
+      // Direct Supabase profile sync using configured Supabase client
+      try {
+        const { supabase } = require('../services/supabase');
+        const targetId = user.id || user._id;
+        if (targetId) {
+          await supabase
+            .from('profiles')
+            .update({
+              name: updateData.name,
+              avatar: currentAvatarUrl,
+            })
+            .eq('id', targetId);
+        }
+      } catch (sbErr) {
+        console.log('[Supabase Direct Sync]:', sbErr?.message);
       }
 
       if (typeof onUpdateUser === 'function') {

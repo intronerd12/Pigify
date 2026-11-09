@@ -16,7 +16,26 @@ LogBox.ignoreLogs([
   /InteractionManager has been deprecated/,
   "The <CameraView> component does not support children. This may lead to inconsistent behaviour or crashes. If you want to render content on top of the Camera, consider using absolute positioning.",
   /The <CameraView> component does not support children/,
+  "props.pointerEvents is deprecated. Use style.pointerEvents",
+  /props\.pointerEvents is deprecated/,
+  "Animated: `useNativeDriver` is not supported because the native animated module is missing. Falling back to JS-based animation.",
+  /Animated: `useNativeDriver` is not supported/,
 ]);
+
+// Cleanly silence React Native Web internal framework deprecation warnings in web console
+if (Platform.OS === 'web' && typeof console !== 'undefined') {
+  const origWarn = console.warn;
+  console.warn = (...args) => {
+    const msg = typeof args[0] === 'string' ? args[0] : '';
+    if (
+      msg.includes('props.pointerEvents is deprecated') ||
+      msg.includes('useNativeDriver is not supported')
+    ) {
+      return;
+    }
+    origWarn.apply(console, args);
+  };
+}
 
 import { clearEnvironmentCaches } from './services/EnvironmentService';
 import { getUserNamespace, sanitizeForKey } from './services/storageScope';

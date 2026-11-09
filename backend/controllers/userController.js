@@ -145,32 +145,36 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const isAdmin = req.user?.role === 'admin';
     const has = (key) => Object.prototype.hasOwnProperty.call(req.body, key);
     const updates = {};
 
     if (has('name')) updates.name = String(req.body.name).trim();
-    if (has('role')) {
-      const allowedRoles = ['admin', 'user', 'veterinarian', 'moderator', 'viewer'];
-      const nextRole = String(req.body.role || '').toLowerCase();
-      if (allowedRoles.includes(nextRole)) {
-        updates.role = nextRole;
-      }
-    }
     if (has('avatar')) updates.avatar = req.body.avatar;
 
-    if (has('status')) {
-      const nextStatus = normalizeStatus(req.body.status);
-      updates.status = nextStatus;
-
-      if (nextStatus === 'active') {
-        updates.status_reason = '';
-      } else {
-        const defaultReason = nextStatus === 'banned' ? 'Suspended by administrator' : 'Deactivated by administrator';
-        const reason = String(req.body.status_reason || '').trim() || currentProfile.status_reason || defaultReason;
-        updates.status_reason = reason;
+    if (isAdmin) {
+      if (has('role')) {
+        const allowedRoles = ['admin', 'user', 'veterinarian', 'moderator', 'viewer'];
+        const nextRole = String(req.body.role || '').toLowerCase();
+        if (allowedRoles.includes(nextRole)) {
+          updates.role = nextRole;
+        }
       }
-    } else if (has('status_reason')) {
-      updates.status_reason = String(req.body.status_reason || '').trim();
+
+      if (has('status')) {
+        const nextStatus = normalizeStatus(req.body.status);
+        updates.status = nextStatus;
+
+        if (nextStatus === 'active') {
+          updates.status_reason = '';
+        } else {
+          const defaultReason = nextStatus === 'banned' ? 'Suspended by administrator' : 'Deactivated by administrator';
+          const reason = String(req.body.status_reason || '').trim() || currentProfile.status_reason || defaultReason;
+          updates.status_reason = reason;
+        }
+      } else if (has('status_reason')) {
+        updates.status_reason = String(req.body.status_reason || '').trim();
+      }
     }
 
     // Direct Postgres update for maximum reliability
@@ -275,7 +279,18 @@ const uploadAvatar = async (req, res) => {
     });
 
     // Remove local file
-    fs.unlinkSync(req.file.path);
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    // Direct Postgres pool update for consistency
+    if (pool) {
+      try {
+        await pool.query('UPDATE public.profiles SET avatar = $1 WHERE id = $2', [result.secure_url, id]);
+      } catch (poolErr) {
+        console.error('Postgres pool avatar update error:', poolErr);
+      }
+    }
 
     // Update avatar in profile
     const { data: updatedProfile, error: updateError } = await supabaseAdmin
