@@ -19,6 +19,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import GridBackground from '../components/GridBackground';
+import { useTheme } from '../context/ThemeContext';
 
 import {
   signInWithSupabase,
@@ -37,7 +38,7 @@ import {
 const { width } = Dimensions.get('window');
 
 // ── Web Design Tokens (Exact 1:1 match with AuthPro.css & Home.css) ───────────
-const THEME = {
+const BASE_THEME = {
   bgDeep: '#070A13',
   bgCard: 'rgba(13, 20, 36, 0.92)',
   bgInput: 'rgba(20, 29, 48, 0.85)',
@@ -63,6 +64,28 @@ const THEME = {
 };
 
 export default function AuthScreen({ onLogin }) {
+  const { colors, isDark } = useTheme();
+
+  const THEME = useMemo(
+    () => ({
+      ...BASE_THEME,
+      bgDeep: colors.bgDeep,
+      bgCard: colors.bgCard,
+      bgInput: colors.inputBg,
+      borderCard: colors.borderSubtle,
+      borderInput: colors.borderSubtle,
+      textMain: colors.textMain,
+      textMuted: colors.textMuted,
+      textFaint: isDark ? '#64748B' : '#94A3B8',
+    }),
+    [colors, isDark]
+  );
+
+  const styles = useMemo(
+    () => createStyles(THEME, colors, isDark),
+    [THEME, colors, isDark]
+  );
+
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -1060,7 +1083,8 @@ export default function AuthScreen({ onLogin }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (THEME, colors, isDark) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: THEME.bgDeep,
@@ -1136,7 +1160,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     position: 'relative',
     shadowColor: '#000000',
-    shadowOpacity: 0.5,
+    shadowOpacity: isDark ? 0.5 : 0.08,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
   },
@@ -1182,9 +1206,9 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(20, 29, 48, 0.7)',
+    backgroundColor: isDark ? 'rgba(20, 29, 48, 0.7)' : 'rgba(241, 245, 249, 0.9)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: THEME.borderCard,
     borderRadius: 12,
     padding: 3,
     marginBottom: 12,
@@ -1197,9 +1221,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tabButtonActive: {
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    backgroundColor: isDark ? 'rgba(30, 41, 59, 0.95)' : '#ffffff',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: THEME.borderCard,
   },
   tabText: {
     fontSize: 13,
@@ -1393,7 +1417,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    backgroundColor: '#0D1424',
+    backgroundColor: THEME.bgCard,
     borderRadius: 24,
     borderWidth: 1,
     borderColor: THEME.borderCard,

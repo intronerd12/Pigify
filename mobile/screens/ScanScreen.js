@@ -24,6 +24,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 
 import { ScanService } from '../services/ScanService';
+import { useTheme } from '../context/ThemeContext';
 import SwineScanTelemetryCard, {
   formatMobileScanDateTime,
   inferMobileBodyPart,
@@ -175,6 +176,9 @@ const NATIVE_PIG_PRESETS = [
 export default function ScanScreen({ user }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors: THEME, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(THEME, isDark), [THEME, isDark]);
+
   let tabBarHeight = 0;
   try {
     tabBarHeight = useBottomTabBarHeight();
@@ -368,6 +372,7 @@ export default function ScanScreen({ user }) {
         display_confidence_score: conf,
         triage_recommendation: triage,
         imageUri: uri,
+        imageUrl: res?.imageUrl || res?.image_url || extra.presetData?.imageUrl || null,
         imageSource: extra.presetData?.imageSource || activePen.imageSource,
         source: extra.source || (sourceMode === 'raspi' ? 'raspberry_pi_5' : 'mobile_app'),
         hardwareSource: extra.hardware || (sourceMode === 'raspi' ? 'Raspberry Pi 5 (Pi Cam Module v3 IMX708)' : 'Mobile Phone Camera'),
@@ -396,6 +401,7 @@ export default function ScanScreen({ user }) {
         display_confidence_score: 97.4,
         triage_recommendation: 'Skin surface tissue intact. Continue standard pen ventilation and nutrition.',
         imageUri: uri,
+        imageUrl: extra.presetData?.imageUrl || null,
         imageSource: extra.presetData?.imageSource || activePen.imageSource,
         hardwareSource: extra.hardware || (sourceMode === 'raspi' ? 'Raspberry Pi 5 (Pi Cam v3)' : 'Mobile Phone Camera'),
       };
@@ -1278,33 +1284,34 @@ export default function ScanScreen({ user }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bgDeep,
-  },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  glowTopLeft: {
-    position: 'absolute',
-    top: -50,
-    left: -50,
-    width: 260,
-    height: 260,
-    borderRadius: 130,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
-  permissionCard: {
-    backgroundColor: THEME.bgCard,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    padding: 28,
-    alignItems: 'center',
-  },
+const createStyles = (THEME, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bgDeep,
+    },
+    center: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 24,
+    },
+    glowTopLeft: {
+      position: 'absolute',
+      top: -50,
+      left: -50,
+      width: 260,
+      height: 260,
+      borderRadius: 130,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.14)' : 'rgba(225, 29, 72, 0.06)',
+    },
+    permissionCard: {
+      backgroundColor: THEME.bgCard,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      padding: 28,
+      alignItems: 'center',
+    },
   permissionTitle: {
     fontSize: 18,
     fontWeight: '800',
@@ -1612,17 +1619,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  retakeBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(20, 29, 48, 0.85)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 16,
-    paddingVertical: 14,
-  },
+    retakeBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: isDark ? 'rgba(20, 29, 48, 0.85)' : '#F1F5F9',
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      borderRadius: 16,
+      paddingVertical: 14,
+    },
   retakeBtnText: {
     fontSize: 14,
     fontWeight: '700',
@@ -1779,25 +1786,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
   },
-  modalCard: {
-    width: '100%',
-    backgroundColor: '#0F172A',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    padding: 22,
-  },
-  modalInput: {
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 12,
-    color: '#FFFFFF',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 14,
-    fontFamily: 'monospace',
-  },
+    modalCard: {
+      width: '100%',
+      backgroundColor: THEME.dialogBg || THEME.bgCardSolid,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      padding: 22,
+    },
+    modalInput: {
+      backgroundColor: THEME.inputBg || (isDark ? 'rgba(0, 0, 0, 0.5)' : '#F1F5F9'),
+      borderWidth: 1,
+      borderColor: THEME.inputBorder || THEME.borderCard,
+      borderRadius: 12,
+      color: THEME.textMain,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      fontSize: 14,
+      fontFamily: 'monospace',
+    },
   modalSaveBtn: {
     flex: 1,
     backgroundColor: THEME.primary,
@@ -2340,34 +2347,34 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
     marginBottom: 10,
   },
-  whyCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 12,
-    backgroundColor: 'rgba(13, 20, 36, 0.7)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 8,
-  },
-  whyCardIconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  whyCardTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 3,
-  },
-  whyCardDesc: {
-    fontSize: 11.5,
-    color: '#94A3B8',
-    lineHeight: 16,
-  },
-});
+    whyCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 12,
+      backgroundColor: THEME.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      borderRadius: 14,
+      padding: 12,
+      marginBottom: 8,
+    },
+    whyCardIconBox: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    whyCardTitle: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: THEME.textMain,
+      marginBottom: 3,
+    },
+    whyCardDesc: {
+      fontSize: 11.5,
+      color: THEME.textMuted,
+      lineHeight: 16,
+    },
+  });

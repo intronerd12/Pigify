@@ -16,7 +16,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { getEnvironmentalReport } from '../services/EnvironmentService';
 import { apiFetch } from '../services/api';
-import InfectionDecisionCard from '../components/InfectionDecisionCard';
+import { useTheme } from '../context/ThemeContext';
 
 const THEME = {
   bg: '#070A13',
@@ -394,6 +394,27 @@ const evaluateSwineBiosecuritySuitability = (data) => {
 
 export default function MappingEnvironmentScreen({ navigation, route, user }) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const dynamicTheme = useMemo(
+    () => ({
+      ...THEME,
+      bg: colors.bgDeep,
+      cardBg: colors.bgCard,
+      border: colors.borderSubtle,
+      text: colors.textMain,
+      textSub: colors.textMuted,
+      headerBg: colors.navBarBg,
+      inputBg: colors.inputBg,
+    }),
+    [colors]
+  );
+
+  const styles = useMemo(
+    () => createStyles(dynamicTheme, colors, isDark),
+    [dynamicTheme, colors, isDark]
+  );
+
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -813,7 +834,7 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
             1. CAPSTONE STUDY SITE BANNER: LUNA, LA UNION
             ================================================================ */}
         <LinearGradient
-          colors={['#1e1b4b', '#0f172a', '#060911']}
+          colors={isDark ? ['#1e1b4b', '#0f172a', '#060911'] : ['#e0f2fe', '#f1f5f9', '#ffffff']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.locationCard}
@@ -1299,15 +1320,6 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
         </Surface>
 
         {/* ================================================================
-            4B. WHAT TO DO FIRST: SINGLE & MULTI-INFECTION DECISION ENGINE
-            ================================================================ */}
-        <InfectionDecisionCard
-          detectedConditions={farms}
-          navigation={navigation}
-          contextTitle="LUNA, LA UNION • WHAT TO DO FIRST DECISION ENGINE"
-        />
-
-        {/* ================================================================
             5. ALL 8 MONITORED BARANGAYS IN LUNA, LA UNION
             ================================================================ */}
         <Surface style={styles.sectionCard} elevation={0}>
@@ -1628,13 +1640,14 @@ export default function MappingEnvironmentScreen({ navigation, route, user }) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (THEME, colors, isDark) =>
+  StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: THEME.bg,
   },
   header: {
-    backgroundColor: 'rgba(11, 18, 32, 0.98)',
+    backgroundColor: THEME.headerBg,
     borderBottomWidth: 1,
     borderBottomColor: THEME.border,
     paddingBottom: 12,
@@ -1648,7 +1661,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
     borderWidth: 1,
     borderColor: THEME.border,
     alignItems: 'center',
@@ -1673,20 +1686,20 @@ const styles = StyleSheet.create({
   brandSubtitle: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#64748b',
+    color: THEME.textMuted,
     letterSpacing: 0.7,
   },
   headerTitle: {
     fontSize: 17.5,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
     letterSpacing: 0.2,
   },
   refreshBtn: {
     width: 38,
     height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
     borderWidth: 1,
     borderColor: THEME.border,
     alignItems: 'center',
@@ -1699,7 +1712,7 @@ const styles = StyleSheet.create({
   locationCard: {
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.12)',
+    borderColor: THEME.border,
     padding: 16,
   },
   locationHeaderRow: {
@@ -1718,18 +1731,18 @@ const styles = StyleSheet.create({
   locationNameText: {
     fontSize: 19,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: THEME.text,
     marginBottom: 2,
   },
   locationSubText: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: THEME.textSub,
   },
   gpsCoordsBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.35)' : 'rgba(0, 0, 0, 0.06)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: THEME.border,
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
@@ -1750,8 +1763,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.75)' : 'rgba(241, 245, 249, 0.9)',
     borderWidth: 1,
+    borderColor: THEME.border,
     borderRadius: 10,
     paddingVertical: 6,
   },
@@ -1763,11 +1777,11 @@ const styles = StyleSheet.create({
   zoneCounterVal: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#ffffff',
+    color: THEME.text,
   },
   zoneCounterLbl: {
     fontSize: 10,
-    color: '#94a3b8',
+    color: THEME.textSub,
     fontWeight: '600',
   },
   locationActionsRow: {
@@ -1776,7 +1790,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopColor: THEME.border,
     gap: 8,
   },
   mapActionBtn: {
@@ -1799,7 +1813,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    backgroundColor: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(56, 189, 248, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.35)',
     paddingVertical: 8,
@@ -1809,7 +1823,7 @@ const styles = StyleSheet.create({
   guideToggleText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#38bdf8',
+    color: '#0284c7',
   },
   sectionCard: {
     backgroundColor: THEME.cardBg,
@@ -1827,12 +1841,12 @@ const styles = StyleSheet.create({
   cardSectionTitle: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
     letterSpacing: 0.2,
   },
   cardSectionSub: {
     fontSize: 11.5,
-    color: '#94a3b8',
+    color: THEME.textSub,
     marginTop: 2,
   },
   scenarioScroll: {
@@ -1841,10 +1855,10 @@ const styles = StyleSheet.create({
   },
   scenarioCard: {
     width: 215,
-    backgroundColor: 'rgba(15, 23, 42, 0.78)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.78)' : '#f8fafc',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: THEME.border,
     padding: 12,
   },
   scenarioBadgeRow: {
@@ -1866,17 +1880,17 @@ const styles = StyleSheet.create({
   scenarioTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#ffffff',
+    color: THEME.text,
     marginBottom: 3,
   },
   scenarioDesc: {
     fontSize: 11,
-    color: '#94a3b8',
+    color: THEME.textSub,
     lineHeight: 15,
   },
   walkthroughBox: {
     marginTop: 12,
-    backgroundColor: 'rgba(2, 132, 199, 0.08)',
+    backgroundColor: isDark ? 'rgba(2, 132, 199, 0.08)' : 'rgba(2, 132, 199, 0.05)',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.28)',
@@ -1892,9 +1906,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 9,
     borderRadius: 8,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.7)' : '#e2e8f0',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: THEME.border,
   },
   stepTabBtnActive: {
     backgroundColor: '#0284c7',
@@ -1903,7 +1917,7 @@ const styles = StyleSheet.create({
   stepTabText: {
     fontSize: 10.5,
     fontWeight: '700',
-    color: '#94a3b8',
+    color: THEME.textSub,
   },
   stepTabTextActive: {
     color: '#ffffff',
@@ -1911,12 +1925,12 @@ const styles = StyleSheet.create({
   walkthroughTitle: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
     marginBottom: 4,
   },
   walkthroughDesc: {
     fontSize: 11.5,
-    color: '#cbd5e1',
+    color: THEME.textSub,
     lineHeight: 16.5,
     marginBottom: 10,
   },
@@ -1932,14 +1946,14 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    backgroundColor: isDark ? 'rgba(56, 189, 248, 0.14)' : 'rgba(56, 189, 248, 0.15)',
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.35)',
   },
   playStepText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#38bdf8',
+    color: '#0284c7',
   },
   nextStepBtn: {
     flexDirection: 'row',
@@ -1948,12 +1962,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    backgroundColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
   },
   nextStepText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: THEME.text,
   },
   gisMapCanvas: {
     height: 310,
@@ -2086,7 +2100,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    borderTopColor: THEME.border,
   },
   legendItem: {
     flexDirection: 'row',
@@ -2100,7 +2114,7 @@ const styles = StyleSheet.create({
   },
   legendText: {
     fontSize: 10.5,
-    color: '#94a3b8',
+    color: THEME.textSub,
     fontWeight: '600',
   },
   inspectorHeader: {
@@ -2124,16 +2138,16 @@ const styles = StyleSheet.create({
   },
   inspectorTime: {
     fontSize: 10.5,
-    color: '#64748b',
+    color: THEME.textMuted,
   },
   inspectorFarmTitle: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#ffffff',
+    color: THEME.text,
   },
   inspectorFarmSub: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: THEME.textSub,
     marginBottom: 12,
   },
   inspectorStatsGrid: {
@@ -2144,29 +2158,29 @@ const styles = StyleSheet.create({
   },
   inspectorStatBox: {
     width: '48%',
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.04)',
     borderRadius: 10,
     padding: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: THEME.border,
   },
   inspectorStatLbl: {
     fontSize: 9.5,
     fontWeight: '700',
-    color: '#64748b',
+    color: THEME.textMuted,
     marginBottom: 2,
   },
   inspectorStatVal: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
   },
   vetNotesBox: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.85)' : '#f1f5f9',
     borderRadius: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: THEME.border,
     marginBottom: 12,
   },
   vetNotesTitle: {
@@ -2176,21 +2190,21 @@ const styles = StyleSheet.create({
   },
   vetNotesText: {
     fontSize: 12,
-    color: '#cbd5e1',
+    color: THEME.textSub,
     lineHeight: 17,
   },
   simControlBox: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#f8fafc',
     borderRadius: 12,
     padding: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: THEME.border,
     marginBottom: 12,
   },
   simControlHeader: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#94a3b8',
+    color: THEME.textSub,
     letterSpacing: 0.6,
     marginBottom: 8,
   },
@@ -2255,10 +2269,10 @@ const styles = StyleSheet.create({
   barangayRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    backgroundColor: isDark ? 'rgba(15, 23, 42, 0.65)' : '#f8fafc',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    borderColor: THEME.border,
     padding: 10,
     gap: 10,
   },
@@ -2276,7 +2290,7 @@ const styles = StyleSheet.create({
   barangayName: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
   },
   barangayMiniBadge: {
     paddingHorizontal: 7,
@@ -2290,7 +2304,7 @@ const styles = StyleSheet.create({
   },
   barangaySub: {
     fontSize: 11.5,
-    color: '#94a3b8',
+    color: THEME.textSub,
   },
   kpiRow: {
     flexDirection: 'row',
@@ -2298,23 +2312,23 @@ const styles = StyleSheet.create({
   },
   kpiBox: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
+    backgroundColor: isDark ? 'rgba(0, 0, 0, 0.28)' : 'rgba(0, 0, 0, 0.04)',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    borderColor: THEME.border,
     padding: 12,
     alignItems: 'center',
   },
   kpiVal: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
     marginBottom: 2,
   },
   kpiLbl: {
     fontSize: 10,
     fontWeight: '600',
-    color: '#64748b',
+    color: THEME.textMuted,
     textTransform: 'uppercase',
   },
   errorBanner: {
@@ -2343,7 +2357,7 @@ const styles = StyleSheet.create({
   },
   suitabilitySummary: {
     fontSize: 12.5,
-    color: '#cbd5e1',
+    color: THEME.textSub,
     lineHeight: 18,
     marginBottom: 12,
   },
@@ -2354,12 +2368,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
+    borderBottomColor: THEME.border,
   },
   forecastHeadText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#64748b',
+    color: THEME.textMuted,
     textTransform: 'uppercase',
   },
   forecastRow: {
@@ -2367,12 +2381,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+    borderBottomColor: THEME.border,
   },
   forecastCellDay: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#f8fafc',
+    color: THEME.text,
   },
   forecastCellTemp: {
     fontSize: 12,
@@ -2385,10 +2399,10 @@ const styles = StyleSheet.create({
   },
   forecastCellLabel: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: THEME.textSub,
   },
   pvoCard: {
-    backgroundColor: 'rgba(56, 189, 248, 0.08)',
+    backgroundColor: isDark ? 'rgba(56, 189, 248, 0.08)' : 'rgba(56, 189, 248, 0.12)',
     borderWidth: 1,
     borderColor: 'rgba(56, 189, 248, 0.3)',
     borderRadius: 12,
@@ -2397,7 +2411,7 @@ const styles = StyleSheet.create({
   pvoTitle: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#38bdf8',
+    color: '#0284c7',
     textTransform: 'uppercase',
     letterSpacing: 0.6,
     marginBottom: 3,
@@ -2405,17 +2419,17 @@ const styles = StyleSheet.create({
   pvoName: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: '#f8fafc',
+    color: THEME.text,
     marginBottom: 2,
   },
   pvoLocation: {
     fontSize: 11.5,
-    color: '#cbd5e1',
+    color: THEME.textSub,
     marginBottom: 6,
   },
   pvoRole: {
     fontSize: 11.5,
-    color: '#94a3b8',
+    color: THEME.textSub,
     lineHeight: 16,
     marginBottom: 10,
   },
@@ -2440,10 +2454,10 @@ const styles = StyleSheet.create({
     padding: 18,
   },
   modalCard: {
-    backgroundColor: '#0f172a',
+    backgroundColor: THEME.cardBg,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.35)',
+    borderColor: THEME.border,
     padding: 18,
   },
   modalHeader: {
@@ -2455,28 +2469,28 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: '#ffffff',
+    color: THEME.text,
   },
   modalSubText: {
     fontSize: 12,
-    color: '#94a3b8',
+    color: THEME.textSub,
     lineHeight: 17,
     marginBottom: 4,
   },
   inputLabel: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#94a3b8',
+    color: THEME.textSub,
     marginBottom: 4,
   },
   textInput: {
-    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+    backgroundColor: THEME.inputBg,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.14)',
+    borderColor: THEME.border,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    color: '#f8fafc',
+    color: THEME.text,
     fontSize: 12.5,
   },
   modalSuccessBox: {
@@ -2496,7 +2510,7 @@ const styles = StyleSheet.create({
   },
   modalSuccessDesc: {
     fontSize: 12,
-    color: '#cbd5e1',
+    color: THEME.textSub,
     textAlign: 'center',
     lineHeight: 17,
   },

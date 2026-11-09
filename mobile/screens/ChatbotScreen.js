@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ChatbotService } from '../services/ChatbotService';
 import { getUserNamespace, sanitizeForKey } from '../services/storageScope';
+import { useTheme } from '../context/ThemeContext';
 
 // ── Web Design Tokens (Exact match with Home.css & AuthPro.css) ───────────────
 const THEME = {
@@ -116,6 +117,9 @@ const QUICK_PROMPTS = [
 export default function ChatbotScreen({ user }) {
   const insets = useSafeAreaInsets();
   const tabBarHeight = useBottomTabBarHeight();
+  const { colors: THEME, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(THEME, isDark), [THEME, isDark]);
+
   const flatListRef = useRef(null);
 
   const [messages, setMessages] = useState([]);
@@ -349,212 +353,213 @@ export default function ChatbotScreen({ user }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bgDeep,
-  },
-  glowTopLeft: {
-    position: 'absolute',
-    top: -40,
-    left: -40,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.borderCard,
-    backgroundColor: 'rgba(7, 10, 19, 0.95)',
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerAvatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: THEME.bgCard,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: THEME.textMain,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 2,
-  },
-  onlineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME.emerald,
-    marginRight: 6,
-  },
-  statusText: {
-    fontSize: 11,
-    color: '#34D399',
-    fontWeight: '500',
-  },
-  clearBtn: {
-    padding: 8,
-    backgroundColor: THEME.bgCard,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-  },
-  chatArea: {
-    flex: 1,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  msgRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    marginBottom: 12,
-  },
-  msgRowUser: {
-    justifyContent: 'flex-end',
-  },
-  msgRowBot: {
-    justifyContent: 'flex-start',
-  },
-  botAvatar: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(244, 63, 94, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 8,
-    marginBottom: 4,
-  },
-  userBubble: {
-    maxWidth: '80%',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 18,
-    borderBottomRightRadius: 4,
-    shadowColor: THEME.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  userMsgText: {
-    fontSize: 14,
-    color: '#FFFFFF',
-    lineHeight: 19,
-  },
-  botBubble: {
-    maxWidth: '82%',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 18,
-    borderBottomLeftRadius: 4,
-    backgroundColor: THEME.bgCard,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-  },
-  botMsgText: {
-    fontSize: 14,
-    color: THEME.textMain,
-    lineHeight: 20,
-  },
-  typingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 8,
-  },
-  typingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME.bgCard,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 16,
-    gap: 5,
-  },
-  typingDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
-    backgroundColor: THEME.primaryHover,
-  },
-  quickPromptsWrapper: {
-    paddingVertical: 6,
-  },
-  quickPromptsList: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  quickPromptChip: {
-    backgroundColor: THEME.bgCard,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 16,
-  },
-  quickPromptText: {
-    fontSize: 12,
-    color: THEME.textMuted,
-    fontWeight: '600',
-  },
-  inputBar: {
-    paddingHorizontal: 16,
-    paddingTop: 6,
-  },
-  inputCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME.bgCard,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    borderRadius: 24,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-  },
-  textInput: {
-    flex: 1,
-    fontSize: 14,
-    color: THEME.textMain,
-    maxHeight: 80,
-    paddingVertical: 6,
-  },
-  sendBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    overflow: 'hidden',
-    marginLeft: 8,
-  },
-  sendBtnDisabled: {
-    opacity: 0.5,
-  },
-  sendGradient: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
+const createStyles = (THEME, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bgDeep,
+    },
+    glowTopLeft: {
+      position: 'absolute',
+      top: -40,
+      left: -40,
+      width: 240,
+      height: 240,
+      borderRadius: 120,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.14)' : 'rgba(225, 29, 72, 0.06)',
+    },
+    headerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingBottom: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: THEME.borderCard,
+      backgroundColor: THEME.navBarBg,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerAvatar: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: THEME.bgCard,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    headerTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: THEME.textMain,
+    },
+    statusRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 2,
+    },
+    onlineDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: THEME.emerald,
+      marginRight: 6,
+    },
+    statusText: {
+      fontSize: 11,
+      color: isDark ? '#34D399' : '#059669',
+      fontWeight: '500',
+    },
+    clearBtn: {
+      padding: 8,
+      backgroundColor: THEME.bgCard,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+    },
+    chatArea: {
+      flex: 1,
+    },
+    listContent: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 16,
+    },
+    msgRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      marginBottom: 12,
+    },
+    msgRowUser: {
+      justifyContent: 'flex-end',
+    },
+    msgRowBot: {
+      justifyContent: 'flex-start',
+    },
+    botAvatar: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(225, 29, 72, 0.1)',
+      borderWidth: 1,
+      borderColor: 'rgba(244, 63, 94, 0.4)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginRight: 8,
+      marginBottom: 4,
+    },
+    userBubble: {
+      maxWidth: '80%',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 18,
+      borderBottomRightRadius: 4,
+      shadowColor: THEME.primary,
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 2 },
+    },
+    userMsgText: {
+      fontSize: 14,
+      color: '#FFFFFF',
+      lineHeight: 19,
+    },
+    botBubble: {
+      maxWidth: '82%',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderRadius: 18,
+      borderBottomLeftRadius: 4,
+      backgroundColor: THEME.botBubbleBg || THEME.bgCard,
+      borderWidth: 1,
+      borderColor: THEME.botBubbleBorder || THEME.borderCard,
+    },
+    botMsgText: {
+      fontSize: 14,
+      color: THEME.textMain,
+      lineHeight: 20,
+    },
+    typingRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      marginBottom: 8,
+    },
+    typingContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: THEME.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 16,
+      gap: 5,
+    },
+    typingDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 3.5,
+      backgroundColor: THEME.primaryHover,
+    },
+    quickPromptsWrapper: {
+      paddingVertical: 6,
+    },
+    quickPromptsList: {
+      paddingHorizontal: 16,
+      gap: 8,
+    },
+    quickPromptChip: {
+      backgroundColor: THEME.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      borderRadius: 16,
+    },
+    quickPromptText: {
+      fontSize: 12,
+      color: THEME.textMuted,
+      fontWeight: '600',
+    },
+    inputBar: {
+      paddingHorizontal: 16,
+      paddingTop: 6,
+    },
+    inputCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: THEME.inputBg || THEME.bgCard,
+      borderWidth: 1,
+      borderColor: THEME.inputBorder || THEME.borderCard,
+      borderRadius: 24,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+    },
+    textInput: {
+      flex: 1,
+      fontSize: 14,
+      color: THEME.textMain,
+      maxHeight: 80,
+      paddingVertical: 6,
+    },
+    sendBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      overflow: 'hidden',
+      marginLeft: 8,
+    },
+    sendBtnDisabled: {
+      opacity: 0.5,
+    },
+    sendGradient: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+  });

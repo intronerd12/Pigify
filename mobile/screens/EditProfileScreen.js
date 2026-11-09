@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { updateUser, uploadUserAvatar } from '../services/api';
+import { useTheme } from '../context/ThemeContext';
 
 const THEME = {
   bg: '#070A13',
@@ -33,6 +34,26 @@ const THEME = {
 export default function EditProfileScreen({ route, navigation, onUpdateUser, user: propUser }) {
   const user = route.params?.user || propUser || {};
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const THEME = useMemo(
+    () => ({
+      bg: colors.bgDeep,
+      cardBg: colors.bgCard,
+      border: colors.borderCard,
+      primary: colors.primary,
+      rose: colors.primaryHover,
+      emerald: colors.emerald,
+      cyan: colors.cyan,
+      amber: colors.amber,
+      text: colors.textMain,
+      textSub: colors.textMuted,
+      textMuted: colors.textFaint,
+    }),
+    [colors]
+  );
+
+  const styles = useMemo(() => createStyles(THEME, colors, isDark), [THEME, colors, isDark]);
 
   const [name, setName] = useState(user?.name || user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
@@ -205,9 +226,9 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
                 value={name}
                 onChangeText={setName}
                 mode="outlined"
-                textColor="#f8fafc"
-                outlineColor="rgba(255, 255, 255, 0.08)"
-                activeOutlineColor="#f43f5e"
+                textColor={colors.textMain}
+                outlineColor={colors.borderCard}
+                activeOutlineColor={colors.primary}
                 style={styles.input}
                 left={<TextInput.Icon icon="account" color="#fb7185" />}
               />
@@ -219,9 +240,9 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
                 value={email}
                 onChangeText={setEmail}
                 mode="outlined"
-                textColor="#f8fafc"
-                outlineColor="rgba(255, 255, 255, 0.08)"
-                activeOutlineColor="#f43f5e"
+                textColor={colors.textMain}
+                outlineColor={colors.borderCard}
+                activeOutlineColor={colors.primary}
                 style={styles.input}
                 keyboardType="email-address"
                 autoCapitalize="none"
@@ -235,9 +256,9 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
                 value={farmName}
                 onChangeText={setFarmName}
                 mode="outlined"
-                textColor="#f8fafc"
-                outlineColor="rgba(255, 255, 255, 0.08)"
-                activeOutlineColor="#f43f5e"
+                textColor={colors.textMain}
+                outlineColor={colors.borderCard}
+                activeOutlineColor={colors.primary}
                 style={styles.input}
                 left={<TextInput.Icon icon="home-analytics" color="#10b981" />}
               />
@@ -273,154 +294,155 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bg,
-  },
-  header: {
-    backgroundColor: 'rgba(11, 18, 32, 0.98)',
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
-    paddingBottom: 12,
-  },
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: THEME.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerTitleWrap: {
-    flex: 1,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  pulsingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-    marginRight: 6,
-  },
-  brandSubtitle: {
-    fontSize: 9.5,
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#f8fafc',
-    letterSpacing: 0.2,
-  },
-  content: {
-    padding: 16,
-    gap: 18,
-  },
-  avatarSection: {
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: 10,
-  },
-  avatarImage: {
-    width: 106,
-    height: 106,
-    borderRadius: 53,
-    borderWidth: 2,
-    borderColor: '#f43f5e',
-  },
-  avatarPlaceholder: {
-    width: 106,
-    height: 106,
-    borderRadius: 53,
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    borderWidth: 2,
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarLetter: {
-    fontSize: 42,
-    fontWeight: '800',
-    color: '#fb7185',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#f43f5e',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: THEME.bg,
-  },
-  changePhotoText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 2,
-  },
-  roleSubtext: {
-    fontSize: 11,
-    color: '#06b6d4',
-  },
-  formSection: {
-    backgroundColor: THEME.cardBg,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: THEME.border,
-    padding: 16,
-    gap: 16,
-  },
-  inputContainer: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: 0.6,
-  },
-  input: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    fontSize: 14,
-  },
-  saveButtonWrap: {
-    borderRadius: 14,
-    overflow: 'hidden',
-    marginTop: 6,
-  },
-  saveGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 15,
-  },
-  saveBtnText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.2,
-  },
-});
+const createStyles = (THEME, colors, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bg,
+    },
+    header: {
+      backgroundColor: colors.navBarBg,
+      borderBottomWidth: 1,
+      borderBottomColor: THEME.border,
+      paddingBottom: 12,
+    },
+    headerBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+    },
+    backBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    headerTitleWrap: {
+      flex: 1,
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    pulsingDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: '#10b981',
+      marginRight: 6,
+    },
+    brandSubtitle: {
+      fontSize: 9.5,
+      fontWeight: '700',
+      color: colors.textFaint,
+      letterSpacing: 0.8,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: THEME.text,
+      letterSpacing: 0.2,
+    },
+    content: {
+      padding: 16,
+      gap: 18,
+    },
+    avatarSection: {
+      alignItems: 'center',
+      marginVertical: 10,
+    },
+    avatarContainer: {
+      position: 'relative',
+      marginBottom: 10,
+    },
+    avatarImage: {
+      width: 106,
+      height: 106,
+      borderRadius: 53,
+      borderWidth: 2,
+      borderColor: '#f43f5e',
+    },
+    avatarPlaceholder: {
+      width: 106,
+      height: 106,
+      borderRadius: 53,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.15)' : 'rgba(225, 29, 72, 0.1)',
+      borderWidth: 2,
+      borderColor: 'rgba(244, 63, 94, 0.4)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    avatarLetter: {
+      fontSize: 42,
+      fontWeight: '800',
+      color: '#fb7185',
+    },
+    cameraBadge: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: '#f43f5e',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 2,
+      borderColor: THEME.bg,
+    },
+    changePhotoText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: THEME.text,
+      marginBottom: 2,
+    },
+    roleSubtext: {
+      fontSize: 11,
+      color: '#06b6d4',
+    },
+    formSection: {
+      backgroundColor: THEME.cardBg,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 16,
+      gap: 16,
+    },
+    inputContainer: {
+      gap: 6,
+    },
+    label: {
+      fontSize: 10.5,
+      fontWeight: '700',
+      color: colors.textFaint,
+      letterSpacing: 0.6,
+    },
+    input: {
+      backgroundColor: colors.surfaceMuted,
+      fontSize: 14,
+    },
+    saveButtonWrap: {
+      borderRadius: 14,
+      overflow: 'hidden',
+      marginTop: 6,
+    },
+    saveGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 15,
+    },
+    saveBtnText: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: '#FFFFFF',
+      letterSpacing: 0.2,
+    },
+  });

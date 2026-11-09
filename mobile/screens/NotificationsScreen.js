@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/ThemeContext';
 
 const THEME = {
   bg: '#070A13',
@@ -24,6 +25,26 @@ const STORAGE_KEY = 'pigify_notification_prefs_v1';
 
 export default function NotificationsScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const THEME = useMemo(
+    () => ({
+      bg: colors.bgDeep,
+      cardBg: colors.bgCard,
+      border: colors.borderCard,
+      primary: colors.primary,
+      rose: colors.primaryHover,
+      emerald: colors.emerald,
+      cyan: colors.cyan,
+      amber: colors.amber,
+      text: colors.textMain,
+      textSub: colors.textMuted,
+      textMuted: colors.textFaint,
+    }),
+    [colors]
+  );
+
+  const styles = useMemo(() => createStyles(THEME, colors, isDark), [THEME, colors, isDark]);
 
   const [preferences, setPreferences] = useState({
     pushEnabled: true,
@@ -80,8 +101,11 @@ export default function NotificationsScreen({ navigation }) {
       <Switch
         value={value}
         onValueChange={onToggle}
-        color="#f43f5e"
-        trackColor={{ false: 'rgba(255,255,255,0.1)', true: 'rgba(244, 63, 94, 0.4)' }}
+        color={colors.primary}
+        trackColor={{
+          false: isDark ? 'rgba(255,255,255,0.1)' : '#E2E8F0',
+          true: isDark ? 'rgba(244, 63, 94, 0.4)' : 'rgba(225, 29, 72, 0.35)',
+        }}
       />
     </View>
   );
@@ -220,121 +244,122 @@ export default function NotificationsScreen({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bg,
-  },
-  header: {
-    backgroundColor: 'rgba(11, 18, 32, 0.98)',
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
-    paddingBottom: 12,
-  },
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: THEME.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerTitleWrap: {
-    flex: 1,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  pulsingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-    marginRight: 6,
-  },
-  brandSubtitle: {
-    fontSize: 9.5,
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#f8fafc',
-    letterSpacing: 0.2,
-  },
-  content: {
-    padding: 16,
-    gap: 16,
-  },
-  section: {
-    backgroundColor: THEME.cardBg,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: THEME.border,
-    padding: 16,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 14,
-  },
-  sectionHeader: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#f8fafc',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-    marginRight: 12,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  textContainer: {
-    flex: 1,
-  },
-  settingTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 2,
-  },
-  settingSubtitle: {
-    fontSize: 11.5,
-    color: '#94a3b8',
-    lineHeight: 16,
-  },
-  divider: {
-    marginVertical: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-});
+const createStyles = (THEME, colors, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bg,
+    },
+    header: {
+      backgroundColor: colors.navBarBg,
+      borderBottomWidth: 1,
+      borderBottomColor: THEME.border,
+      paddingBottom: 12,
+    },
+    headerBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+    },
+    backBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    headerTitleWrap: {
+      flex: 1,
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    pulsingDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: '#10b981',
+      marginRight: 6,
+    },
+    brandSubtitle: {
+      fontSize: 9.5,
+      fontWeight: '700',
+      color: colors.textFaint,
+      letterSpacing: 0.8,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: THEME.text,
+      letterSpacing: 0.2,
+    },
+    content: {
+      padding: 16,
+      gap: 16,
+    },
+    section: {
+      backgroundColor: THEME.cardBg,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 16,
+    },
+    sectionTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 14,
+    },
+    sectionHeader: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: THEME.text,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    settingItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: 10,
+    },
+    settingLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flex: 1,
+      marginRight: 12,
+    },
+    iconContainer: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    textContainer: {
+      flex: 1,
+    },
+    settingTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: THEME.text,
+      marginBottom: 2,
+    },
+    settingSubtitle: {
+      fontSize: 11.5,
+      color: THEME.textSub,
+      lineHeight: 16,
+    },
+    divider: {
+      marginVertical: 4,
+      backgroundColor: THEME.border,
+    },
+  });

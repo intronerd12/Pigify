@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ScanService } from '../services/ScanService';
+import { useTheme } from '../context/ThemeContext';
 import InfectionDecisionCard from '../components/InfectionDecisionCard';
 import SwineScanTelemetryCard, {
   formatMobileScanDateTime,
@@ -44,6 +45,9 @@ const getGradeTone = (grade) => {
 
 export default function SortingGradingScreen({ navigation, user }) {
   const insets = useSafeAreaInsets();
+  const { colors: THEME, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(THEME, isDark), [THEME, isDark]);
+
   const [scans, setScans] = useState([]);
   const [gradeFilter, setGradeFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -286,88 +290,89 @@ export default function SortingGradingScreen({ navigation, user }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bgDeep,
-  },
-  glowTopLeft: {
-    position: 'absolute',
-    top: -40,
-    left: -40,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
-  headerContainer: {
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-  },
-  kickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  kickerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: THEME.emerald,
-    marginRight: 6,
-  },
-  kickerText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#34D399',
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: THEME.textMain,
-    letterSpacing: 0.3,
-  },
-  headerSubtitle: {
-    fontSize: 12,
-    color: THEME.textMuted,
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  searchWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: THEME.bgInput,
-    borderWidth: 1,
-    borderColor: THEME.borderInput,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    marginTop: 12,
-    marginBottom: 10,
-    height: 44,
-  },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 13,
-    color: THEME.textMain,
-  },
-  chipsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 2,
-  },
-  filterChip: {
-    backgroundColor: 'rgba(20, 29, 48, 0.7)',
-    borderWidth: 1,
-    borderColor: THEME.borderInput,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 12,
-  },
+const createStyles = (THEME, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bgDeep,
+    },
+    glowTopLeft: {
+      position: 'absolute',
+      top: -40,
+      left: -40,
+      width: 240,
+      height: 240,
+      borderRadius: 120,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.14)' : 'rgba(225, 29, 72, 0.06)',
+    },
+    headerContainer: {
+      paddingHorizontal: 16,
+      paddingBottom: 14,
+    },
+    kickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 8,
+    },
+    kickerDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: THEME.emerald,
+      marginRight: 6,
+    },
+    kickerText: {
+      fontSize: 9.5,
+      fontWeight: '800',
+      color: isDark ? '#34D399' : '#059669',
+      letterSpacing: 0.8,
+    },
+    headerTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: THEME.textMain,
+      letterSpacing: 0.3,
+    },
+    headerSubtitle: {
+      fontSize: 12,
+      color: THEME.textMuted,
+      marginTop: 4,
+      lineHeight: 16,
+    },
+    searchWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: isDark ? 'rgba(20, 29, 48, 0.85)' : '#FFFFFF',
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      marginTop: 12,
+      marginBottom: 10,
+      height: 44,
+    },
+    searchIcon: {
+      marginRight: 8,
+    },
+    searchInput: {
+      flex: 1,
+      fontSize: 13,
+      color: THEME.textMain,
+    },
+    chipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 2,
+    },
+    filterChip: {
+      backgroundColor: isDark ? 'rgba(20, 29, 48, 0.7)' : '#F1F5F9',
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      borderRadius: 12,
+    },
   filterChipActive: {
     backgroundColor: THEME.primary,
     borderColor: THEME.primary,
@@ -530,28 +535,28 @@ const styles = StyleSheet.create({
     color: THEME.textFaint,
     fontWeight: '600',
   },
-  recomBox: {
-    marginTop: 10,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  recomLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: THEME.textFaint,
-    letterSpacing: 0.6,
-  },
-  recomText: {
-    fontSize: 12,
-    color: THEME.textMuted,
-    marginTop: 2,
-    lineHeight: 16,
-  },
-  darkDialog: {
-    backgroundColor: '#0D1424',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-  },
-});
+    recomBox: {
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+    },
+    recomLabel: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: THEME.textFaint,
+      letterSpacing: 0.6,
+    },
+    recomText: {
+      fontSize: 12,
+      color: THEME.textMuted,
+      marginTop: 2,
+      lineHeight: 16,
+    },
+    darkDialog: {
+      backgroundColor: THEME.dialogBg || THEME.bgCardSolid,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+    },
+  });

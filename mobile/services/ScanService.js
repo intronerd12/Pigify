@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { apiFetch } from './api';
+import { supabase } from './supabase';
 
 import { getUserNamespace, sanitizeForKey } from './storageScope';
 
@@ -338,18 +340,59 @@ const buildScanPayload = (scan, user) => {
     penId: scan?.penId || 'Sector A',
     swineId: scan?.swineId || 'Swine #01',
     severity: scan?.severity || scan?.grade || 'Normal',
-    confidence: scan?.confidence || '96.8%',
-    imageUrl: scan?.imageUri,
+    confidence: scan?.confidence || (scan?.display_confidence_score ? `${scan.display_confidence_score}%` : '96.8%'),
+    imageUrl: scan?.imageUrl || scan?.imageUri,
     location: scan?.location,
     timestamp: scan?.timestamp || new Date().toISOString(),
     userId: userId || undefined,
     operatorName: userName || undefined,
     operatorEmail: userEmail || undefined,
-    localScanId: scan?.id || undefined,
+    localScanId: scan?.id || scan?.localScanId || undefined,
     source: scan?.source || 'mobile_app',
     hardwareSource: scan?.hardwareSource || (scan?.source === 'raspberry_pi_5' ? 'Raspberry Pi 5 (Pi Cam Module v3 IMX708)' : undefined),
     hardwareTelemetry: scan?.hardwareTelemetry,
   };
+};
+
+const uploadScanImageToCloudinary = async (imageUri) => {
+  const uri = String(imageUri || '').trim();
+  if (!uri) return null;
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    if (uri.includes('cloudinary.com') || uri.includes('/uploads/')) {
+      return uri;
+    }
+  }
+
+  try {
+    const { mime, fileName } = getUploadMeta(uri);
+    const formData = new FormData();
+
+    if (Platform.OS === 'web') {
+      const fetchRes = await fetch(uri);
+      const blob = await fetchRes.blob();
+      formData.append('image', blob, fileName);
+    } else {
+      formData.append('image', {
+        uri,
+        name: fileName,
+        type: mime,
+      });
+    }
+
+    const res = await apiFetch('/api/scan/upload-image', {
+      method: 'POST',
+      headers: { Accept: 'application/json' },
+      body: formData,
+    });
+
+    if (res.ok) {
+      const data = await safeReadJson(res);
+      if (data?.imageUrl) return data.imageUrl;
+    }
+  } catch (err) {
+    console.warn('[ScanService] Cloudinary scan upload notice:', err?.message || err);
+  }
+  return null;
 };
 
 const syncScanPayloadToBackend = async (payload, { user } = {}) => {
@@ -362,18 +405,68 @@ const syncScanPayloadToBackend = async (payload, { user } = {}) => {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const res = await apiFetch('/api/scan', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    const errorBody = await safeReadJson(res);
-    throw new Error(errorBody?.message || `Scan sync failed (${res.status})`);
+  // If imageUrl is a local file URI, attempt Cloudinary upload before syncing to backend
+  if (payload.imageUrl && typeof payload.imageUrl === 'string') {
+    const isLocal =
+      payload.imageUrl.startsWith('file://') ||
+      payload.imageUrl.startsWith('content://') ||
+      payload.imageUrl.startsWith('blob:') ||
+      payload.imageUrl.startsWith('data:');
+    if (isLocal) {
+      try {
+        const cloudUrl = await uploadScanImageToCloudinary(payload.imageUrl);
+        if (cloudUrl) {
+          payload.imageUrl = cloudUrl;
+        }
+      } catch {
+        // Continue with current image reference
+      }
+    }
   }
 
-  return safeReadJson(res);
+  try {
+    const res = await apiFetch('/api/scan', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      return await safeReadJson(res);
+    }
+    const errorBody = await safeReadJson(res);
+    throw new Error(errorBody?.message || `Scan sync failed (${res.status})`);
+  } catch (apiErr) {
+    console.warn('[ScanService] apiFetch /api/scan failed, attempting direct Supabase fallback:', apiErr.message);
+
+    // Direct Supabase fallback
+    try {
+      const { data, error } = await supabase
+        .from('scans')
+        .insert([{
+          grade: payload.grade,
+          details: payload.details,
+          image_url: payload.imageUrl,
+          location: payload.location,
+          timestamp: payload.timestamp,
+          user_id: payload.userId,
+          operator_name: payload.operatorName,
+          operator_email: payload.operatorEmail,
+          local_scan_id: payload.localScanId,
+          source: payload.source || 'mobile_app',
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+      return data;
+    } catch (supaErr) {
+      console.warn('[ScanService] Supabase fallback also failed:', supaErr.message);
+      throw apiErr;
+    }
+  }
 };
 
 const syncScanToBackend = async (scan, { user } = {}) => {
@@ -505,6 +598,7 @@ const flushPendingSyncInternal = async ({ user } = {}) => {
 };
 
 export const ScanService = {
+  uploadScanImage: uploadScanImageToCloudinary,
   analyzeImage: async (imageUri) => {
     try {
       let uploadUri = imageUri;
@@ -524,11 +618,17 @@ export const ScanService = {
       const { mime, fileName } = getUploadMeta(uploadUri);
 
       const formData = new FormData();
-      formData.append('image', {
-        uri: uploadUri,
-        type: mime,
-        name: fileName,
-      });
+      if (Platform.OS === 'web') {
+        const fetchRes = await fetch(uploadUri);
+        const blob = await fetchRes.blob();
+        formData.append('image', blob, fileName);
+      } else {
+        formData.append('image', {
+          uri: uploadUri,
+          type: mime,
+          name: fileName,
+        });
+      }
       formData.append('client', 'mobile');
 
       const response = await apiFetch('/api/scan/analyze', {

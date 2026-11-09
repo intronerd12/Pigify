@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { apiFetch } from './api';
 
 const safeReadJson = async (res) => {
@@ -46,11 +47,17 @@ const uploadScanImage = async (imageUri) => {
 
   const { mime, fileName } = getUploadMeta(cleanUri);
   const formData = new FormData();
-  formData.append('image', {
-    uri: cleanUri,
-    name: fileName,
-    type: mime,
-  });
+  if (Platform.OS === 'web') {
+    const res = await fetch(cleanUri);
+    const blob = await res.blob();
+    formData.append('image', blob, fileName);
+  } else {
+    formData.append('image', {
+      uri: cleanUri,
+      name: fileName,
+      type: mime,
+    });
+  }
 
   const res = await apiFetch('/api/community/upload-scan-image', {
     method: 'POST',

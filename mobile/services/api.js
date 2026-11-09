@@ -21,7 +21,7 @@ const envApiUrl =
 const renderUrl =
   typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_RENDER_URL
     ? process.env.EXPO_PUBLIC_RENDER_URL
-    : 'https://dragon-backend.onrender.com';
+    : '';
 
 const normalizeBaseUrl = (value) => String(value || '').trim().replace(/\/+$/, '');
 
@@ -291,7 +291,7 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
           effectiveHeaders.Authorization = `Bearer ${data.session.access_token}`;
         }
       }
-    } catch {}
+    } catch { }
   }
 
   const effectiveOptions = {

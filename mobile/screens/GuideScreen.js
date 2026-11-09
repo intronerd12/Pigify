@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -385,6 +386,30 @@ export default function GuideScreen() {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
+  const { colors, isDark } = useTheme();
+
+  const THEME = useMemo(
+    () => ({
+      bg: colors.bgDeep,
+      cardBg: colors.bgCard,
+      cardBgAlt: colors.surfaceMuted,
+      border: colors.borderCard,
+      borderActive: colors.primary,
+      primary: colors.primary,
+      primaryRose: colors.primaryHover,
+      primaryDark: colors.primaryDark,
+      emerald: colors.emerald,
+      cyan: colors.cyan,
+      amber: colors.amber,
+      purple: '#A855F7',
+      text: colors.textMain,
+      textSub: colors.textMuted,
+      textMuted: colors.textFaint,
+    }),
+    [colors]
+  );
+
+  const styles = useMemo(() => createStyles(THEME, colors, isDark), [THEME, colors, isDark]);
 
   const initialKey =
     route.params?.initialTab && CLINICAL_GUIDES[route.params.initialTab]
@@ -626,311 +651,312 @@ export default function GuideScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bg,
-  },
-  header: {
-    backgroundColor: 'rgba(11, 18, 32, 0.98)',
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
-    paddingBottom: 8,
-  },
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 10,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderWidth: 1,
-    borderColor: THEME.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  headerTitleWrap: {
-    flex: 1,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  pulsingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10b981',
-    marginRight: 6,
-  },
-  brandSubtitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#64748b',
-    letterSpacing: 0.8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#f8fafc',
-    letterSpacing: 0.2,
-  },
-  aiHelpBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.25)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabScroll: {
-    marginTop: 4,
-  },
-  tabScrollContent: {
-    paddingHorizontal: 16,
-    gap: 8,
-    paddingBottom: 4,
-  },
-  tabPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: THEME.border,
-    gap: 6,
-  },
-  tabPillActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.12)',
-  },
-  tabPillText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: THEME.textMuted,
-  },
-  tabPillTextActive: {
-    fontWeight: '700',
-  },
-  activeDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-  },
-  scrollBody: {
-    padding: 16,
-  },
-  heroBanner: {
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 18,
-    marginBottom: 20,
-  },
-  heroTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  severityPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    gap: 5,
-  },
-  severityPillText: {
-    fontSize: 11,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  badgePill: {
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: THEME.border,
-  },
-  badgePillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#94a3b8',
-  },
-  heroTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  heroPathogen: {
-    fontSize: 13,
-    fontStyle: 'italic',
-    color: '#06b6d4',
-    marginBottom: 10,
-  },
-  heroOverview: {
-    fontSize: 13,
-    color: '#cbd5e1',
-    lineHeight: 19,
-    marginBottom: 16,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  statBox: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: 'rgba(0, 0, 0, 0.28)',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-    padding: 10,
-  },
-  statLabel: {
-    fontSize: 10,
-    color: '#64748b',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: 2,
-  },
-  statVal: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#f8fafc',
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
-    marginBottom: 12,
-  },
-  sectionHeading: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#f8fafc',
-    letterSpacing: 0.2,
-  },
-  cardsContainer: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  detailCard: {
-    backgroundColor: THEME.cardBg,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: THEME.border,
-    padding: 14,
-  },
-  detailCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 8,
-  },
-  stepNumCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(244, 63, 94, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNumText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#fb7185',
-  },
-  signTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#f8fafc',
-    flex: 1,
-  },
-  signDesc: {
-    fontSize: 13,
-    color: '#94a3b8',
-    lineHeight: 18,
-    paddingLeft: 34,
-  },
-  protocolCard: {
-    backgroundColor: THEME.cardBg,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: THEME.border,
-    padding: 14,
-    gap: 12,
-    marginBottom: 16,
-  },
-  protocolRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-  protocolIcon: {
-    marginTop: 2,
-  },
-  protocolText: {
-    fontSize: 13,
-    color: '#cbd5e1',
-    lineHeight: 19,
-    flex: 1,
-  },
-  ctaRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 10,
-  },
-  scanCtaBtn: {
-    flex: 1,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  ctaGradient: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-  },
-  ctaBtnText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  triageCtaBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderRadius: 12,
-    backgroundColor: THEME.cardBg,
-    borderWidth: 1,
-    borderColor: THEME.border,
-    paddingVertical: 14,
-  },
-  triageBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#94a3b8',
-  },
-});
+const createStyles = (THEME, colors, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bg,
+    },
+    header: {
+      backgroundColor: colors.navBarBg,
+      borderBottomWidth: 1,
+      borderBottomColor: THEME.border,
+      paddingBottom: 8,
+    },
+    headerBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      marginBottom: 10,
+    },
+    backBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 12,
+    },
+    headerTitleWrap: {
+      flex: 1,
+    },
+    brandRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 2,
+    },
+    pulsingDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: '#10b981',
+      marginRight: 6,
+    },
+    brandSubtitle: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: colors.textFaint,
+      letterSpacing: 0.8,
+    },
+    headerTitle: {
+      fontSize: 18,
+      fontWeight: '800',
+      color: THEME.text,
+      letterSpacing: 0.2,
+    },
+    aiHelpBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.1)' : 'rgba(225, 29, 72, 0.08)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(244, 63, 94, 0.25)' : 'rgba(225, 29, 72, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabScroll: {
+      marginTop: 4,
+    },
+    tabScrollContent: {
+      paddingHorizontal: 16,
+      gap: 8,
+      paddingBottom: 4,
+    },
+    tabPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 7,
+      paddingHorizontal: 14,
+      borderRadius: 20,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      gap: 6,
+    },
+    tabPillActive: {
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.12)' : 'rgba(225, 29, 72, 0.12)',
+    },
+    tabPillText: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: THEME.textSub,
+    },
+    tabPillTextActive: {
+      fontWeight: '700',
+    },
+    activeDot: {
+      width: 5,
+      height: 5,
+      borderRadius: 2.5,
+    },
+    scrollBody: {
+      padding: 16,
+    },
+    heroBanner: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 18,
+      marginBottom: 20,
+    },
+    heroTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    severityPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      gap: 5,
+    },
+    severityPillText: {
+      fontSize: 11,
+      fontWeight: '800',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    badgePill: {
+      backgroundColor: colors.surfaceMuted,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: THEME.border,
+    },
+    badgePillText: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: THEME.textSub,
+    },
+    heroTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: '#FFFFFF',
+      marginBottom: 4,
+    },
+    heroPathogen: {
+      fontSize: 13,
+      fontStyle: 'italic',
+      color: '#06b6d4',
+      marginBottom: 10,
+    },
+    heroOverview: {
+      fontSize: 13,
+      color: '#cbd5e1',
+      lineHeight: 19,
+      marginBottom: 16,
+    },
+    statsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    statBox: {
+      flex: 1,
+      minWidth: '45%',
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 10,
+    },
+    statLabel: {
+      fontSize: 10,
+      color: colors.textFaint,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      marginBottom: 2,
+    },
+    statVal: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: THEME.text,
+    },
+    sectionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginTop: 6,
+      marginBottom: 12,
+    },
+    sectionHeading: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: THEME.text,
+      letterSpacing: 0.2,
+    },
+    cardsContainer: {
+      gap: 10,
+      marginBottom: 16,
+    },
+    detailCard: {
+      backgroundColor: THEME.cardBg,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 14,
+    },
+    detailCardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 8,
+    },
+    stepNumCircle: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.15)' : 'rgba(225, 29, 72, 0.1)',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(244, 63, 94, 0.3)' : 'rgba(225, 29, 72, 0.25)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    stepNumText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: '#fb7185',
+    },
+    signTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: THEME.text,
+      flex: 1,
+    },
+    signDesc: {
+      fontSize: 13,
+      color: THEME.textSub,
+      lineHeight: 18,
+      paddingLeft: 34,
+    },
+    protocolCard: {
+      backgroundColor: THEME.cardBg,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      padding: 14,
+      gap: 12,
+      marginBottom: 16,
+    },
+    protocolRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    protocolIcon: {
+      marginTop: 2,
+    },
+    protocolText: {
+      fontSize: 13,
+      color: THEME.textSub,
+      lineHeight: 19,
+      flex: 1,
+    },
+    ctaRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 10,
+    },
+    scanCtaBtn: {
+      flex: 1,
+      borderRadius: 12,
+      overflow: 'hidden',
+    },
+    ctaGradient: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      paddingVertical: 14,
+    },
+    ctaBtnText: {
+      fontSize: 14,
+      fontWeight: '800',
+      color: '#FFFFFF',
+    },
+    triageCtaBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      borderRadius: 12,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: THEME.border,
+      paddingVertical: 14,
+    },
+    triageBtnText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: THEME.textSub,
+    },
+  });

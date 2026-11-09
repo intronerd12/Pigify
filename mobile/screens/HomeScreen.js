@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 
 import { ScanService } from '../services/ScanService';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -131,6 +132,8 @@ const getGradeColor = (grade) => {
 export default function HomeScreen({ user, onLogout }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors: THEME, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(THEME, isDark), [THEME, isDark]);
 
   const [stats, setStats] = useState({ total: 42, best: 'OPTIMAL', avg: '98.5%' });
   const [recentScans, setRecentScans] = useState([]);
@@ -655,55 +658,56 @@ export default function HomeScreen({ user, onLogout }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: THEME.bgDeep,
-  },
-  glowTopLeft: {
-    position: 'absolute',
-    top: -40,
-    left: -40,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-  },
-  glowTopRight: {
-    position: 'absolute',
-    top: 60,
-    right: -50,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-  },
-  glowBottomCenter: {
-    position: 'absolute',
-    bottom: -60,
-    alignSelf: 'center',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: 'rgba(6, 182, 212, 0.08)',
-  },
-  scrollContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 110,
-  },
-  heroCard: {
-    backgroundColor: THEME.bgCard,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: THEME.borderCard,
-    padding: 18,
-    position: 'relative',
-    marginBottom: 16,
-    shadowColor: '#000000',
-    shadowOpacity: 0.45,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
-  },
+const createStyles = (THEME, isDark) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: THEME.bgDeep,
+    },
+    glowTopLeft: {
+      position: 'absolute',
+      top: -40,
+      left: -40,
+      width: 240,
+      height: 240,
+      borderRadius: 120,
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.14)' : 'rgba(225, 29, 72, 0.06)',
+    },
+    glowTopRight: {
+      position: 'absolute',
+      top: 60,
+      right: -50,
+      width: 220,
+      height: 220,
+      borderRadius: 110,
+      backgroundColor: isDark ? 'rgba(16, 185, 129, 0.1)' : 'rgba(5, 150, 105, 0.05)',
+    },
+    glowBottomCenter: {
+      position: 'absolute',
+      bottom: -60,
+      alignSelf: 'center',
+      width: 300,
+      height: 300,
+      borderRadius: 150,
+      backgroundColor: isDark ? 'rgba(6, 182, 212, 0.08)' : 'rgba(8, 145, 178, 0.04)',
+    },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingBottom: 110,
+    },
+    heroCard: {
+      backgroundColor: THEME.bgCard,
+      borderRadius: 24,
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      padding: 18,
+      position: 'relative',
+      marginBottom: 16,
+      shadowColor: THEME.shadowColor || '#000000',
+      shadowOpacity: isDark ? 0.45 : 0.08,
+      shadowRadius: 16,
+      shadowOffset: { width: 0, height: 6 },
+    },
   cornerTL: {
     position: 'absolute',
     top: 9,
@@ -788,51 +792,51 @@ const styles = StyleSheet.create({
   avatarWrapper: {
     position: 'relative',
   },
-  avatar: {
-    backgroundColor: '#0D1424',
-    borderWidth: 1.5,
-    borderColor: 'rgba(244, 63, 94, 0.4)',
-  },
-  avatarLabel: {
-    color: THEME.primaryHover,
-    fontWeight: '800',
-  },
-  onlineIndicator: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: THEME.emerald,
-    borderWidth: 2,
-    borderColor: '#070A13',
-  },
-  greetingText: {
-    fontSize: 11,
-    color: THEME.textMuted,
-  },
-  usernameText: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: THEME.textMain,
-    letterSpacing: 0.2,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  glassActionBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(20, 29, 48, 0.75)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    avatar: {
+      backgroundColor: THEME.bgCardSolid,
+      borderWidth: 1.5,
+      borderColor: 'rgba(244, 63, 94, 0.4)',
+    },
+    avatarLabel: {
+      color: THEME.primaryHover,
+      fontWeight: '800',
+    },
+    onlineIndicator: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 11,
+      height: 11,
+      borderRadius: 6,
+      backgroundColor: THEME.emerald,
+      borderWidth: 2,
+      borderColor: THEME.bgDeep,
+    },
+    greetingText: {
+      fontSize: 11,
+      color: THEME.textMuted,
+    },
+    usernameText: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: THEME.textMain,
+      letterSpacing: 0.2,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    glassActionBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: isDark ? 'rgba(20, 29, 48, 0.75)' : '#F1F5F9',
+      borderWidth: 1,
+      borderColor: THEME.borderCard,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 export const MOBILE_INFECTION_CATALOG = [
   {
@@ -124,6 +125,9 @@ export default function InfectionDecisionCard({
   navigation,
   contextTitle = 'WHAT TO DO FIRST • MULTI-INFECTION DECISION ENGINE',
 }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors, isDark), [colors, isDark]);
+
   const derivedIds = useMemo(() => {
     const set = new Set();
     const list = Array.isArray(detectedConditions) ? detectedConditions : [detectedConditions];
@@ -497,245 +501,246 @@ export default function InfectionDecisionCard({
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(13, 20, 36, 0.95)',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(244, 63, 94, 0.32)',
-    padding: 16,
-    marginVertical: 10,
-  },
-  kickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
-  },
-  kickerText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#FB7185',
-    letterSpacing: 0.7,
-    textTransform: 'uppercase',
-  },
-  title: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 12,
-    color: '#94A3B8',
-    lineHeight: 17,
-    marginBottom: 12,
-  },
-  presetScroll: {
-    gap: 8,
-    paddingBottom: 10,
-  },
-  presetBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingVertical: 6,
-    paddingHorizontal: 11,
-    borderRadius: 9,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
-  },
-  presetBtnActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.16)',
-    borderColor: '#F43F5E',
-  },
-  presetBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#CBD5E1',
-  },
-  presetBtnTextActive: {
-    color: '#FB7185',
-  },
-  chipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 7,
-    marginBottom: 14,
-  },
-  diseaseChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 9,
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.10)',
-  },
-  chipDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-  },
-  diseaseChipText: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#94A3B8',
-  },
-  advisoryBanner: {
-    borderRadius: 13,
-    borderWidth: 1,
-    padding: 12,
-    marginBottom: 14,
-    gap: 6,
-  },
-  advisoryHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-  },
-  advisoryTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    flex: 1,
-  },
-  advisorySummary: {
-    fontSize: 11.5,
-    color: '#E2E8F0',
-    lineHeight: 16.5,
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 6,
-    marginTop: 2,
-  },
-  ruleText: {
-    fontSize: 11,
-    color: '#CBD5E1',
-    lineHeight: 15.5,
-    flex: 1,
-  },
-  priorityList: {
-    gap: 10,
-    marginBottom: 14,
-  },
-  priorityCard: {
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderRadius: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 12,
-    gap: 6,
-  },
-  priorityTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  rankBadge: {
-    paddingVertical: 3,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  rankBadgeText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-  },
-  doFirstPill: {
-    paddingVertical: 2,
-    paddingHorizontal: 7,
-    borderRadius: 5,
-  },
-  doFirstPillText: {
-    fontSize: 9,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
-  priorityName: {
-    fontSize: 14.5,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  priorityLocal: {
-    fontSize: 11,
-    color: '#94A3B8',
-    marginTop: -2,
-  },
-  doFirstBox: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderLeftWidth: 3,
-    borderRadius: 8,
-    padding: 9,
-    marginVertical: 2,
-  },
-  doFirstBoxText: {
-    fontSize: 11.5,
-    color: '#F1F5F9',
-    lineHeight: 16,
-  },
-  metaLine: {
-    fontSize: 11,
-    color: '#94A3B8',
-    lineHeight: 15.5,
-  },
-  timelineBox: {
-    backgroundColor: 'rgba(7, 11, 21, 0.65)',
-    borderRadius: 13,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 12,
-    gap: 10,
-    marginBottom: 12,
-  },
-  timelineHeader: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: '#38BDF8',
-    letterSpacing: 0.6,
-  },
-  timelineStep: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 9,
-  },
-  stepBadge: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  stepBadgeText: {
-    fontSize: 10.5,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
-  stepTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 2,
-  },
-  stepDesc: {
-    fontSize: 11,
-    color: '#94A3B8',
-    lineHeight: 15.5,
-  },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
-  },
+const createStyles = (colors, isDark) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.bgCard,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(244, 63, 94, 0.32)' : 'rgba(225, 29, 72, 0.22)',
+      padding: 16,
+      marginVertical: 10,
+    },
+    kickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 6,
+    },
+    kickerText: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: colors.primaryHover,
+      letterSpacing: 0.7,
+      textTransform: 'uppercase',
+    },
+    title: {
+      fontSize: 17,
+      fontWeight: '800',
+      color: colors.textMain,
+      marginBottom: 4,
+    },
+    subtitle: {
+      fontSize: 12,
+      color: colors.textMuted,
+      lineHeight: 17,
+      marginBottom: 12,
+    },
+    presetScroll: {
+      gap: 8,
+      paddingBottom: 10,
+    },
+    presetBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingVertical: 6,
+      paddingHorizontal: 11,
+      borderRadius: 9,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+    },
+    presetBtnActive: {
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.16)' : 'rgba(225, 29, 72, 0.12)',
+      borderColor: colors.primary,
+    },
+    presetBtnText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.textMuted,
+    },
+    presetBtnTextActive: {
+      color: colors.primaryHover,
+    },
+    chipsWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 7,
+      marginBottom: 14,
+    },
+    diseaseChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+      borderRadius: 9,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+    },
+    chipDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+    },
+    diseaseChipText: {
+      fontSize: 11.5,
+      fontWeight: '700',
+      color: colors.textMuted,
+    },
+    advisoryBanner: {
+      borderRadius: 13,
+      borderWidth: 1,
+      padding: 12,
+      marginBottom: 14,
+      gap: 6,
+    },
+    advisoryHead: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+    },
+    advisoryTitle: {
+      fontSize: 13,
+      fontWeight: '800',
+      flex: 1,
+    },
+    advisorySummary: {
+      fontSize: 11.5,
+      color: colors.textMain,
+      lineHeight: 16.5,
+    },
+    ruleRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 6,
+      marginTop: 2,
+    },
+    ruleText: {
+      fontSize: 11,
+      color: colors.textMuted,
+      lineHeight: 15.5,
+      flex: 1,
+    },
+    priorityList: {
+      gap: 10,
+      marginBottom: 14,
+    },
+    priorityCard: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 13,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      padding: 12,
+      gap: 6,
+    },
+    priorityTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    rankBadge: {
+      paddingVertical: 3,
+      paddingHorizontal: 8,
+      borderRadius: 6,
+      borderWidth: 1,
+    },
+    rankBadgeText: {
+      fontSize: 9.5,
+      fontWeight: '800',
+    },
+    doFirstPill: {
+      paddingVertical: 2,
+      paddingHorizontal: 7,
+      borderRadius: 5,
+    },
+    doFirstPillText: {
+      fontSize: 9,
+      fontWeight: '900',
+      color: '#FFFFFF',
+    },
+    priorityName: {
+      fontSize: 14.5,
+      fontWeight: '800',
+      color: colors.textMain,
+    },
+    priorityLocal: {
+      fontSize: 11,
+      color: colors.textMuted,
+      marginTop: -2,
+    },
+    doFirstBox: {
+      backgroundColor: isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.04)',
+      borderLeftWidth: 3,
+      borderRadius: 8,
+      padding: 9,
+      marginVertical: 2,
+    },
+    doFirstBoxText: {
+      fontSize: 11.5,
+      color: colors.textMain,
+      lineHeight: 16,
+    },
+    metaLine: {
+      fontSize: 11,
+      color: colors.textMuted,
+      lineHeight: 15.5,
+    },
+    timelineBox: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 13,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      padding: 12,
+      gap: 10,
+      marginBottom: 12,
+    },
+    timelineHeader: {
+      fontSize: 10.5,
+      fontWeight: '800',
+      color: colors.cyan,
+      letterSpacing: 0.6,
+    },
+    timelineStep: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 9,
+    },
+    stepBadge: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    stepBadgeText: {
+      fontSize: 10.5,
+      fontWeight: '900',
+      color: '#FFFFFF',
+    },
+    stepTitle: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: colors.textMain,
+      marginBottom: 2,
+    },
+    stepDesc: {
+      fontSize: 11,
+      color: colors.textMuted,
+      lineHeight: 15.5,
+    },
+    actionsRow: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.borderCard,
+    },
   mapBtn: {
     flex: 1,
     flexDirection: 'row',

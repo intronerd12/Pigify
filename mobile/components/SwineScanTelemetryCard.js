@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 
 export const MOBILE_BODY_PARTS = [
   {
@@ -124,6 +125,9 @@ export function inferMobileBodyPart(conditionText = '') {
 }
 
 export default function SwineScanTelemetryCard({ scanResult = null }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors, isDark), [colors, isDark]);
+
   const initialZone = useMemo(
     () => inferMobileBodyPart(scanResult?.condition || scanResult?.disease_detected || ''),
     [scanResult?.condition, scanResult?.disease_detected]
@@ -450,177 +454,179 @@ export default function SwineScanTelemetryCard({ scanResult = null }) {
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: 'rgba(13, 20, 36, 0.94)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    padding: 16,
-    marginTop: 14,
-  },
-  kickerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
-  },
-  kickerText: {
-    fontSize: 9.5,
-    fontWeight: '800',
-    color: '#38BDF8',
-    letterSpacing: 0.6,
-  },
-  title: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 12,
-    lineHeight: 20,
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  summaryItem: {
-    width: '48%',
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 9,
-  },
-  summaryLabel: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#64748B',
-    marginBottom: 2,
-  },
-  summaryVal: {
-    fontSize: 12.5,
-    fontWeight: '800',
-  },
-  tabRow: {
-    flexDirection: 'row',
-    gap: 6,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    alignItems: 'center',
-  },
-  tabBtnActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.2)',
-    borderColor: '#F43F5E',
-  },
-  tabBtnText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#94A3B8',
-  },
-  tabBtnTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  sectionSubLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#38BDF8',
-    marginBottom: 6,
-  },
-  chipWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 10,
-  },
-  zoneChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  zoneChipActive: {
-    backgroundColor: 'rgba(6, 182, 212, 0.22)',
-    borderColor: '#06B6D4',
-  },
-  zoneChipText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#94A3B8',
-  },
-  zoneChipTextActive: {
-    color: '#FFFFFF',
-  },
-  infoBox: {
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: 11,
-  },
-  infoBoxTitle: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: '#F8FAFC',
-    marginBottom: 2,
-  },
-  infoBoxSub: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#38BDF8',
-    marginBottom: 4,
-  },
-  infoBoxDesc: {
-    fontSize: 11.5,
-    color: '#94A3B8',
-    lineHeight: 16,
-  },
-  mealBtn: {
-    flex: 1,
-    paddingVertical: 7,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    alignItems: 'center',
-  },
-  behRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 9,
-    borderRadius: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.025)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.07)',
-    marginBottom: 6,
-  },
-  behRowActive: {
-    backgroundColor: 'rgba(244, 63, 94, 0.14)',
-    borderColor: 'rgba(244, 63, 94, 0.45)',
-  },
-  alertTriggerBtn: {
-    marginTop: 12,
-    backgroundColor: '#F43F5E',
-    borderRadius: 12,
-    paddingVertical: 11,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  alertTriggerBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
-  },
-});
+const createStyles = (colors, isDark) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.bgCard,
+      borderRadius: 20,
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(56, 189, 248, 0.3)' : 'rgba(8, 145, 178, 0.25)',
+      padding: 16,
+      marginTop: 14,
+    },
+    kickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 4,
+    },
+    kickerText: {
+      fontSize: 9.5,
+      fontWeight: '800',
+      color: colors.cyan,
+      letterSpacing: 0.6,
+    },
+    title: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: colors.textMain,
+      marginBottom: 12,
+      lineHeight: 20,
+    },
+    summaryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 12,
+    },
+    summaryItem: {
+      width: '48%',
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      padding: 9,
+    },
+    summaryLabel: {
+      fontSize: 9,
+      fontWeight: '800',
+      color: colors.textFaint,
+      marginBottom: 2,
+    },
+    summaryVal: {
+      fontSize: 12.5,
+      fontWeight: '800',
+    },
+    tabRow: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    tabBtn: {
+      flex: 1,
+      paddingVertical: 8,
+      paddingHorizontal: 6,
+      borderRadius: 10,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      alignItems: 'center',
+    },
+    tabBtnActive: {
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(225, 29, 72, 0.12)',
+      borderColor: colors.primary,
+    },
+    tabBtnText: {
+      fontSize: 10.5,
+      fontWeight: '700',
+      color: colors.textMuted,
+    },
+    tabBtnTextActive: {
+      color: colors.primaryHover,
+      fontWeight: '800',
+    },
+    sectionSubLabel: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: colors.cyan,
+      marginBottom: 6,
+    },
+    chipWrap: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginBottom: 10,
+    },
+    zoneChip: {
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 8,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+    },
+    zoneChipActive: {
+      backgroundColor: isDark ? 'rgba(6, 182, 212, 0.22)' : 'rgba(8, 145, 178, 0.15)',
+      borderColor: colors.cyan,
+    },
+    zoneChipText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: colors.textMuted,
+    },
+    zoneChipTextActive: {
+      color: colors.textMain,
+      fontWeight: '800',
+    },
+    infoBox: {
+      backgroundColor: colors.surfaceMuted,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      padding: 11,
+    },
+    infoBoxTitle: {
+      fontSize: 12.5,
+      fontWeight: '800',
+      color: colors.textMain,
+      marginBottom: 2,
+    },
+    infoBoxSub: {
+      fontSize: 10.5,
+      fontWeight: '700',
+      color: colors.cyan,
+      marginBottom: 4,
+    },
+    infoBoxDesc: {
+      fontSize: 11.5,
+      color: colors.textMuted,
+      lineHeight: 16,
+    },
+    mealBtn: {
+      flex: 1,
+      paddingVertical: 7,
+      borderRadius: 8,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      alignItems: 'center',
+    },
+    behRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 9,
+      borderRadius: 10,
+      backgroundColor: colors.surfaceMuted,
+      borderWidth: 1,
+      borderColor: colors.borderCard,
+      marginBottom: 6,
+    },
+    behRowActive: {
+      backgroundColor: isDark ? 'rgba(244, 63, 94, 0.14)' : 'rgba(225, 29, 72, 0.1)',
+      borderColor: colors.primaryHover,
+    },
+    alertTriggerBtn: {
+      marginTop: 12,
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 11,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    alertTriggerBtnText: {
+      color: '#FFFFFF',
+      fontSize: 12,
+      fontWeight: '800',
+    },
+  });
 

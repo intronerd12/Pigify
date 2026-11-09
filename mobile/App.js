@@ -209,10 +209,25 @@ function MainTabs({ user, handleLogout }) {
 }
 
 function AppContent() {
-  const { colors, paperTheme } = useTheme();
+  const { colors, paperTheme, isDark } = useTheme();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const userKey = sanitizeForKey(getUserNamespace(user)) || 'anon';
+
+  const navigationTheme = useMemo(
+    () => ({
+      dark: isDark,
+      colors: {
+        primary: colors.primary,
+        background: colors.bgDeep,
+        card: colors.navBarBg,
+        text: colors.textMain,
+        border: colors.navBarBorder,
+        notification: colors.primary,
+      },
+    }),
+    [isDark, colors]
+  );
 
   useEffect(() => {
     checkUser();
@@ -302,7 +317,7 @@ function AppContent() {
   return (
     <PaperProvider theme={paperTheme}>
       <StatusBar style={colors.statusBarStyle} />
-      <NavigationContainer>
+      <NavigationContainer theme={navigationTheme}>
         {user ? (
           <Stack.Navigator
             key={`user:${userKey}`}
