@@ -1,5 +1,55 @@
-import { registerRootComponent } from 'expo';
+import * as ReactNative from 'react-native';
 import { LogBox } from 'react-native';
+
+// Polyfill InteractionManager removed in React Native 0.88 / Expo SDK 58
+const polyfillInteractionManager = {
+  runAfterInteractions: (task) => {
+    let cancelled = false;
+    const execute = () => {
+      if (!cancelled && typeof task === 'function') {
+        task();
+      }
+    };
+    let handle;
+    if (typeof requestIdleCallback !== 'undefined') {
+      handle = requestIdleCallback(execute);
+    } else {
+      handle = setTimeout(execute, 0);
+    }
+    return {
+      cancel: () => {
+        cancelled = true;
+        if (typeof cancelIdleCallback !== 'undefined') {
+          cancelIdleCallback(handle);
+        } else {
+          clearTimeout(handle);
+        }
+      },
+      then: (onResolved, onRejected) => {
+        return new Promise((resolve) => {
+          polyfillInteractionManager.runAfterInteractions(resolve);
+        }).then(onResolved, onRejected);
+      },
+    };
+  },
+  createInteractionHandle: () => 1,
+  clearInteractionHandle: () => {},
+  setDeadline: () => {},
+  addListener: () => ({ remove: () => {} }),
+};
+
+try {
+  Object.defineProperty(ReactNative, 'InteractionManager', {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: polyfillInteractionManager,
+  });
+} catch {
+  ReactNative.InteractionManager = polyfillInteractionManager;
+}
+
+import { registerRootComponent } from 'expo';
 
 // Suppress known framework-internal deprecation noise from flooding the Metro bundler terminal
 const IGNORED_WARNINGS = [
