@@ -14,3 +14,4 @@ This directory stores deep-learning weights (`.pt` or ONNX format) for Pigify's 
 To train or fine-tune models, use the curated swine dataset in `roboflow_dataset_500/` or `dataset_samples/`.
 Weights placed here as `swine_yolo.pt` or `yolo_best.pt` will automatically be loaded by the AI vision engine.
 When weights are not present, the system operates seamlessly using grounded clinical heuristic triage and Gemini AI vision.
+

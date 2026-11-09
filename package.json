@@ -1,0 +1,13 @@
+{
+  "name": "pigify-workspace",
+  "version": "2.0.0",
+  "description": "Pigify Swine Disease & Clinical Telemetry System for Backyard Farms",
+  "private": true,
+  "scripts": {
+    "setup:env": "node -e \"const fs = require('fs'); ['backend', 'frontend', 'mobile'].forEach(dir => { const envPath = dir + '/.env'; const examplePath = dir + '/.env.example'; if (!fs.existsSync(envPath) && fs.existsSync(examplePath)) { fs.copyFileSync(examplePath, envPath); console.log('Created ' + envPath + ' from .env.example'); } else { console.log(envPath + ' already exists or is ready.'); } });\"",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm --prefix mobile install",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start:mobile": "npm --prefix mobile start"
+  }
+}

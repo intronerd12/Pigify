@@ -6,102 +6,97 @@ An AI-powered computer vision and clinical telemetry platform designed for early
 
 ## 🏗️ Project Architecture
 
-Pigify is organized into three independent modular applications:
+Pigify is organized into three modular applications:
 
 - **`backend/`**: Node.js Express API server + Python FastAPI YOLOv11 deep-learning inference service.
 - **`frontend/`**: React 19 + Vite web dashboard for desktop farm telemetry, diagnostics, and reports.
-- **`mobile/`**: React Native (Expo SDK 58) cross-platform mobile app for real-time mobile swine scanning and field diagnostics.
+- **`mobile/`**: React Native (Expo SDK 58) cross-platform mobile app for real-time swine scanning and field diagnostics.
 
 ---
 
-## 📦 What to Do After Downloading or Extracting the GitHub ZIP
+## ⚡ Quick Setup on a New Laptop / Computer
 
-When downloading the repository as a ZIP from GitHub, Git automatically excludes:
-1. **`node_modules/`** folders (dependencies must be installed via `npm install`).
-2. **`.env`** configuration files (contains sensitive API keys and database credentials).
+When downloading the repository as a ZIP or cloning via `git clone`, simply follow these steps:
 
 ### ⚙️ Prerequisites
 - **Node.js**: `v18.x` or `v20.x` LTS ([Download Node.js](https://nodejs.org/))
 - **npm**: Comes bundled with Node.js
-- **Python**: `3.10+` (optional, only needed if running local YOLO deep learning inference on your computer)
+- **Python**: `3.10+` (optional, for local YOLO swine vision execution)
 
 ---
 
-## 🚀 Step-by-Step Setup Guide
+### Method A: Automated Setup (Recommended)
 
-### Step 1: Set Up and Run the Backend
+From the root project folder:
 
 ```bash
-# 1. Navigate to the backend directory
+# 1. Automatically create all .env files for backend, frontend, and mobile
+npm run setup:env
+
+# 2. Install dependencies for all 3 subprojects in one command
+npm run install:all
+```
+
+Then start the services in separate terminal windows:
+```bash
+npm run start:backend     # Starts Backend API on http://localhost:5000 (AI on :8000)
+npm run start:frontend    # Starts Web Dashboard on http://localhost:5173
+npm run start:mobile      # Starts Expo Mobile App
+```
+
+---
+
+### Method B: Manual Setup (Per Folder)
+
+#### 1. Backend (`backend/`)
+```bash
 cd backend
-
-# 2. Install dependencies
 npm install
-
-# 3. Create your .env file from the example
-cp .env.example .env
-# (On Windows PowerShell: Copy-Item .env.example .env)
-
-# 4. Start the backend server (starts Node API + Python Swine AI)
+# Copy .env.example to .env
+# Windows: Copy-Item .env.example .env | Mac/Linux: cp .env.example .env
 npm start
-# Server will run on: http://localhost:5000 (AI on :8000)
+# Node server starts on http://localhost:5000 (AI starts on :8000)
+```
 
----
-
-### Step 2: Set Up and Run the Web Frontend
-
+#### 2. Web Frontend (`frontend/`)
 ```bash
-# 1. Open a new terminal and navigate to the frontend directory
 cd frontend
-
-# 2. Install dependencies
 npm install
-
-# 3. Create your .env file from the example
-cp .env.example .env
-# (On Windows PowerShell: Copy-Item .env.example .env)
-
-# 4. Start the Vite development server
+# Copy .env.example to .env
+# Windows: Copy-Item .env.example .env | Mac/Linux: cp .env.example .env
 npm run dev
-# Web app will be accessible at: http://localhost:5173
+# Dashboard opens on http://localhost:5173
 ```
 
----
-
-### Step 3: Set Up and Run the Mobile App (Expo)
-
+#### 3. Mobile App (`mobile/`)
 ```bash
-# 1. Open a new terminal and navigate to the mobile directory
 cd mobile
-
-# 2. Install dependencies
 npm install
-
-# 3. Create your .env file from the example
-cp .env.example .env
-# (On Windows PowerShell: Copy-Item .env.example .env)
-
-# 4. Start the Expo development server
+# Copy .env.example to .env
+# Windows: Copy-Item .env.example .env | Mac/Linux: cp .env.example .env
 npx expo start
+# Scan the QR code using the Expo Go app on your phone, or press 'w' for web preview
 ```
-
-- **Physical Android/iOS Phone**: Scan the QR code using the **Expo Go** app on your phone (ensure your phone is on the same Wi-Fi network).
-- **Web Preview**: Press `w` in the terminal to open the mobile app in your web browser.
-- **Android Emulator**: Press `a` in the terminal to launch on an active Android emulator.
 
 ---
 
 ## 🔑 Environment Variables Reference
 
-Each folder contains a pre-configured `.env.example` file:
+Each folder contains a ready-to-use `.env.example` file:
 
-| Service | Example File | Key Variables Required |
+| Service | Example File | Included Defaults & Fallbacks |
 | :--- | :--- | :--- |
-| **Backend** | [`backend/.env.example`](backend/.env.example) | `PORT`, `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `CLOUDINARY_*`, `GEMINI_API_KEY` |
-| **Frontend** | [`frontend/.env.example`](frontend/.env.example) | `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GEMINI_API_KEY` |
-| **Mobile** | [`mobile/.env.example`](mobile/.env.example) | `EXPO_PUBLIC_API_URL`, `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_CLOUDINARY_*`, `EXPO_PUBLIC_GEMINI_API_KEY` |
+| **Backend** | [`backend/.env.example`](backend/.env.example) | Pre-configured for Supabase, database connection pool, and Cloudinary |
+| **Frontend** | [`frontend/.env.example`](frontend/.env.example) | Pre-configured for local API (`http://localhost:5000`) and Supabase |
+| **Mobile** | [`mobile/.env.example`](mobile/.env.example) | Auto-detects local LAN IP for physical phones; includes Supabase & direct Cloudinary upload |
 
 ---
 
-## 🛡️ License & Biosecurity Protocol
-Built for Philippine swine farmers, veterinarians, and agricultural researchers for ASF early warning and biosecurity monitoring.
+## 🛡️ Biosecurity & Swine Clinical Classifications
+Built for Philippine swine farmers, veterinarians, and agricultural researchers for early warning and biosecurity monitoring across 6 swine conditions:
+1. African Swine Fever (ASF)
+2. Swine Erysipelas (Diamond Skin Disease)
+3. Sarcoptic Mange
+4. Greasy Pig Disease (Exudative Epidermitis)
+5. Porcine Dermatitis and Nephropathy Syndrome (PDNS)
+6. Normal Healthy Swine Dermis
