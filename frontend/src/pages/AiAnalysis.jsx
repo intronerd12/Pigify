@@ -337,8 +337,8 @@ function AiAnalysis() {
     const sampleBehaviors = isHealthy
       ? []
       : isCritical
-      ? ['loss_of_appetite', 'huddling_piling', 'lethargy_recumbency']
-      : ['loss_of_appetite', 'intense_pruritus']
+        ? ['loss_of_appetite', 'huddling_piling', 'lethargy_recumbency']
+        : ['loss_of_appetite', 'intense_pruritus']
     const nowIso = new Date().toISOString()
 
     setSelectedBodyPartId(inferredZone.id)
@@ -611,8 +611,8 @@ function AiAnalysis() {
       isNormalScan
         ? []
         : isCriticalScan
-        ? ['loss_of_appetite', 'huddling_piling', 'lethargy_recumbency']
-        : ['loss_of_appetite', 'intense_pruritus']
+          ? ['loss_of_appetite', 'huddling_piling', 'lethargy_recumbency']
+          : ['loss_of_appetite', 'intense_pruritus']
     )
 
     const diagnosticPayload = {
@@ -876,7 +876,7 @@ function AiAnalysis() {
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>SWINE HEALTH STUDY &bull; SYMPTOM DETECTION &amp; OBSERVATION PROTOTYPE</span>
+              <span>SWINE HEALTH MONITORING &bull; SYMPTOM DETECTION &amp; OBSERVATION</span>
             </div>
 
             <h1 className="mk-title">
@@ -1771,15 +1771,14 @@ function AiAnalysis() {
                             analysisResult.severity === 'Normal'
                               ? 'rgba(16, 185, 129, 0.12)'
                               : analysisResult.severity === 'Mild'
-                              ? 'rgba(245, 158, 11, 0.12)'
-                              : 'rgba(244, 63, 94, 0.14)',
-                          border: `1px solid ${
-                            analysisResult.severity === 'Normal'
-                              ? 'rgba(16, 185, 129, 0.35)'
-                              : analysisResult.severity === 'Mild'
+                                ? 'rgba(245, 158, 11, 0.12)'
+                                : 'rgba(244, 63, 94, 0.14)',
+                          border: `1px solid ${analysisResult.severity === 'Normal'
+                            ? 'rgba(16, 185, 129, 0.35)'
+                            : analysisResult.severity === 'Mild'
                               ? 'rgba(245, 158, 11, 0.35)'
                               : 'rgba(244, 63, 94, 0.4)'
-                          }`,
+                            }`,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'space-between',
@@ -1813,8 +1812,8 @@ function AiAnalysis() {
                                 analysisResult.severity === 'Normal'
                                   ? '#10b981'
                                   : analysisResult.severity === 'Mild'
-                                  ? '#f59e0b'
-                                  : '#f43f5e',
+                                    ? '#f59e0b'
+                                    : '#f43f5e',
                             }}
                           >
                             {analysisResult.severity.toUpperCase()}
@@ -2084,66 +2083,66 @@ function AiAnalysis() {
                         analysisResult.severityGrade === 'E' ||
                         analysisResult.condition.toLowerCase().includes('asf') ||
                         analysisResult.condition.toLowerCase().includes('hemorrhagic')) && (
-                        <div
-                          style={{
-                            borderRadius: '14px',
-                            padding: '16px',
-                            background: 'rgba(244, 63, 94, 0.15)',
-                            border: '1px solid #f43f5e',
-                          }}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                            <ShieldAlert size={18} color="#f43f5e" />
-                            <strong style={{ fontSize: '0.9rem', color: '#ffffff' }}>
-                              CRITICAL ALERT &bull; PVO NOTIFICATION REQUIRED
-                            </strong>
-                          </div>
-                          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
-                            Symptoms indicate acute hemorrhagic or high-mortality swine illness. The Provincial Veterinary Office (PVO) must be notified immediately to contain potential spread.
-                          </p>
+                          <div
+                            style={{
+                              borderRadius: '14px',
+                              padding: '16px',
+                              background: 'rgba(244, 63, 94, 0.15)',
+                              border: '1px solid #f43f5e',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                              <ShieldAlert size={18} color="#f43f5e" />
+                              <strong style={{ fontSize: '0.9rem', color: '#ffffff' }}>
+                                CRITICAL ALERT &bull; PVO NOTIFICATION REQUIRED
+                              </strong>
+                            </div>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted, #94a3b8)', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                              Symptoms indicate acute hemorrhagic or high-mortality swine illness. The Provincial Veterinary Office (PVO) must be notified immediately to contain potential spread.
+                            </p>
 
-                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                            <button
-                              type="button"
-                              onClick={handleDispatchPvo}
-                              disabled={submittingPvo}
-                              className="lp-btn-primary"
-                              style={{
-                                padding: '10px 16px',
-                                fontSize: '0.84rem',
-                                background: '#f43f5e',
-                                borderColor: '#f43f5e',
-                              }}
-                            >
-                              {submittingPvo ? (
-                                <>
-                                  <RefreshCw size={14} className="pigify-spin" />
-                                  <span>Transmitting…</span>
-                                </>
-                              ) : pvoDispatchedRef ? (
-                                <>
-                                  <CheckCircle2 size={14} />
-                                  <span>Dispatched (Ref: {pvoDispatchedRef})</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Send size={14} />
-                                  <span>Transmit Incident to PVO (BAI Form 1)</span>
-                                </>
-                              )}
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                              <button
+                                type="button"
+                                onClick={handleDispatchPvo}
+                                disabled={submittingPvo}
+                                className="lp-btn-primary"
+                                style={{
+                                  padding: '10px 16px',
+                                  fontSize: '0.84rem',
+                                  background: '#f43f5e',
+                                  borderColor: '#f43f5e',
+                                }}
+                              >
+                                {submittingPvo ? (
+                                  <>
+                                    <RefreshCw size={14} className="pigify-spin" />
+                                    <span>Transmitting…</span>
+                                  </>
+                                ) : pvoDispatchedRef ? (
+                                  <>
+                                    <CheckCircle2 size={14} />
+                                    <span>Dispatched (Ref: {pvoDispatchedRef})</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send size={14} />
+                                    <span>Transmit Incident to PVO (BAI Form 1)</span>
+                                  </>
+                                )}
+                              </button>
 
-                            <a
-                              href={`tel:${PVO_DIRECTORY[0].hotline.split('/')[0].trim()}`}
-                              className="lp-btn-secondary"
-                              style={{ padding: '10px 14px', fontSize: '0.84rem', textDecoration: 'none' }}
-                            >
-                              <PhoneCall size={14} />
-                              <span>Call PVO Hotline</span>
-                            </a>
+                              <a
+                                href={`tel:${PVO_DIRECTORY[0].hotline.split('/')[0].trim()}`}
+                                className="lp-btn-secondary"
+                                style={{ padding: '10px 14px', fontSize: '0.84rem', textDecoration: 'none' }}
+                              >
+                                <PhoneCall size={14} />
+                                <span>Call PVO Hotline</span>
+                              </a>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Auxiliary Modals / Drawers Navigation Strip */}
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
@@ -2248,10 +2247,10 @@ function AiAnalysis() {
                   )}
                 </div>
 
-                {/* Responsible Research Note */}
+                {/* Responsible Biosecurity Note */}
                 <div style={{ marginTop: '20px', paddingTop: '14px', borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.08))', fontSize: '0.74rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.4 }}>
                   <Info size={12} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }} />
-                  Pigify Study Protocol &bull; Swine scans and observation records are stored locally for health monitoring. In severe or suspected contagious cases, immediately contact your local veterinarian or Provincial Veterinary Office.
+                  Pigify Clinical Protocol &bull; Swine scans and observation records are stored locally for health monitoring. In severe or suspected contagious cases, immediately contact your local veterinarian or Provincial Veterinary Office.
                 </div>
               </div>
             </div>
@@ -2632,7 +2631,7 @@ function AiAnalysis() {
       <footer className="lp-footer" style={{ marginTop: '20px' }}>
         <div className="container-pro" style={{ textAlign: 'center', color: 'var(--text-muted, #94a3b8)' }}>
           <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main, #ffffff)', marginBottom: '6px' }}>{BRAND_NAME}</div>
-          <div style={{ fontSize: '0.85rem' }}>Swine Health Study &bull; Native Pig Dermal Calibration &bull; Provincial Veterinary Office Surveillance</div>
+          <div style={{ fontSize: '0.85rem' }}>Swine Health Monitoring &bull; Native Pig Dermal Calibration &bull; Provincial Veterinary Office Surveillance</div>
         </div>
       </footer>
     </div>

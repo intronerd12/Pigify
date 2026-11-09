@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import {
@@ -27,28 +27,28 @@ import './AuthPro.css';
 
 const AUTH_VIDEO_SLIDES = [
   {
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
+    image: '/landing/swine-scan-subject.jpg',
     title: 'Symptom Detection',
     desc: 'Checks pig photos for visible lesions, rashes, and irritation',
     tag: 'MODEL: YOLOv8',
     confidence: 'YOLOv8',
   },
   {
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
+    image: '/landing/swine-biosecurity-pen.jpg',
     title: 'Backyard Health Monitoring',
     desc: 'Saves scan results to help farmers track herd condition over time',
     tag: 'MODULE: MONITORING',
     confidence: 'SAVED LOGS',
   },
   {
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
+    image: '/landing/swine-health-scan.jpg',
     title: 'Early Observation',
     desc: 'Supports prompt isolation and monitoring of pigs displaying symptoms',
     tag: 'PURPOSE: OBSERVATION',
     confidence: '3 SEVERITY TIERS',
   },
   {
-    video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
+    image: '/landing/swine-scan-subject.jpg',
     title: 'Pig Health Records',
     desc: 'Historical scan logs to reference during farm visits',
     tag: 'STORAGE: CLOUD',
@@ -99,8 +99,151 @@ async function syncWithBackend(supabaseToken, nameHint, userObj = null) {
   };
 }
 
-function AuthPro() {
+const AuthShowcasePanel = React.memo(function AuthShowcasePanel() {
   const [activeVideoSlide, setActiveVideoSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveVideoSlide((prev) => (prev + 1) % AUTH_VIDEO_SLIDES.length);
+    }, 7500);
+    return () => clearInterval(timer);
+  }, []);
+
+  const activeSlide = AUTH_VIDEO_SLIDES[activeVideoSlide];
+
+  return (
+    <div className="pigify-showcase-panel">
+      <div>
+        {/* Brand Row */}
+        <div className="pigify-brand-row">
+          <div className="pigify-brand-identity">
+            <BrandMark size={44} variant="pigify" />
+            <div>
+              <div className="pigify-brand-name">
+                {BRAND_NAME}
+                <span className="pigify-brand-name-tag">RESEARCH</span>
+              </div>
+              <div className="pigify-brand-sub">{BRAND_TAGLINE}</div>
+            </div>
+          </div>
+          <div className="pigify-live-badge">
+            <span className="pigify-hud-pulse" />
+            <span>ONLINE</span>
+          </div>
+        </div>
+
+        {/* Hero Copy */}
+        <h1 className="pigify-hero-title">
+          <span>Swine Health</span> &amp; Symptom Monitoring
+        </h1>
+        <p className="pigify-hero-subtitle">
+          A deep learning-based swine disease and symptom monitoring system for backyard farms.
+        </p>
+
+        {/* AI Scanner Viewfinder Showcase */}
+        <div className="pigify-scanner-card">
+          <div className="pigify-scanner-media">
+            <img
+              src={activeSlide.image}
+              alt={activeSlide.title}
+              loading="lazy"
+              decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.06) brightness(0.86)' }}
+            />
+            <div className="pigify-scanner-hud">
+              <div className="pigify-scanner-hud-top">
+                <div className="pigify-hud-target-badge">
+                  <ScanLine size={12} />
+                  <span>{activeSlide.tag}</span>
+                </div>
+                <div className="pigify-hud-model-tag">
+                  STATUS: {activeSlide.confidence}
+                </div>
+              </div>
+              <div className="pigify-viewfinder-reticle">
+                <div className="pigify-scanline-laser" />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
+                  ● VIDEO PREVIEW
+                </span>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
+                  SAMPLE FOOTAGE
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Caption & Slide Control */}
+          <div className="pigify-scanner-caption-bar">
+            <div className="pigify-scanner-info">
+              <h4>
+                <Sparkles size={13} color="#fb7185" />
+                {activeSlide.title}
+              </h4>
+              <p>{activeSlide.desc}</p>
+            </div>
+            <div className="pigify-scanner-dots">
+              {AUTH_VIDEO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={`pigify-scanner-dot ${activeVideoSlide === i ? 'active' : ''}`}
+                  onClick={() => setActiveVideoSlide(i)}
+                  aria-label={`Showcase slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 3 High-Tech Feature Cards */}
+        <div className="pigify-feature-grid">
+          <div className="pigify-feature-card">
+            <div className="pigify-feature-icon">
+              <ScanLine size={18} />
+            </div>
+            <div className="pigify-feature-text">
+              <strong>Skin Symptom Detection</strong>
+              <span>Detects visible skin lesions, rashes, and redness on pig photos.</span>
+            </div>
+          </div>
+
+          <div className="pigify-feature-card">
+            <div className="pigify-feature-icon">
+              <Activity size={18} />
+            </div>
+            <div className="pigify-feature-text">
+              <strong>Herd Monitoring &amp; History</strong>
+              <span>Maintains an organized log of past scans to track symptoms over time.</span>
+            </div>
+          </div>
+
+          <div className="pigify-feature-card">
+            <div className="pigify-feature-icon">
+              <ShieldCheck size={18} />
+            </div>
+            <div className="pigify-feature-text">
+              <strong>Cloud Account &amp; Storage</strong>
+              <span>User account authentication with Supabase and Cloudinary image storage.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Info */}
+      <div className="pigify-showcase-footer">
+        <div className="pigify-engine-status">
+          <Cpu size={12} color="#10b981" />
+          <span>YOLOv8 DETECTION MODEL</span>
+        </div>
+        <span>© {new Date().getFullYear()} {BRAND_NAME} System</span>
+      </div>
+    </div>
+  );
+});
+
+function AuthPro() {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
@@ -112,14 +255,6 @@ function AuthPro() {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const navigate = useNavigate();
-
-  // Auto-advance showcase video slides
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveVideoSlide((prev) => (prev + 1) % AUTH_VIDEO_SLIDES.length);
-    }, 7500);
-    return () => clearInterval(timer);
-  }, []);
 
   const { name, email, password } = formData;
 
@@ -353,8 +488,6 @@ function AuthPro() {
     setVerifyEmail('');
   };
 
-  const activeSlide = AUTH_VIDEO_SLIDES[activeVideoSlide];
-
   return (
     <div className="pigify-auth-shell">
       {/* Cyber Grid & Ambient Glows */}
@@ -373,136 +506,8 @@ function AuthPro() {
 
       {/* Main Glassmorphic Container Frame */}
       <div className="pigify-auth-frame">
-        {/* ── LEFT SHOWCASE PANEL ── */}
-        <div className="pigify-showcase-panel">
-          <div>
-            {/* Brand Row */}
-            <div className="pigify-brand-row">
-              <div className="pigify-brand-identity">
-                <BrandMark size={44} variant="pigify" />
-                <div>
-                  <div className="pigify-brand-name">
-                    {BRAND_NAME}
-                    <span className="pigify-brand-name-tag">RESEARCH</span>
-                  </div>
-                  <div className="pigify-brand-sub">{BRAND_TAGLINE}</div>
-                </div>
-              </div>
-              <div className="pigify-live-badge">
-                <span className="pigify-hud-pulse" />
-                <span>ONLINE</span>
-              </div>
-            </div>
-
-            {/* Hero Copy */}
-            <h1 className="pigify-hero-title">
-              <span>Swine Health</span> &amp; Symptom Monitoring
-            </h1>
-            <p className="pigify-hero-subtitle">
-              A deep learning-based swine disease and symptom monitoring system for backyard farms.
-            </p>
-
-            {/* AI Scanner Viewfinder Showcase */}
-            <div className="pigify-scanner-card">
-              <div className="pigify-scanner-media">
-                <video
-                  key={activeSlide.video}
-                  src={activeSlide.video}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
-                <div className="pigify-scanner-hud">
-                  <div className="pigify-scanner-hud-top">
-                    <div className="pigify-hud-target-badge">
-                      <ScanLine size={12} />
-                      <span>{activeSlide.tag}</span>
-                    </div>
-                    <div className="pigify-hud-model-tag">
-                      STATUS: {activeSlide.confidence}
-                    </div>
-                  </div>
-                  <div className="pigify-viewfinder-reticle">
-                    <div className="pigify-scanline-laser" />
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
-                      ● VIDEO PREVIEW
-                    </span>
-                    <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>
-                      SAMPLE FOOTAGE
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Caption & Slide Control */}
-              <div className="pigify-scanner-caption-bar">
-                <div className="pigify-scanner-info">
-                  <h4>
-                    <Sparkles size={13} color="#fb7185" />
-                    {activeSlide.title}
-                  </h4>
-                  <p>{activeSlide.desc}</p>
-                </div>
-                <div className="pigify-scanner-dots">
-                  {AUTH_VIDEO_SLIDES.map((_, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      className={`pigify-scanner-dot ${activeVideoSlide === i ? 'active' : ''}`}
-                      onClick={() => setActiveVideoSlide(i)}
-                      aria-label={`Showcase slide ${i + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* 3 High-Tech Feature Cards */}
-            <div className="pigify-feature-grid">
-              <div className="pigify-feature-card">
-                <div className="pigify-feature-icon">
-                  <ScanLine size={18} />
-                </div>
-                <div className="pigify-feature-text">
-                  <strong>Skin Symptom Detection</strong>
-                  <span>Detects visible skin lesions, rashes, and redness on pig photos.</span>
-                </div>
-              </div>
-
-              <div className="pigify-feature-card">
-                <div className="pigify-feature-icon">
-                  <Activity size={18} />
-                </div>
-                <div className="pigify-feature-text">
-                  <strong>Herd Monitoring &amp; History</strong>
-                  <span>Maintains an organized log of past scans to track symptoms over time.</span>
-                </div>
-              </div>
-
-              <div className="pigify-feature-card">
-                <div className="pigify-feature-icon">
-                  <ShieldCheck size={18} />
-                </div>
-                <div className="pigify-feature-text">
-                  <strong>Cloud Account &amp; Storage</strong>
-                  <span>User account authentication with Supabase and Cloudinary image storage.</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer Info */}
-          <div className="pigify-showcase-footer">
-            <div className="pigify-engine-status">
-              <Cpu size={12} color="#10b981" />
-              <span>YOLOv8 DETECTION MODEL</span>
-            </div>
-            <span>© {new Date().getFullYear()} {BRAND_NAME} System</span>
-          </div>
-        </div>
+        {/* ── LEFT SHOWCASE PANEL (Memoized for zero-lag typing) ── */}
+        <AuthShowcasePanel />
 
         {/* ── RIGHT OPERATOR TERMINAL ── */}
         <div className="pigify-terminal-panel">

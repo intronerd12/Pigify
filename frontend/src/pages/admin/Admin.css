@@ -35,6 +35,15 @@
 }
 
 /* Base admin container reset */
+.admin-sidebar-nav {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 .admin-shell-page {
   color: var(--admin-text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;

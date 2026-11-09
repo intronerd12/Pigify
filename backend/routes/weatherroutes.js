@@ -2,18 +2,18 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 
-// Province Coordinates for Open-Meteo API
+// Study Site Coordinates for Luna, La Union, Philippines (Open-Meteo API)
 const PROVINCE_COORDS = {
-  'Metro Manila': { lat: 14.5995, lon: 120.9842 },
-  'Cebu': { lat: 10.3157, lon: 123.8854 },
-  'Davao': { lat: 7.1907, lon: 125.4553 },
-  'Ilocos Norte': { lat: 18.1960, lon: 120.5927 },
-  'Cavite': { lat: 14.2889, lon: 120.9167 },
-  'Laguna': { lat: 14.2721, lon: 121.3653 },
-  'Batangas': { lat: 13.7565, lon: 121.0583 },
-  'Rizal': { lat: 14.5869, lon: 121.1789 },
-  'Quezon': { lat: 13.9314, lon: 121.6172 },
-  'Pampanga': { lat: 15.0437, lon: 120.6925 }
+  'Luna, La Union': { lat: 16.8530, lon: 120.3802 },
+  'Brgy. Barrientos, Luna': { lat: 16.8590, lon: 120.3910 },
+  'Brgy. Magallanes, Luna': { lat: 16.8530, lon: 120.3802 },
+  'Brgy. Nalvo Norte, Luna': { lat: 16.8685, lon: 120.3775 },
+  'Brgy. Ayaoan, Luna': { lat: 16.8440, lon: 120.3885 },
+  'Brgy. Rimos No. 3, Luna': { lat: 16.8620, lon: 120.3710 },
+  'Brgy. Oaqui No. 2, Luna': { lat: 16.8485, lon: 120.4020 },
+  'Brgy. Darigayos, Luna': { lat: 16.8280, lon: 120.3540 },
+  'Brgy. Sto. Domingo Norte, Luna': { lat: 16.8740, lon: 120.3860 },
+  'La Union': { lat: 16.8530, lon: 120.3802 }
 };
 
 // WMO Weather Code Mapping
@@ -28,7 +28,7 @@ const getWeatherCondition = (code) => {
 };
 
 const fetchWeatherData = async (province) => {
-  const coords = PROVINCE_COORDS[province] || PROVINCE_COORDS['Metro Manila'];
+  const coords = PROVINCE_COORDS[province] || PROVINCE_COORDS['Luna, La Union'];
   
   try {
     const response = await axios.get('https://api.open-meteo.com/v1/forecast', {
@@ -124,7 +124,7 @@ const getGrowthRecommendation = (weather) => {
 // GET /api/weather?province=Name
 router.get('/', async (req, res) => {
   try {
-    const province = req.query.province || 'Metro Manila';
+    const province = req.query.province || 'Luna, La Union';
     const weather = await fetchWeatherData(province);
     const recommendation = getGrowthRecommendation(weather);
 

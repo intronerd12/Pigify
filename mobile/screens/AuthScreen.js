@@ -341,10 +341,10 @@ export default function AuthScreen({ onLogin }) {
       .toLowerCase();
     const displayName = String(
       selectedProfile.name ||
-        googleCustomName ||
-        name ||
-        cleanEmail.split('@')[0] ||
-        'Google Swine Operator'
+      googleCustomName ||
+      name ||
+      cleanEmail.split('@')[0] ||
+      'Google Swine Operator'
     ).trim();
     const googleId = selectedProfile.googleId || `g-${Date.now()}`;
     const isAdminEmail =

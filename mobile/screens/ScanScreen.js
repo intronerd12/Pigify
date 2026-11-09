@@ -25,7 +25,6 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 
 import { ScanService } from '../services/ScanService';
-import InfectionDecisionCard from '../components/InfectionDecisionCard';
 import SwineScanTelemetryCard, {
   formatMobileScanDateTime,
   inferMobileBodyPart,
@@ -214,7 +213,7 @@ export default function ScanScreen({ user }) {
           setTempHost(saved.trim());
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleSaveRaspiHost = async (newHost) => {
@@ -223,7 +222,7 @@ export default function ScanScreen({ user }) {
     setRaspiConfigModal(false);
     try {
       await AsyncStorage.setItem('@pigify_raspi_host_v1', val);
-    } catch {}
+    } catch { }
     void testRaspiPing(val);
   };
 
@@ -342,7 +341,7 @@ export default function ScanScreen({ user }) {
       let res = null;
       try {
         res = await ScanService.analyzeImage(uri);
-      } catch {}
+      } catch { }
 
       const preset = extra.presetData || {};
       const condition = res?.condition || res?.disease_detected || preset.condition || 'Healthy Swine Dermis';
@@ -380,7 +379,7 @@ export default function ScanScreen({ user }) {
 
       try {
         await ScanService.addScan(scanObj, { user });
-      } catch {}
+      } catch { }
 
       setScanResult(scanObj);
     } catch (err) {
@@ -433,7 +432,7 @@ export default function ScanScreen({ user }) {
           penId: activePen.id,
           swineId: activePen.swineId,
         });
-      } catch (err) {}
+      } catch (err) { }
 
       const frameUri = captureRes?.imageUrl || activePen.imageUri;
 
@@ -689,13 +688,6 @@ export default function ScanScreen({ user }) {
 
           {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
           <SwineScanTelemetryCard scanResult={scanResult} />
-
-          {/* What To Do First: Single & Multi-Infection Priority Decision Engine */}
-          <InfectionDecisionCard
-            detectedConditions={[scanResult]}
-            navigation={navigation}
-            contextTitle="AI SCAN RESULT • WHAT TO DO FIRST GUIDE"
-          />
 
           {/* Action Buttons */}
           <View style={styles.actionRow}>
@@ -1137,13 +1129,6 @@ export default function ScanScreen({ user }) {
 
             {/* Anatomical Body Part, MLX90614 Pig Temp, Behavior & 2-Camera Suite */}
             <SwineScanTelemetryCard scanResult={NATIVE_PIG_PRESETS[0]} />
-
-            {/* What To Do First: Multi-Infection Decision Engine */}
-            <InfectionDecisionCard
-              detectedConditions={NATIVE_PIG_PRESETS}
-              navigation={navigation}
-              contextTitle="PEN MONITORING • MULTI-INFECTION PRIORITY GUIDE"
-            />
           </ScrollView>
         )}
       </View>

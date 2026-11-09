@@ -26,7 +26,6 @@ import {
   User,
 } from 'lucide-react'
 import UserHeader from '../components/user/UserHeader'
-import InfectionDecisionEngine from '../components/user/InfectionDecisionEngine'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
 import './Landing.css'
 import './MarketingPages.css'
@@ -429,21 +428,20 @@ function Overview() {
                                   pen.status === 'Optimal'
                                     ? 'rgba(16, 185, 129, 0.15)'
                                     : pen.status === 'Monitor'
-                                    ? 'rgba(245, 158, 11, 0.15)'
-                                    : 'rgba(244, 63, 94, 0.15)',
+                                      ? 'rgba(245, 158, 11, 0.15)'
+                                      : 'rgba(244, 63, 94, 0.15)',
                                 color:
                                   pen.status === 'Optimal'
                                     ? '#10b981'
                                     : pen.status === 'Monitor'
-                                    ? '#f59e0b'
-                                    : '#f43f5e',
-                                border: `1px solid ${
-                                  pen.status === 'Optimal'
-                                    ? 'rgba(16, 185, 129, 0.3)'
-                                    : pen.status === 'Monitor'
+                                      ? '#f59e0b'
+                                      : '#f43f5e',
+                                border: `1px solid ${pen.status === 'Optimal'
+                                  ? 'rgba(16, 185, 129, 0.3)'
+                                  : pen.status === 'Monitor'
                                     ? 'rgba(245, 158, 11, 0.3)'
                                     : 'rgba(244, 63, 94, 0.3)'
-                                }`,
+                                  }`,
                               }}
                             >
                               {pen.status.toUpperCase()}
@@ -556,18 +554,6 @@ function Overview() {
         </section>
 
         {/* ================================================================
-            3B. WHAT TO DO FIRST: MULTI-INFECTION HERD DECISION ENGINE
-            ================================================================ */}
-        <section className="mk-section" style={{ paddingTop: '8px', paddingBottom: '12px' }}>
-          <div className="container-pro">
-            <InfectionDecisionEngine
-              detectedConditions={displayScans}
-              contextLabel="HERD MONITORING • MULTI-INFECTION PRIORITY ENGINE"
-            />
-          </div>
-        </section>
-
-        {/* ================================================================
             4. RECENT DIAGNOSTIC LOGS & AUDIT TRAIL
             ================================================================ */}
         <section className="mk-section mk-section-alt" style={{ padding: '36px 0' }}>
@@ -664,14 +650,14 @@ function Overview() {
                             scan.severity === 'Normal' || scan.status === 'healthy'
                               ? 'rgba(16, 185, 129, 0.15)'
                               : scan.severity === 'Mild' || scan.status === 'warning'
-                              ? 'rgba(245, 158, 11, 0.15)'
-                              : 'rgba(244, 63, 94, 0.15)',
+                                ? 'rgba(245, 158, 11, 0.15)'
+                                : 'rgba(244, 63, 94, 0.15)',
                           color:
                             scan.severity === 'Normal' || scan.status === 'healthy'
                               ? '#10b981'
                               : scan.severity === 'Mild' || scan.status === 'warning'
-                              ? '#f59e0b'
-                              : '#f43f5e',
+                                ? '#f59e0b'
+                                : '#f43f5e',
                         }}
                       >
                         {String(scan.severity || scan.grade || 'TIER A').toUpperCase()}

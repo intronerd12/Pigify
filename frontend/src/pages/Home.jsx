@@ -115,7 +115,6 @@ function Home() {
   const navigate = useNavigate();
   const [health, setHealth] = useState('checking...');
   const [user, setUser] = useState(null);
-  const videoRef = useRef(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem('user');
@@ -136,38 +135,6 @@ function Home() {
       navigate('/login');
     }
   }, [navigate]);
-
-  // Viewport & visibility observer for hero video to save CPU/GPU on lower-end devices
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !document.hidden) {
-          v.play().catch(() => {});
-        } else {
-          v.pause();
-        }
-      },
-      { threshold: 0.25 }
-    );
-    observer.observe(v);
-
-    const handleVisibility = () => {
-      if (document.hidden) {
-        v.pause();
-      } else {
-        v.play().catch(() => {});
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
-    return () => {
-      observer.disconnect();
-      document.removeEventListener('visibilitychange', handleVisibility);
-    };
-  }, []);
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -195,10 +162,6 @@ function Home() {
 
   return (
     <div className="pigify-home-shell">
-      {/* Background Cyber Mesh & Ambient Glows */}
-      <div className="pigify-home-mesh" aria-hidden="true" />
-      <div className="pigify-home-ambient-glow" aria-hidden="true" />
-
       {/* Unified User Header with Unique Theme Switcher */}
       <UserHeader />
 
@@ -264,17 +227,15 @@ function Home() {
                 </div>
               </div>
 
-              {/* Viewfinder Scanner Showcase */}
+              {/* Viewfinder Scanner Showcase (Zero-RAM Static Image Preview) */}
               <div className="pigify-hero-scanner-card">
                 <div className="pigify-hero-scanner-media">
-                  <video
-                    ref={videoRef}
-                    src="https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4"
-                    muted
-                    loop
-                    playsInline
-                    preload="metadata"
-                    aria-label="Swine AI Scan Demo"
+                  <img
+                    src="/landing/swine-scan-subject.jpg"
+                    alt="Swine AI Scan Preview"
+                    loading="lazy"
+                    decoding="async"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'contrast(1.06) brightness(0.88)' }}
                   />
                   <div className="pigify-hero-scanner-hud">
                     <div className="pigify-hero-scanner-hud-top">
@@ -289,9 +250,8 @@ function Home() {
                           color: '#fff',
                           padding: '3px 8px',
                           borderRadius: '6px',
-                          background: 'rgba(244, 63, 94, 0.35)',
-                          backdropFilter: 'blur(8px)',
-                          border: '1px solid rgba(244, 63, 94, 0.5)',
+                          background: 'rgba(244, 63, 94, 0.55)',
+                          border: '1px solid rgba(244, 63, 94, 0.65)',
                         }}
                       >
                         <ScanLine size={11} />
@@ -304,7 +264,7 @@ function Home() {
                           color: 'rgba(255,255,255,0.85)',
                           padding: '2px 8px',
                           borderRadius: '4px',
-                          background: 'rgba(0,0,0,0.5)',
+                          background: 'rgba(0,0,0,0.65)',
                         }}
                       >
                         DETECTION MODEL: YOLOv8
@@ -320,7 +280,7 @@ function Home() {
                         transform: 'translate(-50%, -50%)',
                         width: '100px',
                         height: '100px',
-                        border: '1px dashed rgba(244, 63, 94, 0.5)',
+                        border: '1px dashed rgba(244, 63, 94, 0.6)',
                         borderRadius: '8px',
                         pointerEvents: 'none',
                       }}
@@ -328,10 +288,10 @@ function Home() {
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#34d399' }}>
-                        ● VIDEO DEMO
+                        ● READY TO SCAN
                       </span>
-                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.7)' }}>
-                        YOLOv8 MODEL
+                      <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(255,255,255,0.75)' }}>
+                        LUNA, LA UNION STUDY
                       </span>
                     </div>
                   </div>

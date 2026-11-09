@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 import './SwineScanTelemetrySuite.css'
 
-// ── 1. ANATOMICAL BODY PARTS CATALOG (Sir Nestor Valdez & Doc. Rico Santos) ────
+// ── 1. ANATOMICAL BODY PARTS CATALOG ──────────────────────────────────────────
 export const SWINE_ANATOMICAL_ZONES = [
   {
     id: 'ear_pinnae',
@@ -102,7 +102,7 @@ export const SWINE_ANATOMICAL_ZONES = [
   },
 ]
 
-// ── 2. ABNORMAL SWINE BEHAVIORS & APPETITE INDICATORS (Sir Nestor Valdez) ─────
+// ── 2. ABNORMAL SWINE BEHAVIORS & APPETITE INDICATORS ────────────────────────
 export const SWINE_ABNORMAL_BEHAVIORS = [
   {
     id: 'loss_of_appetite',
@@ -151,7 +151,7 @@ export const SWINE_ABNORMAL_BEHAVIORS = [
   },
 ]
 
-// ── 3. DUAL-CAMERA & HARDWARE SPECIFICATIONS (Ma'am Pops & Sir Julius) ────────
+// ── 3. DUAL-CAMERA & HARDWARE SPECIFICATIONS ─────────────────────────────────
 export const DUAL_CAMERA_HARDWARE_SPECS = [
   {
     unitId: 'CAM-01',
@@ -179,32 +179,32 @@ export const DUAL_CAMERA_HARDWARE_SPECS = [
   },
 ]
 
-// ── 4. SYSTEM TESTING & VALIDATION METHODOLOGY (Sir Nestor, Doc. Rico, Ma'am Maracris)
+// ── 4. SYSTEM TESTING & VALIDATION METHODOLOGY ───────────────────────────────
 export const CAPSTONE_TESTING_PROTOCOL = [
   {
     phase: 'Phase 1: Stratified 500-Image Dataset & Melanin Calibration Benchmark',
-    panelRef: 'Doc. Rico Santos & Ma’am Maracris Lappay',
+    targetArea: 'Dataset & Melanin Contrast Normalization',
     metrics: '500 Annotated Swine Images (100 per class × 5 classes) • 70% Train (350) / 20% Val (100) / 10% Test (50)',
     details: 'Includes both Commercial White breeds (Landrace/Yorkshire) and dark-skinned Philippine Native Pigs (Baboy Katutubo) with CLAHE melanin contrast normalization.',
     status: 'Verified (mAP@0.5: 96.4% • Precision: 95.8% • Recall: 94.9%)',
   },
   {
     phase: 'Phase 2: Anatomical Body-Part & Dual-Camera Localization Testing',
-    panelRef: 'Sir Nestor Valdez & Sir Julius Silang',
+    targetArea: 'Edge Localization & Low-Latency Inference',
     metrics: '2-Camera Pen Rig (Overhead 120° Cam #1 + Feeder 75° AF Cam #2) • 5 Anatomical ROI Zones',
     details: 'Evaluates bounding-box localization across Ear Pinnae, Lateral Flank, Ventral Abdomen, Snout, and Limbs with exact PHT timestamp logging and Ear-Tag + Dorsal Color Mark ID matching.',
     status: 'Verified (36ms Edge Latency on Raspberry Pi 5 8GB)',
   },
   {
     phase: 'Phase 3: MLX90614 Non-Contact Thermal vs. Digital Rectal Probe Correlation',
-    panelRef: 'Ma’am Pops Madriaga & Ma’am Joan Mag-isa',
+    targetArea: 'Non-Contact Infrared Thermal Calibration',
     metrics: 'Melexis MLX90614ESF-DCI IR Sensor (I2C) vs. Veterinary DS18B20 Rectal Thermometer',
     details: 'Validates ear-base tympanic infrared temperature readings at 20–40 cm distance against gold-standard rectal temperature across normal (38.5–39.5°C) and febrile (≥40.5°C) swine.',
     status: 'Calibrated (±0.2°C Deviation • Fever Threshold ≥40.5°C)',
   },
   {
     phase: 'Phase 4: Early Behavioral Appetite & Immediate Alert Trigger Trial (Luna, La Union)',
-    panelRef: 'Sir Nestor Valdez, Sir Julius Silang & Ma’am Maracris Lappay',
+    targetArea: 'Field Biomonitoring & Rapid Alert Dispatch',
     metrics: '40 Barangays Mapped in Luna, La Union • <2.5s Alert Trigger Latency to Farmer & MAO Luna',
     details: 'Tests early detection of trough appetite drop (<2 meals/day) + huddling behavior, triggering immediate Web/Mobile siren alerts and BAI Form 1 dispatch to MAO Luna (0917-842-5510) & OPVet La Union.',
     status: 'Ready for Luna, La Union Deployment',
@@ -305,7 +305,7 @@ function SwineScanTelemetrySuite({
     else setLocalCamera(camId)
   }
 
-  // Fever evaluation (Ma'am Pops Madriaga)
+  // Swine dermal temperature evaluation
   const tempFahrenheit = ((effectiveTemp * 9) / 5 + 32).toFixed(1)
   const tempStatus = useMemo(() => {
     if (effectiveTemp >= 40.5) {
@@ -332,7 +332,7 @@ function SwineScanTelemetrySuite({
     }
   }, [effectiveTemp])
 
-  // Prodromal Early-Warning Score (Sir Nestor Valdez)
+  // Prodromal Early-Warning Score calculation
   const earlyWarningScore = useMemo(() => {
     const behaviorPoints = SWINE_ABNORMAL_BEHAVIORS.reduce(
       (sum, b) => (effectiveBehaviors.includes(b.id) ? sum + b.riskWeight : sum),
@@ -720,7 +720,7 @@ function SwineScanTelemetrySuite({
           ==================================================================== */}
       {activeTab === 'thermal_behavior' && (
         <div className="sst-body-grid">
-          {/* Left: Ma'am Pops Madriaga — Pig Temperature Hardware Specification & Simulator */}
+          {/* Left: Pig Temperature Hardware Specification & Simulator */}
           <div
             style={{
               background: 'rgba(10, 15, 28, 0.82)',
@@ -857,7 +857,7 @@ function SwineScanTelemetrySuite({
             </div>
           </div>
 
-          {/* Right: Sir Nestor Valdez — Abnormal Behavior & Loss of Appetite Early Detection */}
+          {/* Right: Abnormal Behavior & Loss of Appetite Early Detection */}
           <div
             style={{
               background: 'rgba(10, 15, 28, 0.82)',
@@ -984,7 +984,7 @@ function SwineScanTelemetrySuite({
           ==================================================================== */}
       {activeTab === 'cameras_id_alert' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {/* 2-Camera Specification Cards (Sir Julius Silang) */}
+          {/* 2-Camera Specification Cards */}
           <div className="sst-body-grid">
             {DUAL_CAMERA_HARDWARE_SPECS.map((cam) => {
               const isSelected = effectiveCamera === cam.unitId
@@ -1123,7 +1123,7 @@ function SwineScanTelemetrySuite({
             >
               <div>
                 <div style={{ fontFamily: 'JetBrains Mono', fontSize: '0.68rem', color: '#38bdf8', fontWeight: 800, marginBottom: '4px' }}>
-                  EVALUATION BENCHMARK &bull; {item.panelRef.toUpperCase()}
+                  VALIDATION TARGET &bull; {(item.targetArea || item.panelRef || '').toUpperCase()}
                 </div>
                 <h4 style={{ fontFamily: 'Sora', fontSize: '0.96rem', fontWeight: 800, color: '#ffffff', margin: '0 0 6px 0' }}>
                   {item.phase}

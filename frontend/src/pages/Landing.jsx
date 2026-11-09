@@ -30,6 +30,7 @@ const VIDEO_SLIDES = [
     type: 'video',
     title: 'Checking Pig Photos for Skin Symptoms',
     description: 'Pigify analyzes a photo of a pig and points out visible skin signs, such as lesions or redness, that may be linked to disease.',
+    poster: '/landing/swine-scan-subject.jpg',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676636/pigify_videos/15098476_1280_720_60fps.mp4',
     link: '/how-it-works',
     buttonText: 'See How It Works',
@@ -40,6 +41,7 @@ const VIDEO_SLIDES = [
     type: 'video',
     title: 'Health Monitoring for Backyard Farms',
     description: 'The study focuses on small-scale backyard pig raisers who may not have regular access to a veterinarian.',
+    poster: '/landing/swine-biosecurity-pen.jpg',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788676649/pigify_videos/13693034-hd_1280_720_25fps.mp4',
     link: '/features',
     buttonText: 'View Features',
@@ -50,6 +52,7 @@ const VIDEO_SLIDES = [
     type: 'video',
     title: 'Deep Learning Image Analysis',
     description: 'Photos are processed by YOLOv8 object detection models that the team trained on pig images.',
+    poster: '/landing/swine-health-scan.jpg',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678594/pigify_videos/12180338_1280_720_30fps.mp4',
     link: '/home',
     buttonText: 'Open the Scanner',
@@ -60,6 +63,7 @@ const VIDEO_SLIDES = [
     type: 'video',
     title: 'Scan Records and Monitoring',
     description: 'Each scan result is saved so farmers can look back on the health condition of their pigs over time.',
+    poster: '/landing/swine-scan-subject.jpg',
     video: 'https://res.cloudinary.com/dkqnaqbvg/video/upload/v1788678601/pigify_videos/13693036-hd_1280_720_25fps.mp4',
     link: '/about',
     buttonText: 'About the Study',
@@ -167,7 +171,8 @@ const MODULES = [
 
 function Landing() {
   const [activeVideoSlide, setActiveVideoSlide] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(true)
+  // Default to static zero-RAM poster mode; video only loads if user explicitly clicks Play
+  const [isPlaying, setIsPlaying] = useState(false)
   const [isInView, setIsInView] = useState(false)
   const videoSectionRef = useRef(null)
   const videoRef = useRef(null)
@@ -211,7 +216,6 @@ function Landing() {
   const goToVideoSlide = (index) => {
     const nextIndex = (index + VIDEO_SLIDES.length) % VIDEO_SLIDES.length
     setActiveVideoSlide(nextIndex)
-    setIsPlaying(true)
   }
 
   const toggleVideoPlay = () => {
@@ -395,18 +399,27 @@ function Landing() {
               {/* High-tech animated laser scanline */}
               <div className="lp-video-scanline" />
 
-              {/* Active Background Video Element (Loaded on demand when in viewport) */}
-              {isInView && (
+              {/* Lightweight static poster by default; video only mounted when user clicks Play */}
+              {isPlaying && isInView ? (
                 <video
                   ref={videoRef}
                   key={VIDEO_SLIDES[activeVideoSlide].video}
                   className="lp-video-element active"
                   src={VIDEO_SLIDES[activeVideoSlide].video}
+                  poster={VIDEO_SLIDES[activeVideoSlide].poster}
                   playsInline
                   muted
                   loop
-                  preload="metadata"
+                  preload="none"
                   aria-label={VIDEO_SLIDES[activeVideoSlide].title}
+                />
+              ) : (
+                <img
+                  src={VIDEO_SLIDES[activeVideoSlide].poster}
+                  alt={VIDEO_SLIDES[activeVideoSlide].title}
+                  className="lp-video-element active"
+                  loading="lazy"
+                  decoding="async"
                 />
               )}
 

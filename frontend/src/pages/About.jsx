@@ -77,13 +77,6 @@ const PIPELINE = [
 
 const TEAM_MEMBERS = [
   {
-    name: 'Adora, Joenabelle',
-    role: 'Member',
-    description: 'Contributes to swine dataset collection, image annotation, and documentation for the monitoring study.',
-    imgSrc: '/About%20us/adora,%20joanabel.jpg',
-    fbLink: 'https://www.facebook.com/aeri.elle.0#',
-  },
-  {
     name: 'Bumatay, Axel Jillian',
     role: 'Leader',
     description: 'Project leader responsible for system architecture, coordinating deep learning model integration, and full-stack development.',

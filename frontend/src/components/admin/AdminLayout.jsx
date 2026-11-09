@@ -148,9 +148,21 @@ const AdminLayout = () => {
         </div>
 
         {/* Navigation Groups */}
-        <nav style={{ flex: 1, padding: '16px 12px', overflowY: 'auto' }}>
+        <nav
+          className="admin-sidebar-nav"
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'stretch',
+            justifyContent: 'flex-start',
+            padding: '16px 12px',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}
+        >
           {navGroups.map((grp, gIdx) => (
-            <div key={grp.group} style={{ marginBottom: gIdx !== navGroups.length - 1 ? '20px' : '0' }}>
+            <div key={grp.group} style={{ width: '100%', marginBottom: gIdx !== navGroups.length - 1 ? '20px' : '0' }}>
               <div style={{
                 fontSize: '0.68rem',
                 fontWeight: 800,

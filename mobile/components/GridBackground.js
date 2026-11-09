@@ -12,7 +12,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  * IMPORTANT: The parent screen must set ScrollView and KeyboardAvoidingView
  * to backgroundColor: 'transparent' for this to show through.
  */
-function GridBackground({ gridSize = 48, style }) {
+function GridBackground({ gridSize = 64, style }) {
   const W = SCREEN_WIDTH;
   const H = SCREEN_HEIGHT; // Exact screen height since GridBackground is fixed behind scroll
 
@@ -36,7 +36,12 @@ function GridBackground({ gridSize = 48, style }) {
   );
 
   return (
-    <View style={[styles.root, style]} pointerEvents="none">
+    <View
+      style={[styles.root, style]}
+      pointerEvents="none"
+      renderToHardwareTextureAndroid={true}
+      shouldRasterizeIOS={true}
+    >
       {/* Dark base */}
       <View style={StyleSheet.absoluteFillObject} />
 

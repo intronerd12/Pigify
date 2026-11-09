@@ -47,14 +47,14 @@ function calculateDistanceKm(lat1, lon1, lat2, lon2) {
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2)
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
   return R * c
 }
 
-// Primary Study & Capstone Testing Site: Municipality of Luna, La Union, Philippines (Region I)
+// Primary Surveillance Site: Municipality of Luna, La Union, Philippines (Region I)
 const BASE_LUNA_FARMS = [
   {
     id: 'luna-farm-01',
@@ -349,7 +349,7 @@ function buildScenarioFarms(scenarioType, customEpicenterId = 'luna-farm-01', cu
       suspectedCondition: 'Healthy Swine (Malusog na Baboy)',
       quarantineRadiusKm: 0,
       pvoNotified: false,
-      lastScanned: 'Just now (Capstone Baseline)',
+      lastScanned: 'Just now (Baseline Verification)',
     }))
   }
 
@@ -454,7 +454,7 @@ function DiseaseMap() {
       id: 'log-1',
       time: 'Just now',
       type: 'red',
-      text: 'Capstone Study Site Locked: Municipality of Luna, La Union (16.8530°N, 120.3802°E).',
+      text: 'Surveillance Site Locked: Municipality of Luna, La Union (16.8530°N, 120.3802°E).',
     },
     {
       id: 'log-2',
@@ -486,7 +486,7 @@ function DiseaseMap() {
     suspectedDisease: 'African Swine Fever (ASF)',
     severityTier: 'Critical Quarantine (Red Alert)',
     symptoms: 'High pyrexia (41.2°C), cyanotic purple ear tips, ventral blotches, anorexia',
-    reportingOfficer: 'Backyard Raiser / Pigify Capstone Field Tester',
+    reportingOfficer: 'Backyard Raiser / Farm Biosecurity Officer',
   })
   const [submittingReport, setSubmittingReport] = useState(false)
   const [dispatchedConfirmation, setDispatchedConfirmation] = useState(null)
@@ -509,10 +509,10 @@ function DiseaseMap() {
                 severityColor: f.status?.includes('Red')
                   ? '#f43f5e'
                   : f.status?.includes('Pink')
-                  ? '#ec4899'
-                  : f.status?.includes('Yellow')
-                  ? '#f59e0b'
-                  : '#10b981',
+                    ? '#ec4899'
+                    : f.status?.includes('Yellow')
+                      ? '#f59e0b'
+                      : '#10b981',
               }
             })
             setFarms(merged)
@@ -602,15 +602,15 @@ function DiseaseMap() {
       const nextFarms = farms.map((f) =>
         f.id === farm.id
           ? {
-              ...f,
-              status: 'Surveillance Zone (Yellow)',
-              severityColor: '#f59e0b',
-              activeAlert: 'Localized Pen Isolation // Swine Erysipelas (Diamond Skin)',
-              suspectedCondition: 'Swine Erysipelas (Respond with Penicillin G)',
-              quarantineRadiusKm: 0.5,
-              pvoNotified: true,
-              lastScanned: 'Just now (Simulated)',
-            }
+            ...f,
+            status: 'Surveillance Zone (Yellow)',
+            severityColor: '#f59e0b',
+            activeAlert: 'Localized Pen Isolation // Swine Erysipelas (Diamond Skin)',
+            suspectedCondition: 'Swine Erysipelas (Respond with Penicillin G)',
+            quarantineRadiusKm: 0.5,
+            pvoNotified: true,
+            lastScanned: 'Just now (Simulated)',
+          }
           : f
       )
       setFarms(nextFarms)
@@ -658,17 +658,17 @@ function DiseaseMap() {
         filterBreed === 'ALL'
           ? true
           : filterBreed === 'NATIVE'
-          ? f.breedType.includes('Native')
-          : !f.breedType.includes('Native')
+            ? f.breedType.includes('Native')
+            : !f.breedType.includes('Native')
 
       const matchZone =
         filterZone === 'ALL'
           ? true
           : filterZone === 'INFECTED'
-          ? f.status.includes('Red')
-          : filterZone === 'BUFFER'
-          ? f.status.includes('Pink') || f.status.includes('Yellow')
-          : f.status.includes('Green')
+            ? f.status.includes('Red')
+            : filterZone === 'BUFFER'
+              ? f.status.includes('Pink') || f.status.includes('Yellow')
+              : f.status.includes('Green')
 
       return matchBreed && matchZone
     })
@@ -784,12 +784,12 @@ function DiseaseMap() {
       <UserHeader />
 
       <main className="mk-main">
-        {/* ── 1. HERO HEADER: LUNA, LA UNION CAPSTONE SURVEILLANCE ── */}
+        {/* ── 1. HERO HEADER: LUNA, LA UNION SURVEILLANCE ── */}
         <section className="mk-hero" style={{ paddingBottom: '18px' }}>
           <div className="container-pro">
             <div className="mk-kicker">
               <span className="mk-kicker-dot" />
-              <span>CAPSTONE STUDY SITE &bull; LUNA, LA UNION, PHILIPPINES (16.8530&deg;N, 120.3802&deg;E)</span>
+              <span>MUNICIPAL SURVEILLANCE &bull; LUNA, LA UNION, PHILIPPINES (16.8530&deg;N, 120.3802&deg;E)</span>
             </div>
 
             <h1 className="mk-title">
@@ -855,13 +855,13 @@ function DiseaseMap() {
         {activeTab === 'map' && (
           <section className="mk-section" style={{ paddingTop: '8px' }}>
             <div className="container-pro">
-              {/* ── INTERACTIVE CAPSTONE DEMO & OUTBREAK SIMULATOR PANEL ── */}
+              {/* ── INTERACTIVE OUTBREAK SIMULATOR PANEL ── */}
               <div className="luna-sim-banner">
                 <div className="luna-sim-header">
                   <div className="luna-sim-title-group">
                     <span className="luna-sim-badge">
                       <Zap size={12} />
-                      Interactive Capstone Simulator
+                      Interactive Outbreak Scenario Simulator
                     </span>
                     <h2 className="luna-sim-title">
                       Simulate an Infection or Outbreak Scenario in Luna, La Union
@@ -1202,21 +1202,33 @@ function DiseaseMap() {
                         style={{ width: '100%', height: '100%', display: 'block' }}
                       >
                         <defs>
-                          <pattern id="lunaGrid" width="35" height="35" patternUnits="userSpaceOnUse">
-                            <path d="M 35 0 L 0 0 0 35" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
+                          <pattern id="lunaGrid" width="30" height="30" patternUnits="userSpaceOnUse">
+                            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(16, 185, 129, 0.06)" strokeWidth="0.9" />
+                          </pattern>
+                          <pattern id="lunaRestrictedHatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                            <line x1="0" y1="0" x2="0" y2="12" stroke="rgba(244, 63, 94, 0.14)" strokeWidth="3" />
                           </pattern>
                           <radialGradient id="redOutbreakGlow">
-                            <stop offset="0%" stopColor="rgba(244, 63, 94, 0.48)" />
-                            <stop offset="60%" stopColor="rgba(244, 63, 94, 0.16)" />
+                            <stop offset="0%" stopColor="rgba(244, 63, 94, 0.52)" />
+                            <stop offset="60%" stopColor="rgba(244, 63, 94, 0.18)" />
                             <stop offset="100%" stopColor="rgba(244, 63, 94, 0.0)" />
                           </radialGradient>
                           <linearGradient id="seaGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor="rgba(6, 182, 212, 0.22)" />
                             <stop offset="100%" stopColor="rgba(6, 182, 212, 0.03)" />
                           </linearGradient>
+                          {/* Game-style Quarantine Fog-of-War Mask: Shrouds everything outside Luna, La Union */}
+                          <mask id="lunaQuarantineMask">
+                            <rect width="500" height="500" fill="white" />
+                            <path
+                              d="M 195 20 L 385 35 L 455 170 L 445 340 L 335 455 L 105 465 Q 125 350 145 235 T 195 20 Z"
+                              fill="black"
+                            />
+                          </mask>
                         </defs>
 
                         {/* Background Coordinate Grid */}
+                        <rect width="500" height="500" fill="#050811" />
                         <rect width="500" height="500" fill="url(#lunaGrid)" />
 
                         {/* West Philippine Sea / South China Sea Coastline along Western Luna (Nalvo, Rimos, Magallanes, Darigayos) */}
@@ -1226,26 +1238,37 @@ function DiseaseMap() {
                           stroke="rgba(6, 182, 212, 0.45)"
                           strokeWidth="2"
                         />
+
+                        {/* GAME-STYLE RESTRICTED OUTER PERIMETER SHROUD (Locks focus strictly to Luna, La Union) */}
+                        <rect width="500" height="500" fill="rgba(2, 4, 10, 0.84)" mask="url(#lunaQuarantineMask)" />
+                        <rect width="500" height="500" fill="url(#lunaRestrictedHatch)" mask="url(#lunaQuarantineMask)" />
+
                         <text
                           x="22"
                           y="235"
-                          fill="rgba(6, 182, 212, 0.45)"
-                          fontSize="10"
+                          fill="rgba(6, 182, 212, 0.55)"
+                          fontSize="9.5"
                           fontFamily="JetBrains Mono"
                           fontWeight="bold"
                           letterSpacing="2"
                           transform="rotate(-78 55 235)"
                         >
-                          WEST PHILIPPINE SEA (LUNA COASTLINE)
+                          WEST PHILIPPINE SEA COORDON
                         </text>
 
-                        {/* Municipality of Luna Landmass Boundary Polygon */}
+                        {/* Illuminated Study Area: Municipality of Luna Quarantine Boundary Polygon */}
                         <path
                           d="M 195 20 L 385 35 L 455 170 L 445 340 L 335 455 L 105 465 Q 125 350 145 235 T 195 20 Z"
-                          fill="rgba(16, 185, 129, 0.03)"
-                          stroke="rgba(255, 255, 255, 0.14)"
-                          strokeWidth="1.5"
-                          strokeDasharray="6 4"
+                          fill="rgba(16, 185, 129, 0.05)"
+                          stroke={stats.redInfected > 0 ? '#f43f5e' : '#10b981'}
+                          strokeWidth="3"
+                        />
+                        <path
+                          d="M 195 20 L 385 35 L 455 170 L 445 340 L 335 455 L 105 465 Q 125 350 145 235 T 195 20 Z"
+                          fill="none"
+                          stroke="#ffffff"
+                          strokeWidth="1.2"
+                          strokeDasharray="8 6"
                         />
 
                         {/* Amburayan / Baroro Tributary & Darigayos Creek */}
@@ -1263,32 +1286,32 @@ function DiseaseMap() {
                         <path
                           d="M 245 245 L 285 95 L 315 30"
                           fill="none"
-                          stroke="rgba(255, 255, 255, 0.14)"
+                          stroke="rgba(255, 255, 255, 0.16)"
                           strokeWidth="2.5"
                         />
                         <path
                           d="M 245 245 L 315 205 L 390 265 L 465 275"
                           fill="none"
-                          stroke="rgba(255, 255, 255, 0.16)"
+                          stroke="rgba(255, 255, 255, 0.18)"
                           strokeWidth="2.5"
                         />
                         <path
                           d="M 230 135 L 185 180 L 245 245 L 295 305 L 145 395"
                           fill="none"
-                          stroke="rgba(255, 255, 255, 0.12)"
+                          stroke="rgba(255, 255, 255, 0.14)"
                           strokeWidth="1.8"
                           strokeDasharray="3 3"
                         />
 
-                        {/* Compass Direction Labels for Neighboring Towns */}
-                        <text x="275" y="22" fill="rgba(255,255,255,0.4)" fontSize="8.5" fontFamily="JetBrains Mono">
-                          &uarr; NORTH TO BANGAR, LA UNION
+                        {/* Restricted Outer Perimeter Labels for Neighboring Towns */}
+                        <text x="245" y="15" fill="rgba(244, 63, 94, 0.78)" fontSize="8" fontFamily="JetBrains Mono" fontWeight="bold">
+                          [OUTER PERIMETER LOCKED: BANGAR — OUTSIDE STUDY AREA]
                         </text>
-                        <text x="345" y="298" fill="rgba(255,255,255,0.4)" fontSize="8.5" fontFamily="JetBrains Mono">
-                          EAST TO BALAOAN &rarr;
+                        <text x="348" y="298" fill="rgba(244, 63, 94, 0.72)" fontSize="7.5" fontFamily="JetBrains Mono" fontWeight="bold">
+                          [LOCKED: BALAOAN &rarr;]
                         </text>
-                        <text x="180" y="485" fill="rgba(255,255,255,0.4)" fontSize="8.5" fontFamily="JetBrains Mono">
-                          &darr; SOUTH TO BACNOTAN &amp; SAN FERNANDO CITY
+                        <text x="155" y="488" fill="rgba(244, 63, 94, 0.78)" fontSize="8" fontFamily="JetBrains Mono" fontWeight="bold">
+                          [OUTER PERIMETER LOCKED: BACNOTAN — OUTSIDE STUDY AREA]
                         </text>
 
                         {/* DYNAMIC 1-7-10 KM CONCENTRIC ZONING RINGS AROUND ACTIVE EPICENTER */}
@@ -1525,6 +1548,30 @@ function DiseaseMap() {
                         })}
                       </svg>
 
+                      {/* Top-Left Game Quarantine Perimeter HUD Badge */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          left: '12px',
+                          background: 'rgba(7, 10, 19, 0.92)',
+                          border: '1px solid rgba(244, 63, 94, 0.48)',
+                          borderRadius: '10px',
+                          padding: '7px 11px',
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: '10px',
+                          color: '#f8fafc',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        <div style={{ color: '#fb7185', fontWeight: 800 }}>
+                          ● QUARANTINE AREA LOCKED: LUNA, LA UNION ONLY
+                        </div>
+                        <div style={{ color: '#94a3b8', fontSize: '9px', marginTop: '2px' }}>
+                          OUTER PERIMETER SHROUDED &bull; 8 BARANGAYS ACTIVE
+                        </div>
+                      </div>
+
                       {/* Map Legend Overlay */}
                       <div
                         style={{
@@ -1586,10 +1633,42 @@ function DiseaseMap() {
                         height="100%"
                         style={{ border: 0, filter: 'contrast(1.04)' }}
                         loading="lazy"
-                        src={`https://www.openstreetmap.org/export/embed.html?bbox=120.3350%2C16.8150%2C120.4250%2C16.8850&layer=mapnik&marker=${
-                          selectedFarm ? `${selectedFarm.latitude}%2C${selectedFarm.longitude}` : '16.8530%2C120.3802'
-                        }`}
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=120.3350%2C16.8150%2C120.4250%2C16.8850&layer=mapnik&marker=${selectedFarm ? `${selectedFarm.latitude}%2C${selectedFarm.longitude}` : '16.8530%2C120.3802'
+                          }`}
                       />
+                      {/* Game-Style Quarantine Perimeter Vignette & Border Frame over Live Map */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          pointerEvents: 'none',
+                          boxShadow: 'inset 0 0 85px 34px rgba(5, 9, 20, 0.88)',
+                          border: '2px solid rgba(244, 63, 94, 0.58)',
+                          borderRadius: '16px',
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          left: '12px',
+                          background: 'rgba(7, 10, 19, 0.92)',
+                          border: '1px solid rgba(244, 63, 94, 0.5)',
+                          borderRadius: '10px',
+                          padding: '7px 11px',
+                          fontFamily: 'JetBrains Mono',
+                          fontSize: '10px',
+                          color: '#f8fafc',
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        <div style={{ color: '#fb7185', fontWeight: 800 }}>
+                          ● QUARANTINE ZONE LOCKED: LUNA, LA UNION ONLY
+                        </div>
+                        <div style={{ color: '#94a3b8', fontSize: '9px', marginTop: '2px' }}>
+                          RESTRICTED OUTER BOUNDARY &bull; 16.8530°N, 120.3802°E
+                        </div>
+                      </div>
                       <div
                         style={{
                           position: 'absolute',
@@ -1616,9 +1695,8 @@ function DiseaseMap() {
                           </div>
                         </div>
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${
-                            selectedFarm ? `${selectedFarm.latitude},${selectedFarm.longitude}` : '16.8530,120.3802'
-                          }`}
+                          href={`https://www.google.com/maps/search/?api=1&query=${selectedFarm ? `${selectedFarm.latitude},${selectedFarm.longitude}` : '16.8530,120.3802'
+                            }`}
                           target="_blank"
                           rel="noreferrer"
                           className="lp-btn-primary"
@@ -1837,11 +1915,10 @@ function DiseaseMap() {
                           background: selectedFarm.status.includes('Red')
                             ? 'rgba(244, 63, 94, 0.12)'
                             : 'rgba(6, 182, 212, 0.1)',
-                          border: `1px solid ${
-                            selectedFarm.status.includes('Red')
-                              ? 'rgba(244, 63, 94, 0.35)'
-                              : 'rgba(6, 182, 212, 0.3)'
-                          }`,
+                          border: `1px solid ${selectedFarm.status.includes('Red')
+                            ? 'rgba(244, 63, 94, 0.35)'
+                            : 'rgba(6, 182, 212, 0.3)'
+                            }`,
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '5px' }}>
@@ -1852,10 +1929,10 @@ function DiseaseMap() {
                           {selectedFarm.status.includes('Red')
                             ? 'CRITICAL RED ZONE (0-1 KM): Complete barangay pen lockdown. No live pig movement across Luna borders. 24/7 MAO Luna & OPVet La Union checkpoint active. Apply 2% Virkon S & slaked lime.'
                             : selectedFarm.status.includes('Pink')
-                            ? 'PINK BUFFER ZONE (1-7 KM): Weekly clinical inspection by MAO Luna & Barangay Biosecurity Officers. Daily footbath disinfection required. Live pig transport prohibited without permit.'
-                            : selectedFarm.status.includes('Yellow')
-                            ? 'YELLOW SURVEILLANCE: Routine blood sampling or localized pen quarantine. Transit requires certified Veterinary Health Certificate (VHC) from OPVet La Union.'
-                            : 'GREEN FREE ZONE: Maintain standard backyard biosecurity hygiene, slaked lime walkways, and 48-hour footbath replacement across Luna pens.'}
+                              ? 'PINK BUFFER ZONE (1-7 KM): Weekly clinical inspection by MAO Luna & Barangay Biosecurity Officers. Daily footbath disinfection required. Live pig transport prohibited without permit.'
+                              : selectedFarm.status.includes('Yellow')
+                                ? 'YELLOW SURVEILLANCE: Routine blood sampling or localized pen quarantine. Transit requires certified Veterinary Health Certificate (VHC) from OPVet La Union.'
+                                : 'GREEN FREE ZONE: Maintain standard backyard biosecurity hygiene, slaked lime walkways, and 48-hour footbath replacement across Luna pens.'}
                         </p>
                       </div>
 
@@ -1901,7 +1978,7 @@ function DiseaseMap() {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <div style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#06b6d4', fontWeight: 700 }}>
-                      LUNA, LA UNION CAPSTONE FIELD SITES (8 MONITORED BARANGAYS)
+                      LUNA, LA UNION FIELD MONITORING SITES (8 MONITORED BARANGAYS)
                     </div>
                     <h3 style={{ margin: '4px 0 0 0', fontFamily: 'Sora', fontSize: '1.2rem', fontWeight: 800, color: '#ffffff' }}>
                       Click Any Barangay to Inspect or Simulate an Infection
@@ -2064,7 +2141,7 @@ function DiseaseMap() {
                 >
                   <Award size={22} color="#f43f5e" style={{ flexShrink: 0 }} />
                   <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted, #94a3b8)', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#ffffff' }}>Capstone Defense Key (Luna, La Union):</strong> The <strong>Municipal Agriculture Office (MAO Luna)</strong> and the <strong>Office of the Provincial Veterinarian (OPVet La Union)</strong> are the primary statutory bodies responsible for on-ground epidemiological checking and testing of whether ASF is contagious and spreading across barangays. The <strong>Bureau of Animal Industry (BAI / DA-RFO I)</strong> provides confirmatory RT-PCR diagnostics, while the <strong>Luna Backyard Farmer</strong> acts as the first observer using Pigify.
+                    <strong style={{ color: '#ffffff' }}>Epidemiological Protocol (Luna, La Union):</strong> The <strong>Municipal Agriculture Office (MAO Luna)</strong> and the <strong>Office of the Provincial Veterinarian (OPVet La Union)</strong> are the primary statutory bodies responsible for on-ground epidemiological checking and testing of whether ASF is contagious and spreading across barangays. The <strong>Bureau of Animal Industry (BAI / DA-RFO I)</strong> provides confirmatory RT-PCR diagnostics, while the <strong>Luna Backyard Farmer</strong> acts as the first observer using Pigify.
                   </p>
                 </div>
               </div>

@@ -570,7 +570,7 @@ function UserProfile() {
                   Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms
                 </h4>
                 <p className="capstone-study-authors">
-                  <strong>Authors:</strong> Axel J. Bumatay, John Carlo R. Adora, Ranzel B. Danque, Carl Justin V. Landas
+                  <strong>Authors:</strong> Axel J. Bumatay, Ranzel B. Danque, Carl Justin V. Landas
                 </p>
                 <div className="capstone-study-tags">
                   <span className="study-tag">YOLOv8</span>

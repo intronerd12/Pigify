@@ -69,13 +69,6 @@ export const USER_NAV_ITEMS = [
     icon: Users2,
     description: 'Discussion & Tips',
   },
-  {
-    path: '/chatbot',
-    label: 'Dr. Pigify AI',
-    shortLabel: 'AI Chat',
-    icon: Bot,
-    description: 'Pigify Study Research Assistant',
-  },
 ]
 
 const PREFETCH_MAP = {
@@ -200,7 +193,7 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
                 )}
                 {navMode !== 'icons' && (
                   <span className="user-header-nav-text">
-                    {navMode === 'both' ? (item.shortLabel || item.label) : item.label}
+                    {item.shortLabel || item.label}
                   </span>
                 )}
               </NavLink>
@@ -212,21 +205,14 @@ function UserHeader({ showDashboardLink = false, dashboardTo = '/home', rightSlo
 
         {/* Right Utility & Profile Cluster */}
         <div className="user-header-actions">
-          {/* Live AI Core Engine Pill (User Toggleable) */}
-          {showAiBadge && (
-            <div className="user-header-engine-pill" title="YOLO Swine Lesion Model Engine Online">
-              <span className="user-header-engine-dot" />
-              <span className="user-header-engine-text">AI ONLINE</span>
-            </div>
-          )}
-
-          {/* Dr. Pigify AI Dedicated Page Link */}
+          {/* Dr. Pigify AI Dedicated Page Link (with integrated live status dot) */}
           <Link
             to="/chatbot"
             className="user-header-ai-chat-btn"
-            title="Open Dr. Pigify AI Research Assistant"
+            title="Open Dr. Pigify AI Research Assistant (Online)"
             aria-label="Open Dr. Pigify AI"
           >
+            {showAiBadge && <span className="user-header-engine-dot" />}
             <Bot size={14} className="user-header-ai-icon" />
             <span className="user-header-ai-text">Dr. Pigify AI</span>
           </Link>

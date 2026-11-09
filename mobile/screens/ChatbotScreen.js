@@ -138,7 +138,7 @@ export default function ChatbotScreen({ user }) {
         const welcomeMessage = {
           id: makeId(),
           sender: 'bot',
-          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Farmer'}! I am Dr. Pigify AI, specialized exclusively in the Pigify Study: "A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".\n\nAsk me about our thesis research, authors (Axel, Joenabelle, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, severity grading, or backyard pen biosecurity!`,
+          text: `Hello ${user?.name ? user.name.split(' ')[0] : 'Farmer'}! I am Dr. Pigify AI, specialized exclusively in the Pigify Study: "A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".\n\nAsk me about our thesis research, authors (Axel, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, severity grading, or backyard pen biosecurity!`,
           timestamp: new Date().toISOString(),
         };
         setMessages([welcomeMessage]);

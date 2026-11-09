@@ -40,9 +40,8 @@ const SYSTEM_PROMPT = `You are Dr. Pigify AI, the official clinical and scientif
 STUDY CREDENTIALS & RESEARCH TEAM:
 - Title: Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms
 1. Axel Jillian Bumatay: Leader & Full-Stack/ML Architect
-2. Joenabelle Adora: Dataset Collection & Annotation
-3. John Michael Danque: Dataset Verification & Evaluation
-4. Davimher Landas: System Implementation & Device Testing
+2. John Michael Danque: Dataset Verification & Evaluation
+3. Davimher Landas: System Implementation & Device Testing
 - Target Beneficiaries: Filipino backyard swine farmers, local agricultural technicians, and municipal veterinary officers.
 - Study & Field Testing Site: Municipality of Luna, La Union, Philippines (16.8530°N, 120.3802°E), featuring BAI 1-7-10 km GIS disease mapping across Barangays Barrientos, Magallanes, Nalvo Norte, Ayaoan, Rimos No. 3, Oaqui No. 2, Darigayos, and Sto. Domingo Norte with MAO Luna and OPVet La Union.
 
@@ -69,7 +68,7 @@ CRITICAL FORMATTING MANDATE (ABSOLUTE REQUIREMENT):
 STRICT DOMAIN BOUNDARY (CRITICAL RULE):
 - You MUST answer questions related ONLY to the Pigify research study, its authors/team, the 6 swine conditions, lesion detection, severity triage, swine health, and backyard farm biosecurity.
 - If the user asks about ANYTHING ELSE (general trivia, recipes, movies, programming unrelated to Pigify, math, sports, non-swine topics), you MUST POLITELY REFUSE:
-  "I am Dr. Pigify AI, dedicated exclusively to the Pigify research study ('A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms'). I can only assist with questions about our research, authors (Axel, Joenabelle, John Michael, Davimher), the 6 swine conditions, YOLO lesion detection, or backyard farm biosecurity. How can I help you with the Pigify study?"
+  "I am Dr. Pigify AI, dedicated exclusively to the Pigify research study ('A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms'). I can only assist with questions about our research, authors (Axel, John Michael, Davimher), the 6 swine conditions, YOLO lesion detection, or backyard farm biosecurity. How can I help you with the Pigify study?"
 - Respond concisely, professionally, and empathetically in English or Tagalog/Taglish.`
 
 function cleanAsterisks(rawText) {
@@ -95,7 +94,6 @@ const QUICK_PROMPTS = [
 
 const AUTHORS_LIST = [
   { name: 'Axel Jillian Bumatay', role: 'Leader & Full-Stack/ML Architect', badge: 'Leadership & AI' },
-  { name: 'Joenabelle Adora', role: 'Dataset Collection & Annotation', badge: 'Dataset & Curation' },
   { name: 'John Michael Danque', role: 'Dataset Verification & Evaluation', badge: 'Verification & QA' },
   { name: 'Davimher Landas', role: 'System Implementation & Device Testing', badge: 'Hardware & Edge' },
 ]
@@ -113,7 +111,7 @@ function getLocalPigifyKnowledge(query) {
   const q = (query || '').toLowerCase()
 
   if (q.includes('author') || q.includes('team') || q.includes('who made') || q.includes('researcher') || q.includes('axel') || q.includes('bumatay')) {
-    return `Pigify Research Team & Authors:\n\n1. Axel Jillian Bumatay: Leader & Full-Stack/ML Architect\n2. Joenabelle Adora: Dataset Collection & Annotation\n3. John Michael Danque: Dataset Verification & Evaluation\n4. Davimher Landas: System Implementation & Device Testing\n\nThe team designed Pigify to empower backyard swine farmers through automated computer-vision disease triage.`
+    return `Pigify Research Team & Authors:\n\n1. Axel Jillian Bumatay: Leader & Full-Stack/ML Architect\n2. John Michael Danque: Dataset Verification & Evaluation\n3. Davimher Landas: System Implementation & Device Testing\n\nThe team designed Pigify to empower backyard swine farmers through automated computer-vision disease triage.`
   }
 
   if (q.includes('what is pigify') || q.includes('study') || q.includes('about') || q.includes('objective')) {
@@ -132,7 +130,7 @@ function getLocalPigifyKnowledge(query) {
     return `Backyard Farm Biosecurity Protocol (Pigify Guidelines):\n\n1. Immediate Isolation: Quarantine symptomatic pigs in a separate pen at least 10 meters away from the main herd.\n2. Footbaths & Disinfection: Maintain 1:100 Virkon-S or 2% citric acid footbaths at pen entrances.\n3. Vehicle & Visitor Restriction: Disallow external traders or feed trucks near animal housing.\n4. No Swill Feeding: Never feed untreated kitchen scraps or swill (kanin-baboy) to prevent ASF introduction.\n5. Report to PVO: For suspected ASF or sudden mortalities, notify your municipal agriculturist immediately.`
   }
 
-  return `I am Dr. Pigify AI, an assistant dedicated exclusively to the Pigify research study ("A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms").\n\nI can only answer questions related to our research, authors (Axel, Joenabelle, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, or backyard farm biosecurity.\n\nPlease ask a Pigify-related question!`
+  return `I am Dr. Pigify AI, an assistant dedicated exclusively to the Pigify research study ("A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms").\n\nI can only answer questions related to our research, authors (Axel, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, or backyard farm biosecurity.\n\nPlease ask a Pigify-related question!`
 }
 
 function formatPageMessageContent(content) {
@@ -186,7 +184,7 @@ export default function ChatbotPage() {
       {
         id: 'welcome-page-1',
         sender: 'bot',
-        text: `Hello! I am Dr. Pigify AI, the official research assistant for the study:\n\n"Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".\n\nAsk me about our thesis research, authors (Axel, Joenabelle, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, severity triage, or backyard biosecurity protocols!`,
+        text: `Hello! I am Dr. Pigify AI, the official research assistant for the study:\n\n"Pigify: A Deep Learning-Based Swine Disease and Symptom Monitoring System for Backyard Farms".\n\nAsk me about our thesis research, authors (Axel, John Michael, Davimher), the 6 monitored swine conditions (ASF, Erysipelas, Mange, Greasy Pig, PDNS, Healthy), YOLO lesion detection, severity triage, or backyard biosecurity protocols!`,
         timestamp: new Date().toISOString(),
       },
     ]
@@ -383,7 +381,7 @@ export default function ChatbotPage() {
               </span>
               <span className="chatpage-badge badge-amber">
                 <Users size={13} />
-                Authors: Axel, Joenabelle, John Michael, Davimher
+                Authors: Axel, John Michael, Davimher
               </span>
             </div>
           </div>

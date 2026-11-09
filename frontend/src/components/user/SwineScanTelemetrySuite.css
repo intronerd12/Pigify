@@ -1,10 +1,10 @@
 /* ============================================================================
    SWINE SCAN TELEMETRY SUITE
-   Addresses Panel Evaluation Requirements:
-   - Body Part Localization & Exact Date/Time (Sir Nestor Valdez)
-   - Pig Body Temperature Sensor Hardware MLX90614 (Ma'am Pops Madriaga)
-   - Abnormal Behavior & Loss of Appetite Detection (Sir Nestor Valdez)
-   - 2-Camera Architecture, Pig ID & Immediate Alert Trigger (Sir Julius Silang)
+   Telemetry Specifications:
+   - Body Part Localization & Exact Date/Time
+   - Pig Body Temperature Sensor Hardware (MLX90614)
+   - Abnormal Behavior & Loss of Appetite Detection
+   - 2-Camera Architecture, Pig ID & Immediate Alert Trigger
    ============================================================================ */
 
 .sst-wrapper {
