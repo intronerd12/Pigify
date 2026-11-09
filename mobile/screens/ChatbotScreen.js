@@ -57,6 +57,8 @@ function cleanAsterisks(rawText) {
 }
 
 const TypingIndicator = () => {
+  const { colors: THEME, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(THEME, isDark), [THEME, isDark]);
   const d1 = useRef(new Animated.Value(0.2)).current;
   const d2 = useRef(new Animated.Value(0.2)).current;
   const d3 = useRef(new Animated.Value(0.2)).current;

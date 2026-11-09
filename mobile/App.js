@@ -36,7 +36,15 @@ if (typeof ReactNative.InteractionManager === 'undefined' || !ReactNative.Intera
   }
 }
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+
+if (typeof globalThis !== 'undefined') {
+  globalThis.useMemo = globalThis.useMemo || useMemo;
+  globalThis.useState = globalThis.useState || useState;
+  globalThis.useEffect = globalThis.useEffect || useEffect;
+  globalThis.useCallback = globalThis.useCallback || useCallback;
+  globalThis.useRef = globalThis.useRef || useRef;
+}
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
