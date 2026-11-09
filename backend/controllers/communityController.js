@@ -92,6 +92,7 @@ const createCommunityPost = async (req, res) => {
       authorEmail,
       email,
       authorAvatar,
+      avatar,
       source,
       scanSnapshot,
     } = req.body || {};
@@ -139,14 +140,32 @@ const createCommunityPost = async (req, res) => {
       resolvedUser?.email ||
       '';
     const safeAuthorAvatar =
-      normalizeText(authorAvatar) ||
+      normalizeText(authorAvatar || avatar || req.body?.user?.avatar) ||
       resolvedUser?.avatar ||
       '';
+
+    let resolvedImageUrl = normalizeText(cleanSnapshot?.imageUrl || cleanSnapshot?.imageUri);
+    // If client provided a base64 image, upload to Cloudinary for cross-platform HTTPS access
+    if (resolvedImageUrl && resolvedImageUrl.startsWith('data:image') && process.env.CLOUDINARY_CLOUD_NAME) {
+      try {
+        const cRes = await cloudinary.uploader.upload(resolvedImageUrl, {
+          folder: 'pigify/community-scans',
+          resource_type: 'image',
+          quality: 'auto:good',
+        });
+        if (cRes?.secure_url) {
+          resolvedImageUrl = cRes.secure_url;
+        }
+      } catch (cErr) {
+        console.warn('[communityController] Auto-upload to Cloudinary notice:', cErr?.message || cErr);
+      }
+    }
 
     const payload = {
       authorName: safeAuthorName,
       authorEmail: safeAuthorEmail,
       authorAvatar: safeAuthorAvatar,
+      avatar: safeAuthorAvatar,
       text: normalizedText,
       source: normalizeText(source) || 'mobile_app',
       user: resolvedUser?._id || effectiveUserId || undefined,
@@ -164,7 +183,8 @@ const createCommunityPost = async (req, res) => {
         swineId: normalizeText(cleanSnapshot.swineId || 'Swine'),
         confidence: normalizeText(cleanSnapshot.confidence || '96.8%'),
         scanTimestamp: parseDateOrNow(cleanSnapshot.scanTimestamp || cleanSnapshot.timestamp),
-        imageUrl: normalizeText(cleanSnapshot.imageUrl || cleanSnapshot.imageUri),
+        imageUrl: resolvedImageUrl,
+        authorAvatar: safeAuthorAvatar,
       };
     }
 
@@ -238,7 +258,7 @@ const addCommunityComment = async (req, res) => {
       resolvedUser?.email ||
       '';
     const safeCommenterAvatar =
-      normalizeText(commenterAvatar) ||
+      normalizeText(commenterAvatar || req.body?.authorAvatar || req.body?.avatar) ||
       resolvedUser?.avatar ||
       '';
 

@@ -148,7 +148,15 @@ const formatDate = (value) => {
 };
 
 const UserAvatar = ({ url, name, size = 36 }) => {
+  const [imgError, setImgError] = useState(false);
   const initial = name ? name.charAt(0).toUpperCase() : 'O';
+
+  useEffect(() => {
+    setImgError(false);
+  }, [url]);
+
+  const showImg = Boolean(url && !imgError);
+
   return (
     <View
       style={{
@@ -163,8 +171,12 @@ const UserAvatar = ({ url, name, size = 36 }) => {
         overflow: 'hidden',
       }}
     >
-      {url ? (
-        <Image source={{ uri: url }} style={{ width: '100%', height: '100%' }} />
+      {showImg ? (
+        <Image
+          source={{ uri: url }}
+          style={{ width: '100%', height: '100%' }}
+          onError={() => setImgError(true)}
+        />
       ) : (
         <Text style={{ color: '#fb7185', fontWeight: '800', fontSize: size * 0.42 }}>
           {initial}
@@ -308,6 +320,19 @@ export default function CommunityForumScreen({ route, navigation, user }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [customImageUri, setCustomImageUri] = useState(null);
+  const [currentUser, setCurrentUser] = useState(user);
+
+  useEffect(() => {
+    setCurrentUser(user);
+    if (!user?.avatar && user?.email) {
+      const cleanEmail = String(user.email).trim().toLowerCase();
+      AsyncStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`).then((cached) => {
+        if (cached) {
+          setCurrentUser((prev) => ({ ...prev, avatar: cached }));
+        }
+      }).catch(() => {});
+    }
+  }, [user]);
 
   // Auto-populate scan if shared from ScanScreen
   useEffect(() => {
@@ -538,7 +563,7 @@ export default function CommunityForumScreen({ route, navigation, user }) {
       setPosting(true);
       setFormError('');
       const created = await CommunityService.createPost({
-        user,
+        user: currentUser || user,
         text: maskedText,
         scan: scanPayload,
       });
@@ -640,7 +665,18 @@ export default function CommunityForumScreen({ route, navigation, user }) {
       <Surface style={styles.postCard} elevation={0}>
         {/* Post Author Header */}
         <View style={styles.postHeader}>
-          <UserAvatar url={item?.authorAvatar} name={authorName} size={38} />
+          <UserAvatar
+            url={
+              item?.authorAvatar ||
+              item?.author_avatar ||
+              item?.avatar ||
+              item?.user?.avatar ||
+              item?.scanSnapshot?.authorAvatar ||
+              (currentEmail && String(item?.authorEmail || item?.author_email || '').toLowerCase() === currentEmail ? currentUser?.avatar : '')
+            }
+            name={authorName}
+            size={38}
+          />
           <View style={styles.authorMeta}>
             <View style={styles.authorNameRow}>
               <Text style={styles.authorName}>{authorName}</Text>
@@ -908,8 +944,8 @@ export default function CommunityForumScreen({ route, navigation, user }) {
             <Surface style={styles.composeCard} elevation={0}>
               <View style={styles.composeTopRow}>
                 <UserAvatar
-                  url={user?.avatar}
-                  name={user?.name || user?.fullName}
+                  url={currentUser?.avatar || user?.avatar}
+                  name={currentUser?.name || user?.name || user?.fullName}
                   size={36}
                 />
                 <TextInput

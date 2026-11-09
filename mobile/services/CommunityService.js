@@ -118,13 +118,14 @@ const getUserMeta = (user) => {
   const userId = user?._id || user?.id || user?.userId || user?.uid || undefined;
   const authorName = normalizeText(user?.name || user?.fullName || user?.username) || 'Anonymous User';
   const authorEmail = normalizeText(user?.email).toLowerCase() || undefined;
-  const authorAvatar = normalizeText(user?.avatar) || undefined;
+  const authorAvatar = normalizeText(user?.avatar || user?.photoURL) || undefined;
 
   return {
     userId: userId ? String(userId) : undefined,
     authorName,
     authorEmail,
     authorAvatar,
+    avatar: authorAvatar,
   };
 };
 
@@ -147,26 +148,66 @@ const buildScanSnapshot = (scan) => {
 export const CommunityService = {
   getPosts: async ({ limit = 60 } = {}) => {
     const ts = new Date().getTime();
-    const res = await apiFetch(`/api/community?limit=${encodeURIComponent(String(limit))}&_t=${ts}`, {
-      method: 'GET',
-      headers: { 
-        Accept: 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      },
-    });
+    try {
+      const res = await apiFetch(`/api/community?limit=${encodeURIComponent(String(limit))}&_t=${ts}`, {
+        method: 'GET',
+        headers: { 
+          Accept: 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        },
+      });
 
-    const data = await safeReadJson(res);
-    if (!res.ok) {
-      throw new Error(data?.message || 'Failed to load community posts');
+      const data = await safeReadJson(res);
+      if (res.ok && Array.isArray(data) && data.length > 0) {
+        return data;
+      }
+    } catch (apiErr) {
+      console.warn('[CommunityService] Backend apiFetch failed, trying direct Supabase query:', apiErr?.message || apiErr);
     }
-    return Array.isArray(data) ? data : [];
+
+    // Direct Supabase fallback so mobile always sees posts
+    try {
+      const { supabase } = require('./supabase');
+      const { data, error } = await supabase
+        .from('community_posts')
+        .select('*, community_comments(*), community_reactions(*)')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (!error && Array.isArray(data) && data.length > 0) {
+        return data.map((raw) => ({
+          _id: String(raw.id),
+          id: String(raw.id),
+          user: raw.user_id,
+          userId: raw.user_id,
+          authorName: raw.author_name || 'Backyard Swine Farmer',
+          authorEmail: raw.author_email || '',
+          authorAvatar: raw.author_avatar || raw.scan_snapshot?.authorAvatar || '',
+          text: raw.text || '',
+          source: raw.source || 'mobile_app',
+          scanSnapshot: raw.scan_snapshot,
+          comments: raw.community_comments || [],
+          reactions: raw.community_reactions || [],
+          createdAt: raw.created_at,
+          created_at: raw.created_at,
+        }));
+      }
+    } catch (supaErr) {
+      console.warn('[CommunityService] Direct Supabase query failed:', supaErr?.message || supaErr);
+    }
+
+    return [];
   },
 
   createPost: async ({ user, text, scan } = {}) => {
     const userMeta = getUserMeta(user);
     const scanSnapshot = buildScanSnapshot(scan);
+
+    if (scanSnapshot && userMeta.authorAvatar) {
+      scanSnapshot.authorAvatar = userMeta.authorAvatar;
+    }
 
     if (scanSnapshot?.imageUrl && !isRemoteUrl(scanSnapshot.imageUrl)) {
       try {
@@ -190,20 +231,60 @@ export const CommunityService = {
       throw new Error('Add text or select a scan result before posting.');
     }
 
-    const res = await apiFetch('/api/community', {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const res = await apiFetch('/api/community', {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const data = await safeReadJson(res);
-    if (!res.ok) {
-      throw new Error(data?.message || 'Failed to create community post');
+      const data = await safeReadJson(res);
+      if (res.ok && data) {
+        return data;
+      }
+    } catch (apiErr) {
+      console.warn('[CommunityService] apiFetch createPost failed, trying direct Supabase insert:', apiErr?.message || apiErr);
     }
-    return data;
+
+    // Direct Supabase fallback
+    try {
+      const { supabase } = require('./supabase');
+      const { data, error } = await supabase
+        .from('community_posts')
+        .insert({
+          author_name: payload.authorName,
+          author_email: payload.authorEmail,
+          text: payload.text,
+          source: 'mobile_app',
+          scan_snapshot: payload.scanSnapshot,
+          user_id: payload.userId,
+        })
+        .select('*, community_comments(*), community_reactions(*)')
+        .single();
+
+      if (!error && data) {
+        return {
+          _id: String(data.id),
+          id: String(data.id),
+          authorName: data.author_name,
+          authorEmail: data.author_email,
+          authorAvatar: payload.authorAvatar || '',
+          text: data.text,
+          source: data.source,
+          scanSnapshot: data.scan_snapshot,
+          comments: [],
+          reactions: [],
+          createdAt: data.created_at,
+        };
+      }
+    } catch (supaErr) {
+      console.warn('[CommunityService] Direct Supabase createPost failed:', supaErr?.message || supaErr);
+    }
+
+    throw new Error('Failed to create community post. Please check connection and try again.');
   },
 
   addComment: async ({ user, postId, text } = {}) => {

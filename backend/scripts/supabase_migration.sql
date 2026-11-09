@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   user_id       UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   author_name   TEXT NOT NULL,
   author_email  TEXT,
+  author_avatar TEXT DEFAULT '',
   text          TEXT CHECK (length(text) <= 1200),
   source        TEXT DEFAULT 'mobile_app',
   -- Scan snapshot (embedded JSON)
@@ -80,6 +81,7 @@ CREATE TABLE IF NOT EXISTS public.community_posts (
   created_at    TIMESTAMPTZ DEFAULT NOW(),
   updated_at    TIMESTAMPTZ DEFAULT NOW()
 );
+ALTER TABLE public.community_posts ADD COLUMN IF NOT EXISTS author_avatar TEXT DEFAULT '';
 
 DROP TRIGGER IF EXISTS community_posts_updated_at ON public.community_posts;
 CREATE TRIGGER community_posts_updated_at

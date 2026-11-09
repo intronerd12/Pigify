@@ -170,6 +170,8 @@ const formatPost = (raw) => {
     commenterName: c.commenter_name || c.commenterName || c.authorName || 'Backyard Farmer',
     authorName: c.commenter_name || c.commenterName || c.authorName || 'Backyard Farmer',
     commenterEmail: c.commenter_email || c.commenterEmail || '',
+    commenterAvatar: c.commenter_avatar || c.commenterAvatar || c.authorAvatar || c.avatar || '',
+    authorAvatar: c.commenter_avatar || c.commenterAvatar || c.authorAvatar || c.avatar || '',
     text: c.text || '',
     createdAt: c.created_at || c.createdAt || new Date().toISOString(),
     created_at: c.created_at || c.createdAt || new Date().toISOString(),
@@ -200,6 +202,14 @@ const formatPost = (raw) => {
   });
 
   const scan = raw.scan_snapshot || raw.scanSnapshot || null;
+  const authorAvatar =
+    raw.author_avatar ||
+    raw.authorAvatar ||
+    raw.avatar ||
+    raw.user?.avatar ||
+    scan?.authorAvatar ||
+    scan?.author_avatar ||
+    '';
 
   return {
     _id: id,
@@ -210,7 +220,9 @@ const formatPost = (raw) => {
     author_name: raw.author_name || raw.authorName || 'Backyard Swine Farmer',
     authorEmail: raw.author_email || raw.authorEmail || '',
     author_email: raw.author_email || raw.authorEmail || '',
-    authorAvatar: raw.author_avatar || raw.authorAvatar || '',
+    authorAvatar: authorAvatar,
+    author_avatar: authorAvatar,
+    avatar: authorAvatar,
     text: raw.text || '',
     source: raw.source || 'mobile_app',
     scanSnapshot: scan,
@@ -237,6 +249,37 @@ const communityStore = {
         .limit(limit);
 
       if (!error && Array.isArray(data) && data.length > 0) {
+        // Enrich posts with avatars from Supabase profiles if missing
+        try {
+          const emails = [...new Set(data.map((p) => String(p.author_email || '').trim().toLowerCase()).filter(Boolean))];
+          if (emails.length > 0) {
+            const { data: profileList } = await supabaseAdmin
+              .from('profiles')
+              .select('id, email, avatar')
+              .in('email', emails);
+
+            if (Array.isArray(profileList) && profileList.length > 0) {
+              const avatarMap = new Map();
+              profileList.forEach((prof) => {
+                if (prof.avatar) {
+                  if (prof.email) avatarMap.set(String(prof.email).trim().toLowerCase(), prof.avatar);
+                  if (prof.id) avatarMap.set(String(prof.id), prof.avatar);
+                }
+              });
+
+              data.forEach((p) => {
+                const em = String(p.author_email || '').trim().toLowerCase();
+                const uid = String(p.user_id || '');
+                if (!p.author_avatar && (avatarMap.has(em) || avatarMap.has(uid))) {
+                  p.author_avatar = avatarMap.get(em) || avatarMap.get(uid);
+                }
+              });
+            }
+          }
+        } catch (_profErr) {
+          // non-blocking profile avatar enrichment
+        }
+
         const formatted = data.map(formatPost);
         memoryStore.posts = formatted;
         saveBackup();
@@ -253,6 +296,45 @@ const communityStore = {
       loadBackup();
     }
 
+    // Enrich memoryStore posts if missing avatars
+    try {
+      const missingEmails = [
+        ...new Set(
+          memoryStore.posts
+            .filter((p) => !p.authorAvatar && !p.author_avatar && (p.authorEmail || p.author_email))
+            .map((p) => String(p.authorEmail || p.author_email).trim().toLowerCase())
+        ),
+      ];
+
+      if (missingEmails.length > 0) {
+        const { data: profileList } = await supabaseAdmin
+          .from('profiles')
+          .select('id, email, avatar')
+          .in('email', missingEmails);
+
+        if (Array.isArray(profileList) && profileList.length > 0) {
+          const map = new Map();
+          profileList.forEach((prof) => {
+            if (prof.avatar) {
+              if (prof.email) map.set(String(prof.email).trim().toLowerCase(), prof.avatar);
+              if (prof.id) map.set(String(prof.id), prof.avatar);
+            }
+          });
+
+          memoryStore.posts.forEach((p) => {
+            const em = String(p.authorEmail || p.author_email || '').trim().toLowerCase();
+            const uid = String(p.user || p.userId || '');
+            if (!p.authorAvatar && (map.has(em) || map.has(uid))) {
+              const av = map.get(em) || map.get(uid);
+              p.authorAvatar = av;
+              p.author_avatar = av;
+              p.avatar = av;
+            }
+          });
+        }
+      }
+    } catch {}
+
     return memoryStore.posts.slice(0, limit);
   },
 
@@ -260,13 +342,23 @@ const communityStore = {
    * Create a new post in Supabase
    */
   async createPost(payload) {
+    const avatar = payload.authorAvatar || payload.avatar || '';
+    const scanSnapshot = payload.scanSnapshot ? { ...payload.scanSnapshot } : null;
+    if (scanSnapshot && avatar) {
+      scanSnapshot.authorAvatar = avatar;
+    }
+
     const postInsert = {
       author_name: payload.authorName || 'Backyard Swine Farmer',
       author_email: payload.authorEmail ? String(payload.authorEmail).toLowerCase() : null,
       text: payload.text || null,
       source: payload.source || 'mobile_app',
-      scan_snapshot: payload.scanSnapshot || null,
+      scan_snapshot: scanSnapshot,
     };
+
+    if (avatar) {
+      postInsert.author_avatar = avatar;
+    }
 
     if (payload.user && isUUID(payload.user)) {
       postInsert.user_id = payload.user;
@@ -281,6 +373,18 @@ const communityStore = {
         .select('*, community_comments(*), community_reactions(*)')
         .single();
 
+      // If column author_avatar does not exist in PostgreSQL schema, retry without it
+      if (error && (error.code === '42703' || String(error.message).includes('author_avatar'))) {
+        delete postInsert.author_avatar;
+        const retry = await supabaseAdmin
+          .from('community_posts')
+          .insert(postInsert)
+          .select('*, community_comments(*), community_reactions(*)')
+          .single();
+        data = retry.data;
+        error = retry.error;
+      }
+
       // If foreign key violation on user_id, retry without user_id
       if (error && (error.code === '23503' || String(error.message).includes('user_id'))) {
         delete postInsert.user_id;
@@ -294,7 +398,7 @@ const communityStore = {
       }
 
       if (!error && data) {
-        createdPost = formatPost(data);
+        createdPost = formatPost({ ...data, author_avatar: avatar || data.author_avatar, authorAvatar: avatar });
       } else if (error) {
         console.warn('[communityStore] Supabase createPost insert warning:', error.message);
       }
@@ -310,6 +414,9 @@ const communityStore = {
         id: fallbackId,
         author_name: postInsert.author_name,
         author_email: postInsert.author_email,
+        author_avatar: avatar,
+        authorAvatar: avatar,
+        avatar: avatar,
         text: postInsert.text,
         source: postInsert.source,
         scan_snapshot: postInsert.scan_snapshot,

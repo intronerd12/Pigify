@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { API_BASE_URL } from '../config/api'
 import { BRAND_NAME, BRAND_TAGLINE } from '../config/brand'
+import { supabase } from '../utils/supabase'
 import UserHeader from '../components/user/UserHeader'
 import './Landing.css'
 import './MarketingPages.css'
@@ -142,6 +143,11 @@ const isPigRelatedText = (text, hasScan = false) => {
 const UserAvatar = ({ url, name, size = 32 }) => {
   const [imgError, setImgError] = React.useState(false)
   const initial = name ? name.charAt(0).toUpperCase() : '?'
+
+  React.useEffect(() => {
+    setImgError(false)
+  }, [url])
+
   const showImage = Boolean(url && !imgError)
 
   return (
@@ -272,7 +278,16 @@ function CommunityForum() {
       return
     }
     try {
-      setUser(JSON.parse(raw))
+      const parsed = JSON.parse(raw)
+      const cleanEmail = asText(parsed?.email).toLowerCase()
+      if (!parsed.avatar) {
+        const cached =
+          (cleanEmail ? localStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`) : '') ||
+          (parsed.id ? localStorage.getItem(`@pigify_saved_avatar_${parsed.id}`) : '') ||
+          ''
+        if (cached) parsed.avatar = cached
+      }
+      setUser(parsed)
     } catch {
       localStorage.removeItem('user')
       navigate('/login')
@@ -280,10 +295,18 @@ function CommunityForum() {
   }, [navigate])
 
   const userMeta = useMemo(() => {
+    const cleanEmail = asText(user?.email).toLowerCase()
+    const avatar =
+      user?.avatar ||
+      (cleanEmail ? localStorage.getItem(`@pigify_saved_avatar_${cleanEmail}`) : '') ||
+      (user?.id ? localStorage.getItem(`@pigify_saved_avatar_${user.id}`) : '') ||
+      ''
     return {
       userId: asText(user?._id || user?.id || user?.userId || user?.uid) || undefined,
       authorName: asText(user?.name || user?.fullName || user?.username, 'Backyard Farmer'),
-      authorEmail: asText(user?.email).toLowerCase() || undefined,
+      authorEmail: cleanEmail || undefined,
+      authorAvatar: avatar || undefined,
+      avatar: avatar || undefined,
     }
   }, [user])
 
@@ -314,11 +337,43 @@ function CommunityForum() {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const postsReq = fetch(`${API_BASE_URL}/api/community?limit=70`, { cache: 'no-store' }).then(async (res) => {
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to load community posts')
-      return Array.isArray(data) ? data : []
-    })
+    const postsReq = fetch(`${API_BASE_URL}/api/community?limit=70`, { cache: 'no-store' })
+      .then(async (res) => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data?.message || 'Failed to load community posts')
+        return Array.isArray(data) ? data : []
+      })
+      .catch(async () => {
+        // Direct Supabase fallback if local backend is offline or unreachable
+        if (supabase) {
+          try {
+            const { data, error } = await supabase
+              .from('community_posts')
+              .select('*, community_comments(*), community_reactions(*)')
+              .order('created_at', { ascending: false })
+              .limit(70)
+            if (!error && Array.isArray(data) && data.length > 0) {
+              return data.map((raw) => ({
+                _id: String(raw.id),
+                id: String(raw.id),
+                user: raw.user_id,
+                userId: raw.user_id,
+                authorName: raw.author_name || 'Backyard Swine Farmer',
+                authorEmail: raw.author_email || '',
+                authorAvatar: raw.author_avatar || '',
+                text: raw.text || '',
+                source: raw.source || 'mobile_app',
+                scanSnapshot: raw.scan_snapshot,
+                comments: raw.community_comments || [],
+                reactions: raw.community_reactions || [],
+                createdAt: raw.created_at,
+                created_at: raw.created_at,
+              }))
+            }
+          } catch {}
+        }
+        return []
+      })
 
     // Scans from local storage + API
     let localScans = []
@@ -421,20 +476,70 @@ function CommunityForum() {
     try {
       const payload = {
         ...userMeta,
+        authorAvatar: userMeta.authorAvatar || userMeta.avatar,
+        avatar: userMeta.authorAvatar || userMeta.avatar,
         text: maskedText,
         source: 'web_app',
         scanSnapshot,
       }
 
-      const res = await fetch(`${API_BASE_URL}/api/community`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.message || 'Failed to create post')
+      let createdPost = null
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/community`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        const data = await res.json()
+        if (res.ok && data) {
+          createdPost = data
+        } else {
+          throw new Error(data?.message || 'Failed to create post')
+        }
+      } catch (postErr) {
+        // Direct Supabase fallback so post is always saved
+        if (supabase) {
+          try {
+            const { data: supaData, error: supaErr } = await supabase
+              .from('community_posts')
+              .insert({
+                author_name: payload.authorName,
+                author_email: payload.authorEmail,
+                text: payload.text,
+                source: 'web_app',
+                scan_snapshot: payload.scanSnapshot,
+                user_id: payload.userId,
+              })
+              .select('*, community_comments(*), community_reactions(*)')
+              .single()
 
-      setPosts((prev) => [data, ...prev])
+            if (!supaErr && supaData) {
+              createdPost = {
+                _id: String(supaData.id),
+                id: String(supaData.id),
+                authorName: supaData.author_name,
+                authorEmail: supaData.author_email,
+                authorAvatar: payload.authorAvatar || '',
+                avatar: payload.authorAvatar || '',
+                text: supaData.text,
+                source: supaData.source,
+                scanSnapshot: supaData.scan_snapshot,
+                comments: [],
+                reactions: [],
+                createdAt: supaData.created_at,
+              }
+            } else {
+              throw postErr
+            }
+          } catch {
+            throw postErr
+          }
+        } else {
+          throw postErr
+        }
+      }
+
+      setPosts((prev) => [createdPost, ...prev])
       setPostText('')
       setSelectedScanId('')
       setCustomImage(null)
@@ -463,6 +568,7 @@ function CommunityForum() {
           name: userMeta.authorName,
           reactorEmail: userMeta.authorEmail,
           email: userMeta.authorEmail,
+          reactorAvatar: userMeta.authorAvatar,
         }),
       })
 
@@ -499,6 +605,8 @@ function CommunityForum() {
           commenterEmail: userMeta.authorEmail,
           authorEmail: userMeta.authorEmail,
           email: userMeta.authorEmail,
+          commenterAvatar: userMeta.authorAvatar,
+          authorAvatar: userMeta.authorAvatar,
         }),
       })
 
@@ -584,6 +692,19 @@ function CommunityForum() {
               </div>
 
               <form onSubmit={handleCreatePost}>
+                {/* Compose Author Profile Badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', padding: '8px 12px', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '12px', border: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.07))' }}>
+                  <UserAvatar url={userMeta.authorAvatar} name={userMeta.authorName} size={36} />
+                  <div style={{ overflow: 'hidden' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--text-main, #ffffff)', fontSize: '0.88rem', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                      {userMeta.authorName}
+                    </div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted, #94a3b8)' }}>
+                      Posting as active field researcher
+                    </div>
+                  </div>
+                </div>
+
                 <textarea
                   value={postText}
                   onChange={(e) => setPostText(e.target.value)}
@@ -890,7 +1011,22 @@ function CommunityForum() {
                       >
                         {/* Author Header */}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                          <UserAvatar url={post?.user?.avatar || post?.authorAvatar} name={post?.authorName} size={36} />
+                          <UserAvatar
+                            url={
+                              post?.authorAvatar ||
+                              post?.author_avatar ||
+                              post?.avatar ||
+                              post?.user?.avatar ||
+                              post?.scanSnapshot?.authorAvatar ||
+                              post?.scan_snapshot?.authorAvatar ||
+                              (post?.authorEmail ? localStorage.getItem(`@pigify_saved_avatar_${String(post.authorEmail).trim().toLowerCase()}`) : '') ||
+                              (post?.author_email ? localStorage.getItem(`@pigify_saved_avatar_${String(post.author_email).trim().toLowerCase()}`) : '') ||
+                              (userMeta.authorEmail && String(post?.authorEmail || post?.author_email || '').toLowerCase() === userMeta.authorEmail.toLowerCase() ? userMeta.authorAvatar : '') ||
+                              ''
+                            }
+                            name={post?.authorName}
+                            size={36}
+                          />
                           <div>
                             <div style={{ fontWeight: 700, color: 'var(--text-main, #ffffff)', fontSize: '0.92rem' }}>
                               {post?.authorName || 'Backyard Farmer'}
@@ -1110,12 +1246,25 @@ function CommunityForum() {
                         {/* Comments List */}
                         {comments.length > 0 && (
                           <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border-subtle, rgba(255, 255, 255, 0.05))', display: 'grid', gap: '8px' }}>
-                            {comments.map((cmt, idx) => (
-                              <div key={idx} style={{ padding: '8px 10px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.02)', fontSize: '0.8rem' }}>
-                                <strong style={{ color: 'var(--text-main, #ffffff)' }}>{cmt.commenterName || cmt.authorName || cmt.name || 'Backyard Farmer'}</strong>
-                                <span style={{ color: 'var(--text-muted, #94a3b8)', marginLeft: '6px' }}>{cmt.text}</span>
-                              </div>
-                            ))}
+                            {comments.map((cmt, idx) => {
+                              const cmtEmail = String(cmt.commenterEmail || cmt.authorEmail || cmt.email || '').trim().toLowerCase()
+                              const cmtAvatar =
+                                cmt.commenterAvatar ||
+                                cmt.authorAvatar ||
+                                cmt.avatar ||
+                                (cmtEmail ? localStorage.getItem(`@pigify_saved_avatar_${cmtEmail}`) : '') ||
+                                (userMeta.authorEmail && cmtEmail === userMeta.authorEmail ? userMeta.authorAvatar : '') ||
+                                ''
+                              return (
+                                <div key={idx} style={{ padding: '8px 10px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.02)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <UserAvatar url={cmtAvatar} name={cmt.commenterName || cmt.authorName || cmt.name} size={24} />
+                                  <div>
+                                    <strong style={{ color: 'var(--text-main, #ffffff)' }}>{cmt.commenterName || cmt.authorName || cmt.name || 'Backyard Farmer'}</strong>
+                                    <span style={{ color: 'var(--text-muted, #94a3b8)', marginLeft: '6px' }}>{cmt.text}</span>
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
                         )}
 
