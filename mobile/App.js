@@ -171,7 +171,12 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (!user?.token) return undefined;
+    if (
+      !user?.token ||
+      String(user.token).startsWith('firebase-') ||
+      String(user.token).startsWith('demo-')
+    )
+      return undefined;
 
     let mounted = true;
     let checking = false;

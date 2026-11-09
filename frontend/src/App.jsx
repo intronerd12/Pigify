@@ -111,7 +111,12 @@ function App() {
         return
       }
 
-      if (!parsedUser?.token || parsedUser?.token?.startsWith('demo-')) return
+      if (
+        !parsedUser?.token ||
+        parsedUser?.token?.startsWith('demo-') ||
+        parsedUser?.token?.startsWith('firebase-')
+      )
+        return
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/session`, {

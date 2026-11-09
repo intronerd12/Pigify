@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "000000000000",
-    "project_id": "mock-project-id",
-    "storage_bucket": "mock-project-id.appspot.com"
+    "project_number": "236055056140",
+    "project_id": "pigify-ecfcf",
+    "storage_bucket": "pigify-ecfcf.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+        "mobilesdk_app_id": "1:236055056140:android:725be7237c8a0e8a6a8329",
         "android_client_info": {
           "package_name": "com.pigify.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "mock-client-id.apps.googleusercontent.com",
+          "client_id": "236055056140-pigifyweb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "mock-api-key"
+          "current_key": "AIzaSyCVV13Haa79XO_yEJVwchbmUrqVs051Cxo"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "mock-client-id.apps.googleusercontent.com",
+              "client_id": "236055056140-pigifyweb.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
