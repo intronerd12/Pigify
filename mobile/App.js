@@ -1,41 +1,4 @@
-import * as ReactNative from 'react-native';
-
-// Polyfill InteractionManager removed in React Native 0.88 / Expo SDK 58
-if (typeof ReactNative.InteractionManager === 'undefined' || !ReactNative.InteractionManager?.runAfterInteractions) {
-  const polyfillInteractionManager = {
-    runAfterInteractions: (task) => {
-      let cancelled = false;
-      const execute = () => {
-        if (!cancelled && typeof task === 'function') task();
-      };
-      const handle = (typeof requestIdleCallback !== 'undefined' ? requestIdleCallback : setTimeout)(execute, 0);
-      return {
-        cancel: () => {
-          cancelled = true;
-          if (typeof cancelIdleCallback !== 'undefined') cancelIdleCallback(handle);
-          else clearTimeout(handle);
-        },
-        then: (onResolved, onRejected) => new Promise((res) => polyfillInteractionManager.runAfterInteractions(res)).then(onResolved, onRejected),
-      };
-    },
-    createInteractionHandle: () => 1,
-    clearInteractionHandle: () => {},
-    setDeadline: () => {},
-    addListener: () => ({ remove: () => {} }),
-  };
-
-  try {
-    Object.defineProperty(ReactNative, 'InteractionManager', {
-      configurable: true,
-      enumerable: true,
-      writable: true,
-      value: polyfillInteractionManager,
-    });
-  } catch {
-    ReactNative.InteractionManager = polyfillInteractionManager;
-  }
-}
-
+import './polyfillInteractionManager';
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 
 if (typeof globalThis !== 'undefined') {
