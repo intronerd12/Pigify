@@ -1,5 +1,17 @@
 const RN = require('react-native');
 
+// Restore React Native's native XHR-backed fetch (whatwg-fetch) on native platforms
+// so FormData with { uri, name, type } works natively instead of throwing
+// "Unsupported FormDataPart implementation" in Expo SDK 58's WinterCG fetch.
+if (RN.Platform && RN.Platform.OS !== 'web') {
+  try {
+    const whatwgFetch = require('whatwg-fetch');
+    if (whatwgFetch && typeof whatwgFetch.fetch === 'function') {
+      globalThis.fetch = whatwgFetch.fetch;
+    }
+  } catch {}
+}
+
 const polyfillInteractionManager = {
   Events: {
     interactionStart: 'interactionStart',
@@ -61,4 +73,3 @@ try {
 }
 
 module.exports = polyfillInteractionManager;
-

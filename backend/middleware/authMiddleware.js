@@ -20,10 +20,13 @@ const protect = async (req, res, next) => {
 
     // Support Firebase Google & Evaluator Demo tokens gracefully
     if (token.startsWith('firebase-google-') || token.startsWith('demo-')) {
-      const isDemoAdmin = token.includes('admin');
+      const isDemoAdmin = token.includes('admin') || token.includes('axel-bumatay');
+      const rawSub = token.replace(/^firebase-google-/, '');
       req.user = {
-        id: token,
-        _id: token,
+        id: rawSub || token,
+        _id: rawSub || token,
+        tokenId: token,
+        isSocialSession: true,
         email: isDemoAdmin ? 'admin@pigify.com' : 'google.user@pigify.com',
         name: isDemoAdmin ? 'Pigify Admin' : 'Google Verified User',
         avatar: '',

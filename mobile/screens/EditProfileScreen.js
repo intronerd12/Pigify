@@ -136,8 +136,9 @@ export default function EditProfileScreen({ route, navigation, onUpdateUser, use
       // Direct Supabase profile sync using configured Supabase client
       try {
         const { supabase } = require('../services/supabase');
-        const targetId = user.id || user._id;
-        if (targetId) {
+        const targetId = String(user.id || user._id || '').trim();
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(targetId);
+        if (targetId && isUuid) {
           await supabase
             .from('profiles')
             .update({

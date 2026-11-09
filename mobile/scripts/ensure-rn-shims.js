@@ -113,4 +113,30 @@ if (fs.existsSync(rnRoot)) {
       }
     }
   } catch (err) {}
+
+  // Patch expo/build/winter/runtime.native.js to use React Native's native XHR fetch
+  // so FormData with { uri, name, type } never throws "Unsupported FormDataPart implementation"
+  try {
+    const expoWinterRuntime = path.resolve(
+      __dirname,
+      '..',
+      'node_modules',
+      'expo',
+      'build',
+      'winter',
+      'runtime.native.js'
+    );
+    if (fs.existsSync(expoWinterRuntime)) {
+      const src = fs.readFileSync(expoWinterRuntime, 'utf8');
+      if (src.includes('process.env.EXPO_PUBLIC_USE_RN_FETCH')) {
+        const patched = src.replace(
+          /const useRnFetch = [^;]+;/,
+          'const useRnFetch = true;'
+        );
+        if (patched !== src) {
+          fs.writeFileSync(expoWinterRuntime, patched, 'utf8');
+        }
+      }
+    }
+  } catch (err) {}
 }

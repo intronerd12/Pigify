@@ -311,7 +311,22 @@ export const apiFetch = async (path, options = {}, timeoutMs = 6000) => {
     const timer = setTimeout(() => controller.abort(), effectiveTimeout);
 
     try {
-      const response = await fetch(buildApiUrlInternal(baseUrl, path), {
+      const isNativeFormData =
+        Platform.OS !== 'web' &&
+        effectiveOptions.body &&
+        (effectiveOptions.body instanceof FormData ||
+          typeof effectiveOptions.body?.getParts === 'function');
+      let fetchFn = fetch;
+      if (isNativeFormData) {
+        try {
+          const whatwg = require('whatwg-fetch');
+          if (whatwg && typeof whatwg.fetch === 'function') {
+            fetchFn = whatwg.fetch;
+          }
+        } catch {}
+      }
+
+      const response = await fetchFn(buildApiUrlInternal(baseUrl, path), {
         ...effectiveOptions,
         signal: controller.signal,
       });
