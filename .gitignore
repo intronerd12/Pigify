@@ -4,6 +4,7 @@ node_modules/
 .env.*
 !/frontend/.env.example
 !/mobile/.env.example
+!/backend/.env.example
 backend/config/.env
 frontend/.env.local
 .venv/
