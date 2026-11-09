@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "postinstall": "node scripts/ensure-rn-shims.js",
+    "prestart": "node scripts/ensure-rn-shims.js",
     "start": "expo start",
     "start:prod": "expo start --no-dev --minify",
     "dev": "expo start",
