@@ -2,7 +2,7 @@ const { spawnSync } = require('child_process');
 const path = require('path');
 
 const isRender = String(process.env.RENDER || '').toLowerCase() === 'true';
-const forceInstall = String(process.env.DRAGON_INSTALL_PY_DEPS || '').toLowerCase() === '1';
+const forceInstall = String(process.env.PIGIFY_INSTALL_PY_DEPS || '').toLowerCase() === '1';
 
 if (!isRender && !forceInstall) {
   console.log('[postinstall] Skipping Python dependency install (not Render).');

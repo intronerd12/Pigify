@@ -171,20 +171,7 @@ router.post('/analyze', upload.single('image'), async (req, res) => {
 
     const client = String(req.body?.client || '').trim().toLowerCase();
     const source = String(req.body?.source || '').trim().toLowerCase();
-    const requireYoloWeights =
-      client === 'mobile' ||
-      client === 'web' ||
-      source === 'mobile_app' ||
-      source === 'web_app';
-
-    if (requireYoloWeights) {
-      // Mobile and web app scans must use production YOLO weights.
-      form.append('source', source || (client === 'web' ? 'web_app' : 'mobile_app'));
-      form.append('require_yolo', '1');
-      form.append('require_dual_yolo', '1');
-      form.append('require_weights', 'yolo_best_own.pt');
-      form.append('require_bad_weights', 'yolo_bad_own.pt');
-    }
+    form.append('source', source || (client === 'web' ? 'web_app' : 'mobile_app'));
 
     // Forward to Python Service
     const response = await axios.post(`${PYTHON_SERVICE_URL}/detect`, form, {

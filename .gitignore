@@ -20,13 +20,6 @@ backend/datasets/
 backend/ml_models/yolo_runs/
 backend/ml_models/*.pt
 backend/yolov*.pt
-Dragon Fruit.yolov11/
-Dragon Fruit.yolov8/
-Dragon Fruit Vignan.v2i.yolov11/
-Dragon Fruit Vignan.v2i.yolov8/
-Dragon Fruit.v1i.folder/
-Own Dataset/
-Wallpaper Dragon/
 *.zip
 *.rar
 *.7z
@@ -42,16 +35,12 @@ Wallpaper Dragon/
 *.mov
 *.avi
 
-# Keep production YOLO weights in repo for Render deployment.
-!backend/ml_models/yolo_best.pt
-!backend/ml_models/yolo_bad.pt
-!backend/ml_models/yolo_best_own.pt
-!backend/ml_models/yolo_bad_own.pt
 mobile/.expo/
 mobile/.expo-shared/
 mobile/.expo-test-dist/
 mobile/dist/
 frontend/dist/
+frontend/.firebase/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

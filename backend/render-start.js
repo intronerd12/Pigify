@@ -47,7 +47,7 @@ const shouldStartLocalAi = () => {
 
 const env = { ...process.env };
 env.PYTHONUNBUFFERED = '1';
-if (noTrain) env.DRAGON_AUTO_TRAIN = '0';
+if (noTrain) env.PIGIFY_AUTO_TRAIN = '0';
 
 console.log('[render-start] Starting Node API (server.js)...');
 const nodeProc = spawn('node', ['server.js'], {

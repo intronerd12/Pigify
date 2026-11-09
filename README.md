@@ -42,15 +42,9 @@ npm install
 cp .env.example .env
 # (On Windows PowerShell: Copy-Item .env.example .env)
 
-# 4. Start the backend server
+# 4. Start the backend server (starts Node API + Python Swine AI)
 npm start
-# Server will run on: http://localhost:5000
-```
-
-> **Note on Windows with Python AI:** If you have Python and want to run both Node server and the local Python YOLO AI service concurrently, run:
-> ```bash
-> npm run dev:no-train:windows
-> ```
+# Server will run on: http://localhost:5000 (AI on :8000)
 
 ---
 
