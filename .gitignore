@@ -48,3 +48,8 @@ hf_deploy/
 dataset_1000/
 dataset_samples/
 roboflow_dataset_500/
+
+# Secret env files (named without the leading dot)
+env
+**/env
+

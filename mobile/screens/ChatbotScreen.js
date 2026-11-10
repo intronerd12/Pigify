@@ -181,7 +181,8 @@ export default function ChatbotScreen({ user }) {
     setIsTyping(true);
 
     try {
-      const history = updated.slice(-8).map((m) => ({
+      // Exclude the message being sent; the service appends it as the final turn.
+      const history = messages.slice(-8).map((m) => ({
         role: m.sender === 'user' ? 'user' : 'model',
         text: m.text,
       }));

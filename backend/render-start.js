@@ -4,7 +4,9 @@ const dotenv = require('dotenv');
 
 const root = __dirname;
 dotenv.config({ path: path.join(root, '.env') });
+dotenv.config({ path: path.join(root, 'env') });
 dotenv.config({ path: path.join(root, 'config', '.env') });
+dotenv.config({ path: path.join(root, 'config', 'env') });
 
 const args = process.argv.slice(2);
 const noTrain = args.includes('--no-train');

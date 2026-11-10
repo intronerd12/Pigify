@@ -29,7 +29,7 @@ import './MarketingPages.css'
 import './ChatbotPage.css'
 
 const GEMINI_API_KEY =
-  import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyD6ye4nKVWPvRzOKsOdl3H4D81nG_iEmyQ'
+  import.meta.env.VITE_GEMINI_API_KEY || ''
 const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash'
 
 const STORAGE_KEY = 'pigify_web_chat_history_v1'
@@ -190,8 +190,9 @@ export default function ChatbotPage() {
     ]
   })
 
-  const messagesEndRef = useRef(null)
+  const messagesBodyRef = useRef(null)
   const inputRef = useRef(null)
+  const isFirstScroll = useRef(true)
 
   useEffect(() => {
     try {
@@ -199,8 +200,13 @@ export default function ChatbotPage() {
     } catch {}
   }, [messages])
 
+  // Scroll only the chat box (not the whole page) to the newest message.
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesBodyRef.current
+    if (!el) return
+    const behavior = isFirstScroll.current ? 'auto' : 'smooth'
+    isFirstScroll.current = false
+    el.scrollTo({ top: el.scrollHeight, behavior })
   }, [messages, isTyping])
 
   const callAiAssistant = async (promptText, conversationHistory) => {
@@ -307,7 +313,7 @@ export default function ChatbotPage() {
       setMessages([...updated, fallbackMsg])
     } finally {
       setIsTyping(false)
-      setTimeout(() => inputRef.current?.focus(), 80)
+      setTimeout(() => inputRef.current?.focus({ preventScroll: true }), 80)
     }
   }
 
@@ -438,7 +444,7 @@ export default function ChatbotPage() {
             </div>
 
             {/* Messages Body */}
-            <div className="chatpage-messages-body">
+            <div className="chatpage-messages-body" ref={messagesBodyRef}>
               {messages.map((m) => {
                 const isUser = m.sender === 'user'
                 return (
@@ -489,7 +495,6 @@ export default function ChatbotPage() {
                   </div>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Bar */}

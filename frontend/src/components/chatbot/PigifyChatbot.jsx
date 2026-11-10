@@ -17,7 +17,7 @@ import './PigifyChatbot.css'
 
 // Default fallback key if env variable not directly available
 const GEMINI_API_KEY =
-  import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyD6ye4nKVWPvRzOKsOdl3H4D81nG_iEmyQ'
+  import.meta.env.VITE_GEMINI_API_KEY || ''
 const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash'
 
 const STORAGE_KEY = 'pigify_web_chat_history_v1'

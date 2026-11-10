@@ -1,9 +1,7 @@
 import { apiFetch } from './api';
 
-const DEFAULT_GEMINI_KEY = 'AIzaSyD6ye4nKVWPvRzOKsOdl3H4D81nG_iEmyQ';
 const GEMINI_API_KEY =
-  (typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_GEMINI_API_KEY) ||
-  DEFAULT_GEMINI_KEY;
+  (typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_GEMINI_API_KEY) || '';
 const GEMINI_MODEL =
   (typeof process !== 'undefined' && process?.env?.EXPO_PUBLIC_GEMINI_MODEL) ||
   'gemini-2.5-flash';
@@ -160,6 +158,7 @@ function getLocalPigifyFallback(query) {
  * to the local backend server (e.g. testing on Wi-Fi without LAN routing).
  */
 async function callDirectGemini(message, history = []) {
+  if (!GEMINI_API_KEY) return null;
   try {
     const contents = [
       {
@@ -244,7 +243,7 @@ export const ChatbotService = {
             : undefined,
           history: Array.isArray(history) ? history : undefined,
         }),
-      });
+      }, 20000);
 
       if (response && response.ok) {
         const data = await response.json();

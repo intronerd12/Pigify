@@ -3,9 +3,7 @@ const axios = require('axios');
 
 const router = express.Router();
 
-const DEFAULT_GEMINI_KEY = 'AIzaSyD6ye4nKVWPvRzOKsOdl3H4D81nG_iEmyQ';
-const GEMINI_API_KEY =
-  process.env.GEMINI_API_KEY || process.env.PIGIFY_GEMINI_API_KEY || DEFAULT_GEMINI_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.PIGIFY_GEMINI_API_KEY || '';
 const PRIMARY_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const CANDIDATE_MODELS = [PRIMARY_MODEL, 'gemini-2.5-flash', 'gemini-1.5-flash'].filter(
   (v, i, a) => a.indexOf(v) === i
@@ -235,7 +233,10 @@ router.post('/', async (req, res) => {
     let lastError = null;
 
     // Try candidate models in order (e.g. gemini-2.5-flash)
-    for (const model of CANDIDATE_MODELS) {
+    if (!GEMINI_API_KEY) {
+      console.warn('GEMINI_API_KEY is not set; using local Pigify knowledge base.');
+    }
+    for (const model of GEMINI_API_KEY ? CANDIDATE_MODELS : []) {
       try {
         const response = await axios.post(
           `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,

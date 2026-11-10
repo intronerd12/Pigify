@@ -6,7 +6,9 @@ const dotenv = require('dotenv');
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config({ path: path.join(__dirname, 'env') });
 dotenv.config({ path: path.join(__dirname, 'config', '.env') });
+dotenv.config({ path: path.join(__dirname, 'config', 'env') });
 
 const connectDB = require('./config/db');
 const { configureCloudinary } = require('./config/cloudinary');
